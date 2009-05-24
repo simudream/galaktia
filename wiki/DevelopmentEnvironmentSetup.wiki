@@ -1,0 +1,204 @@
+#summary How to setup the development environment.
+#labels Phase-Requirements,Phase-Implementation
+
+= Introduction =
+
+This document explains how to install libraries, tools and other dependencies required for development.
+
+
+= Dependencies =
+
+  * *Python 2.5 or 2.6*
+     * *ipython*
+     * *virtualenv*
+  * *Python libraries*
+     * *pygame*
+     * *twisted*
+     * *simplejson*
+     * *setuptools*
+     * *nose*
+     * *sqlalchemy*
+     * *sqlite*
+  * *PostgreSQL*
+     * *pgAdmin III*
+  * *Memcached* ... not yet
+
+= Platform-dependent installation instructions =
+
+==Windows==
+
+  _Oh, please! Get an operating system!_
+
+==Ubuntu Linux==
+
+  * *Python 2.6*: comes out-of-the-box
+     * *ipython*: sudo apt-get install ipython
+     * *virtualenv*: sudo apt-get install python-virtualenv
+  * *Bibliotecas de Python*
+     * *pygame*: sudo apt-get install python-pygame
+     * *twisted*: sudo apt-get install python-twisted
+     * *simplejson*: sudo apt-get install python-simplejson
+     * *setuptools*: sudo apt-get install python-setuptools
+     * *nose*: sudo apt-get install python-nose
+     * *sqlalchemy*: sudo apt-get install python-sqlalchemy
+     * *sqlite*: sudo apt-get install python-sqlite
+  * *PostgreSQL*: sudo apt-get install postgresql (See: http://www.guia-ubuntu.org/index.php?title=PostgreSQL )
+     * *pgAdmin III*: sudo apt-get install pgadmin3
+  * *Memcached* ... not yet
+
+==Mac OS X (Leopard)==
+
+  * *Python 2.5*: comes out-of-the-box
+     * *ipython*: sudo easy_install ipython
+     * *virtualenv*: sudo easy_install python-virtualenv
+  * *Bibliotecas de Python*
+     * *pygame*: See the instructions at http://pygame.org/wiki/MacCompile
+     * *twisted*: sudo easy_install twisted
+     * *simplejson*: sudo easy_install simplejson
+     * *setuptools*: sudo easy_install setuptools
+     * *nose*: sudo easy_install nose
+     * *sqlalchemy*: sudo easy_install sqlalchemy
+     * *sqlite*: sudo easy_install sqlite
+  * *PostgreSQL*: See the instructions at http://developer.apple.com/internet/opensource/postgres.html
+     * *pgAdmin III*: See http://www.pgadmin.org/download/macosx.php
+  * *Memcached* ... not yet
+
+
+=Source Code Management=
+
+==Tools==
+
+  * *Subversion*
+  * *[http://www.orcaware.com/svn/wiki/Svnmerge.py svnmerge.py]*: Script for _branch_ management
+
+==Source checkout==
+
+To check out the code (at the repository trunk) as a developer:
+
+{{{
+$ svn checkout https://galaktia.googlecode.com/svn/trunk/ galaktia --username PUT_YOUR_USERNAME_HERE
+}}}
+
+When prompted, enter your [http://code.google.com/hosting/settings generated Google Code password].
+
+==Installing galaktia as a Python module==
+
+*_TODO: Expand on this topic_*
+
+At the trunk path:
+
+{{{
+$ cd galaktia/galaktia
+$ python setup.py develop
+}}}
+
+If everything went fine, you should then be able to `import galaktia` on the `ipython` interactive shell.
+
+=Python Virtual Environment _(OPTIONAL)_=
+
+==About _virtualenv_==
+
+From the Python Package Index of [http://pypi.python.org/pypi/virtualenv virtualenv]:
+
+  virtualenv is a tool to create isolated Python environments.
+
+  The basic problem being addressed is one of dependencies and versions, and indirectly permissions. `[...]`
+
+   In all these cases, virtualenv can help you. It creates an environment that has its own installation directories, that doesn't share libraries with other virtualenv environments (and optionally doesn't use the globally installed libraries either).
+
+== Basic usage ==
+
+To create a _virtualenv_:
+{{{
+$ virtualenv $PATH_TO_ENV
+}}}
+
+  This creates ENV/lib/python2.4/site-packages (or ENV/lib/python2.5/site-packages on Python 2.5, etc), where any libraries you install will go. It also creates ENV/bin/python, which is a Python interpreter that uses this environment. Anytime you use that interpreter (including when a script has #!/path/to/ENV/bin/python in it) the libraries in that environment will be used. `[...]` It also installs Setuptools for you, and if you use ENV/bin/easy_install the packages will be installed into the environment.
+
+To enter the _virtualenv_:
+{{{
+$ source $PATH_TO_ENV/bin/activate
+}}}
+
+=IDEs _(OPTIONAL)_=
+
+One of the following is recommended:
+
+  * *vim*
+  * *Emacs*
+  * *Eclipse* with *PyDev* plug-in
+
+In the case of _vim_, make sure to include this configuration in your `~/.vimrc` (that applies, among others, style rules for indentation, for example):
+{{{
+" vimrc file for following the coding standards specified in PEP 7 & 8.
+"
+" To use this file, source it in your own personal .vimrc file (``source
+" <filename>``) or, if you don't have a .vimrc file, you can just symlink to it
+" (``ln -s <this file> ~/.vimrc``).  All options are protected by autocmds
+" (read below for an explanation of the command) so blind sourcing of this file
+" is safe and will not affect your settings for non-Python or non-C files.
+"
+"
+" All setting are protected by 'au' ('autocmd') statements.  Only files ending
+" in .py or .pyw will trigger the Python settings while files ending in *.c or
+" *.h will trigger the C settings.  This makes the file "safe" in terms of only
+" adjusting settings for Python and C files.
+"
+" Only basic settings needed to enforce the style guidelines are set.
+" Some suggested options are listed but commented out at the end of this file.
+
+
+" Number of spaces to use for an indent.
+" This will affect Ctrl-T and 'autoindent'.
+" Python: 4 spaces
+" C: 8 spaces (pre-existing files) or 4 spaces (new files)
+au BufRead,BufNewFile *.py,*pyw set shiftwidth=4
+au BufRead *.c,*.h set shiftwidth=8
+au BufNewFile *.c,*.h set shiftwidth=4
+
+" Number of spaces that a pre-existing tab is equal to.
+" For the amount of space used for a new tab use shiftwidth.
+" Python: 8
+" C: 8
+au BufRead,BufNewFile *py,*pyw set tabstop=4
+au BufRead,BufNewFile *.c,*.h set tabstop=8
+
+" Replace tabs with the equivalent number of spaces.
+" Also have an autocmd for Makefiles since they require hard tabs.
+" Python: yes
+" C: no
+" Makefile: no
+au BufRead,BufNewFile *.py,*.pyw set expandtab
+au BufRead,BufNewFile *.c,*.h set noexpandtab
+au BufRead,BufNewFile Makefile* set noexpandtab
+
+" Use the below highlight group when displaying bad whitespace is desired
+highlight BadWhitespace ctermbg=red guibg=red
+
+" Display tabs at the beginning of a line in Python mode as bad.
+au BufRead,BufNewFile *.py,*.pyw match BadWhitespace /^\t\+/
+" Make trailing whitespace be flagged as bad.
+au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
+
+" Wrap text after a certain number of characters
+" Python: 79 
+" C: 79
+au BufRead,BufNewFile *.py,*.pyw,*.c,*.h set textwidth=79
+
+" Turn off settings in 'formatoptions' relating to comment formatting.
+" - c : do not automatically insert the comment leader when wrapping based on
+"    'textwidth'
+" - o : do not insert the comment leader when using 'o' or 'O' from command mode
+" - r : do not insert the comment leader when hitting <Enter> in insert mode
+" Python: not needed
+" C: prevents insertion of '*' at the beginning of every line in a comment
+au BufRead,BufNewFile *.c,*.h set formatoptions-=c formatoptions-=o formatoptions-=r
+
+" Use UNIX (\n) line endings.
+" Only used for new files so as to not force existing files to change their
+" line endings.
+" Python: yes
+" C: yes
+au BufNewFile *.py,*.pyw,*.c,*.h set fileformat=unix
+
+}}}
