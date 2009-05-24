@@ -12,7 +12,7 @@ This document explains how to install libraries, tools and other dependencies re
      * *ipython*
      * *virtualenv*
   * *Python libraries*
-     * *pygame*
+     * ~~*pygame*~~ *pyglet*
      * *twisted*
      * *simplejson*
      * *setuptools*
@@ -34,8 +34,8 @@ This document explains how to install libraries, tools and other dependencies re
   * *Python 2.6*: comes out-of-the-box
      * *ipython*: sudo apt-get install ipython
      * *virtualenv*: sudo apt-get install python-virtualenv
-  * *Bibliotecas de Python*
-     * *pygame*: sudo apt-get install python-pygame
+  * *Python libraries*
+     * ~~*pygame*: sudo apt-get install python-pygame~~ *pyglet*
      * *twisted*: sudo apt-get install python-twisted
      * *simplejson*: sudo apt-get install python-simplejson
      * *setuptools*: sudo apt-get install python-setuptools
@@ -51,8 +51,8 @@ This document explains how to install libraries, tools and other dependencies re
   * *Python 2.5*: comes out-of-the-box
      * *ipython*: sudo easy_install ipython
      * *virtualenv*: sudo easy_install python-virtualenv
-  * *Bibliotecas de Python*
-     * *pygame*: See the instructions at http://pygame.org/wiki/MacCompile
+  * *Python libraries*
+     * ~~*pygame*: See the instructions at http://pygame.org/wiki/MacCompile ~~  *pyglet*
      * *twisted*: sudo easy_install twisted
      * *simplejson*: sudo easy_install simplejson
      * *setuptools*: sudo easy_install setuptools
@@ -126,7 +126,7 @@ One of the following is recommended:
 
   * *vim*
   * *Emacs*
-  * *Eclipse* with *PyDev* plug-in
+  * *Eclipse* with *Py Dev* plug-in
 
 In the case of _vim_, make sure to include this configuration in your `~/.vimrc` (that applies, among others, style rules for indentation, for example):
 {{{
