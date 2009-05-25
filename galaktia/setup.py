@@ -9,7 +9,10 @@ setup(name='galaktia',
       author_email='contact@galaktia.com.ar',
       url='http://code.google.com/p/galaktia/',
       install_requires= [
-        'pygame>=1.8',
+        'pyglet',
+        'twisted',
+        'sqlalchemy',
+        'simplejson',
       ],
       packages=find_packages(exclude=['ez_setup']),
      )
