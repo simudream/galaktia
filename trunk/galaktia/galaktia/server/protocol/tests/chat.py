@@ -50,6 +50,8 @@ class ManuServerProtocol(ChatServerProtocol):
 
 
 class ManuClientProtocol(ChatClientProtocol):
+    
+    
     username = ''
     
     def prompt_username(self):

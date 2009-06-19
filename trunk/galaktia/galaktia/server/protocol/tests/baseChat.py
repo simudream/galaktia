@@ -15,10 +15,12 @@ class BaseMessageProtocol(DatagramProtocol):
 
     def datagramReceived(self, input_data, (host, port)):
         """ Event handler for datagram reception """
+        logger.debug('hola')
         input_message = self.decode(input_data)
         logger.debug('Received from %s:%d: %s', host, port, input_message)
         for output_message, dst in self.process(input_message, (host, port)):
             self.send(output_message, dst)
+        
 
     def send(self, output_message, dst=None):
         """ Sends an output message to given destination (host, port) """
