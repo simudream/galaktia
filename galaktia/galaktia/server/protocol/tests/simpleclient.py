@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-#/usr/bin/python
+#!/usr/bin/python
 
 
 
-from chat import ChatClientProtocol
+
+from chat import ManuClientProtocol, ClientInterface
 import pygame
 from pygame.locals import *
 
@@ -15,7 +16,10 @@ def main():
     font = pygame.font.SysFont("arial", 16);
     font_height = font.get_linesize()
     
-
+    #online client
+    client_interface = ClientInterface()
+    client_interface.run()
+    print "Hola"
 
     #Display
     SCREEN_SIZE = (800, 600)
