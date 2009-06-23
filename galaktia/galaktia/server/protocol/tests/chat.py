@@ -104,20 +104,7 @@ class ManuClientProtocol(ChatClientProtocol):
         return [(self.username+':'+output_message, None)]
         
         
-class ClientInterface(object):
-    
-    def __init__(self):
-        endpoint='client'
-        host='127.0.0.1'
-        port = 6414
-        logging.basicConfig(stream=sys.stderr, level=logging.INFO)
-        protocol = ManuClientProtocol(host, port)
-        port = 0 # dinamically assign client port
-        logger.info('Starting %s', endpoint)
-        reactor.listenUDP(port, protocol)
-        
-    def run(self):
-        reactor.run()
+
 
 def main(program, endpoint='client', host='127.0.0.1', port=6414):
     """ Main program: Starts a chat client or server on given host:port """
