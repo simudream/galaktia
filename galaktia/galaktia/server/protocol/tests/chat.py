@@ -8,11 +8,12 @@ from twisted.internet import reactor
 from twisted.internet.protocol import DatagramProtocol
 from twisted.python import log
 
-from baseChat import *
+from baseChat import * # LOS IMPORTS CON * SON MALOS!!!
 
 logger = logging.getLogger(__name__)
 
 
+# ESTAS IMPLEMENTACIONES ESTARIAN MEJOR SI LAS HUBIERAMOS PENSADO ANTES
 
         
 class ManuServerProtocol(ChatServerProtocol):
@@ -46,7 +47,6 @@ class ManuServerProtocol(ChatServerProtocol):
             else:
                 logger.error(str(parsed_input))
                 
-
 
 
 class ManuClientProtocol(ChatClientProtocol):
