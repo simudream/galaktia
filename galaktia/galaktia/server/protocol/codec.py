@@ -3,7 +3,7 @@
 
 import simplejson
 
-from galaktia.protocol.model import Datagram, Message
+from galaktia.server.protocol.model import Datagram, Message
 
 class Codec(object):
     """ Encodes and decodes objects """
@@ -22,8 +22,8 @@ class SerializationCodec(Codec):
     def encode(self, decoded):
         return simplejson.dumps(decoded, separators=(',', ':'))
 
-    def decode(self, input_data):
-        return simplejson.loads()
+    def decode(self, encoded):
+        return simplejson.loads(encoded)
 
 class CompressionCodec(Codec):
     """ Compresses and decompresses strings via zlib """
@@ -83,13 +83,13 @@ class ProtocolCodec(Codec):
         serialized = self.serializer.encode(message)
         compressed = self.compressor.encode(serialized)
         password = self._get_password('%s:%s' % (host, port))
-        encrypted = self.cipher.encode((compressed, password))
-        return Datagram(encrypted, host, port)
+        encrypted = self.cipher.encode((compressed, password))[0]
+        return Datagram(encrypted, host=host, port=port)
 
     def decode(self, encoded):
-        encrypted, host, port = encoded
+        encrypted, host, port = (encoded.data, encoded.host, encoded.port)
         password = self._get_password('%s:%d' % (host, port))
-        decrypted = self.cipher.decode((encrypted, password))
+        decrypted = self.cipher.decode((encrypted, password))[0]
         decompressed = self.compressor.decode(decrypted)
         unserialized = self.serializer.decode(decompressed)
         return Message(host=host, port=port, **unserialized)

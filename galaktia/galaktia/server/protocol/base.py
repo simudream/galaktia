@@ -36,7 +36,8 @@ class BaseServer(DatagramProtocol):
         """ Sends an output message (according to its host, port) """
         destination = tuple(output_message[i] for i in ('host', 'port')) \
                 if output_message.get('host') else None
-        self.transport.write(self.encode(output_message), destination)
+        output_data = self.codec.encode(output_message).data
+        self.transport.write(output_data, destination)
         logger.debug('Sent to %s: %s', destination or 'server', \
                 output_message)
 
@@ -49,7 +50,7 @@ class BaseClient(BaseServer):
     def __init__(self, codec, controller, \
             server=DEFAULT_SERVER, port=DEFAULT_PORT):
         """ BaseClient constructor """
-        super(BaseClient, self).__init__(codec, controller)
+        BaseServer.__init__(self, codec, controller) # old-style class
         self.server = server
         self.port = int(port)
 
