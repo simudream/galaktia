@@ -2,7 +2,7 @@
 #!/usr/bin/python
 
 
-
+# ESTO ESTA MAL!!! PYGAME ES MALO!!!
 
 from chat import ManuClientProtocol, ClientInterface
 import pygame

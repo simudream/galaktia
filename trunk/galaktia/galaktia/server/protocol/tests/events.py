@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-import pygame
+import pygame # PROHIBIDO USAR PYGAME!!!
+              # SE LE CORTARA LA CABEZA AL QUE IMPORTE ESTA DEPENDENCIA
 from pygame.locals import *
 from sys import exit
 pygame.init()
