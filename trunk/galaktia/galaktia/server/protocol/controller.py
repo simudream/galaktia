@@ -10,10 +10,12 @@ from galaktia.server.protocol.model import Datagram, Message
 from galaktia.server.protocol.base import BaseServer, BaseClient
 from galaktia.server.protocol.codec import ProtocolCodec
 
+logger = logging.getLogger(__name__)
+
 class Controller(object):
 
     def greet(self):
-        """ Returns Datagram objects to be sent to start a connection """
+        """ Returns Message objects to be sent to start a connection """
         return [] # override in clients to start a connection
 
     def process(self, input_message):
@@ -32,16 +34,16 @@ class ChatClientController(Controller):
     def greet(self):
         sys.stdout.write('Enter text to chat with the echo server')
         output_message = self.prompt()
-        return [Datagram(output_message, None, None)]
+        return [Message(text=output_message)]
 
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
-        sys.stdout.write(input_message.get('record', '?'))
+        sys.stdout.write(input_message.get('text', '?'))
         output_message = self.prompt()
         if output_message is None:
             reactor.stop() # the reactor singleton is not a good idea...
             return []
-        return [Message(record=output_message)]
+        return [Message(text=output_message)]
 
     def prompt(self):
         """ Prompts to read a new message to be sent to the server """
