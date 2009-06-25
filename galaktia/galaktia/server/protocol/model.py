@@ -15,3 +15,8 @@ class Message(dict):
         self['port'] = kwargs.get('port')
         self.update(kwargs)
 
+class Command(Message):
+    
+    def __init__(self, **kwargs):
+        self['name'] = self.__class__.__name__
+        Message.__init__(self, **kwargs)

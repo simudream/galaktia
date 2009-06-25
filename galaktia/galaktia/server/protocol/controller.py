@@ -64,7 +64,7 @@ def main(program, endpoint='client', host='127.0.0.1', port=6414):
             return MockSession(id)
     codec = ProtocolCodec(MockSessionDAO())
     if endpoint == 'client':
-        log_level = logging.INFO
+        log_level = logging.DEBUG
         controller = ChatClientController()
         protocol = BaseClient(codec, controller, host, port)
         port = 0 # dinamically assign client port
