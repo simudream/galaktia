@@ -92,7 +92,9 @@ class ProtocolCodec(Codec):
         decrypted = self.cipher.decode((encrypted, password))[0]
         decompressed = self.compressor.decode(decrypted)
         unserialized = self.serializer.decode(decompressed)
-        return Message(host=host, port=port, **unserialized)
+
+        return Message(host=host, port=port, **dict((str(k), v) \
+                    for k, v in unserialized.iteritems()))
 
     def _get_password(self, session_id):
         session = self.session_dao.get(session_id)
