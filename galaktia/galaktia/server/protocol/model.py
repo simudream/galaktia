@@ -16,7 +16,7 @@ class Message(dict):
         self.update(kwargs)
 
 class Command(Message):
-    
+    """ A client-server protocol command with an identifying name """
     def __init__(self, **kwargs):
         self['name'] = self.__class__.__name__
         Message.__init__(self, **kwargs)

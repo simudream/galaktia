@@ -6,6 +6,7 @@ import sys, logging
 from twisted.internet import reactor
 from twisted.python import log
 
+# should be using pyglet, but for this example it's ok
 import pygame
 from pygame.locals import *
 
@@ -28,16 +29,12 @@ screen = pygame.display.set_mode(SCREEN_SIZE, 0, 32)
 class PygameClientController(Controller):
     def greet(self):
 
-        pygame.display.set_caption("Simple Galaktia Client")
-        self.event_text = [""]
-        entered_username = self.get_username()
-        
+        pygame.display.set_caption("Simple Pygame Galaktia Client")
+        self.event_text = ["Type Your Username Please..."]
+        entered_username = self.prompt()
+
         return [RequestUserJoin(username=entered_username)]
 
-    def get_username(self):
-        u = raw_input("Enter username: ")
-        return u
-    
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
         string = input_message.get('text')
@@ -62,7 +59,8 @@ class PygameClientController(Controller):
             clock.tick(30)
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    exit(0)
+                    reactor.stop()
+                    return input_string
                 elif event.type == KEYDOWN:
                     key = event.key
                     if key == K_RETURN:
@@ -76,8 +74,8 @@ class PygameClientController(Controller):
                             pass
                     self.user_is_typing(input_string)
             screen.fill((255, 255, 255))
-            pygame.draw.line(screen, (0, 0, 0),(0,SCREEN_SIZE[1]-font_height-1), \
-                                (SCREEN_SIZE[0],SCREEN_SIZE[1]-font_height-1), 1)
+            pygame.draw.line(screen, (0,0,0),(0,SCREEN_SIZE[1]-font_height-1),\
+                       (SCREEN_SIZE[0],SCREEN_SIZE[1]-font_height-1),1)
             y = SCREEN_SIZE[1]-font_height
             for text in reversed(self.event_text):
                 screen.blit( font.render(text, True, (0, 0, 0)), (0, y) )
