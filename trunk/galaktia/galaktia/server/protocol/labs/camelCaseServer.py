@@ -18,19 +18,26 @@ from galaktia.server.protocol.operations.join import RequestUserJoin
 logger = logging.getLogger(__name__)
 
 class CamelCaseChatServerController(Controller):
-    """ Implementation of a simple echo chat server """
+    """ Implementation of a simple chat server """
 
     def process(self, input_message):
-        """ Implements processing by returning output identical to input """
+        """ Implements processing by returning CamelCased input 
+            Please see protocol specification for more on messages
+        """
         command = input_message['name']
         if command == "SayThis":
+            # TODO: we should never instanciate a Message, but a subclass
+            #       this should be replaced with a SomeoneSaid object
             return [Message(text=input_message['text'].title(), \
                         host = input_message['host'], \
                         port = input_message['port']
                     )]
         elif command == "RequestUserJoin":
             user = input_message['username']
-            return [Message(text="Hello %s, welcome to the CamelCase Server!" % user, \
+            # TODO: we should never instanciate a Message, but a subclass
+            #       this should be replaced with a UserAccepted object
+            return [Message(text="Hello %s, welcome to the CamelCase" % user +\
+                        "Server! Everything you read here comes from server",
                     host = input_message['host'], \
                     port = input_message['port']
                     )]
