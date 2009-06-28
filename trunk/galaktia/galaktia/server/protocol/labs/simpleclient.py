@@ -15,8 +15,8 @@ from galaktia.server.protocol.base import BaseServer, BaseClient
 from galaktia.server.protocol.codec import ProtocolCodec
 from galaktia.server.protocol.controller import Controller
 
-from galaktia.server.protocol.operations.talk import SayThis
-from galaktia.server.protocol.operations.join import RequestUserJoin
+from galaktia.server.protocol.operations.talk import *
+from galaktia.server.protocol.operations.join import *
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ class PygameClientController(Controller):
 	    self.prompt()
 	    return [RequestUserJoin(username = username)]
 	elif command == "UserJoined":
-	    self.event_text.append("El usuario "+ input_message['username'] + "se ha conectado." )
+	    self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado." )
 	    self.prompt()
 	    return []
 	else:
