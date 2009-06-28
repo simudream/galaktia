@@ -12,8 +12,9 @@ from galaktia.server.protocol.base import BaseServer, BaseClient
 from galaktia.server.protocol.codec import ProtocolCodec
 from galaktia.server.protocol.controller import Controller
 
-from galaktia.server.protocol.operations.talk import SayThis
-from galaktia.server.protocol.operations.join import RequestUserJoin
+from galaktia.server.protocol.operations.talk import *
+from galaktia.server.protocol.operations.join import *
+
 
 
 logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ class CamelCaseChatServerController(Controller):
         else:
             raise ValueError, "Invalid command: %s" % command
         
-    def _generate_session_id(username):
+    def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """
         return username
 
