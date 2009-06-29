@@ -69,7 +69,13 @@ class PygameClientController(Controller):
                 self.x,self.y = input_message['player_initial_state']
                 return [UserAcceptedAck(ack = input_message['id'])]
             else:
-                return [UserAcceptedAck(ack = input_message['id'])]
+                self.event_text[-1] = "El server no acepta ese username."
+                self.event_text.append("Type Other Username Please...")
+                self.username = self.prompt()
+                return [
+                    UserAcceptedAck(ack = input_message['id']),
+                    RequestUserJoin(username = self.username)
+                    ]
                 
         elif command == "CheckProtocolVersion":
             version = input_message['version']
@@ -139,7 +145,7 @@ class PygameClientController(Controller):
             pygame.display.flip()
 
         output_message = input_string
-        if output_message == 'quit' or output_message == '':
+        if output_message == 'quit':
             return None # exits on empty message or by entering 'quit'
         return output_message
         
