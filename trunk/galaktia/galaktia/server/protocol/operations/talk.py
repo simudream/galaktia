@@ -26,12 +26,13 @@ class SomeoneSaid(ActionUpdate):
     """ S->C Command for informing client that other client said something
         in chat. """
     def __init__(self, **kwargs):
-        kwargs['username'] = kwargs['username']
+        kwargs['subject'] = kwargs['username']
         kwargs['action'] = kwargs['message']
-        ActionResponse.__init__(self, **kwargs)
+        kwargs['object'] = None
+        ActionUpdate.__init__(self, **kwargs)
 
 class SomeoneSaidAck(Acknowledge):
-    """ S->C Acknowledge for SomeoneSaid Action"""
+    """ C->S Acknowledge for SomeoneSaid Action"""
     pass
 
 
