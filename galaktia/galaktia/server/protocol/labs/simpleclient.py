@@ -33,20 +33,18 @@ class PygameClientController(Controller):
     def greet(self):
 
         pygame.display.set_caption("Simple Pygame Galaktia Client")
-        self.event_text = ["Type Your Username Please..."]
-        entered_username = self.prompt()
-
-        return [RequestUserJoin(username=entered_username)]
+        return [StartConection()]
 
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
         command = input_message.get('name')
 
-        """ Talk commands """
+        #Talk commands
         if command == None:
             # TODO: implement
             logger.info('received ACK: %s', input_message['ack'])
             return []
+            
         elif command == "SomoneSaid":
             string = input_message['message']
             self.event_text.append(input_message['username'] + ": " + string)
@@ -55,26 +53,32 @@ class PygameClientController(Controller):
                 reactor.stop() # the reactor singleton is not a good idea...
                 return []
             return [SayThis(message=output_message)]
+            
         elif command == "SayThisAck":
             output_message = self.prompt()
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
                 return []
             return [SayThis(message=output_message)]
+            
         elif command == "UserAccepted":
             if input_message['accepted']:
                 self.session_id = input_message['session_id']
+                self.x,self.y = input_message['player_initial_state']
                 return [UserAcceptedAck(ack = input_message['id'])]
             else:
                 return [UserAcceptedAck(ack = input_message['id'])]
+                
         elif command == "CheckProtocolVersion":
             version = input_message['version']
             if version != CLIENT_VERSION:
                 self.event_text.append("Bajate la ultima version de:" + input_message['url'])
             else:
                 self.event_text.append("Version "+ version)
-                #self.prompt()
-            return [RequestUserJoin(username = username)]
+            self.event_text.append("Type Your Username Please...")
+            self.username = self.prompt()
+            return [RequestUserJoin(username = self.username)]
+            
         elif command == "UserJoined":
             self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado." )
             output_message = self.prompt()
@@ -82,6 +86,7 @@ class PygameClientController(Controller):
                 reactor.stop() # the reactor singleton is not a good idea...
                 return []
             return [SayThis(message=output_message, session_id = self.session_id)]
+            
         else:
             self.event_text[-1] = string
             self.event_text.append("Type to send chat")
