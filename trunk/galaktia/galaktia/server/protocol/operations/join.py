@@ -6,6 +6,25 @@ import sys, logging
 from galaktia.server.protocol.model import Command, Acknowledge
 
 
+"""
+***********************************************************************
+                               Join
+***********************************************************************
+Client:                                                     Server:
+            StartConection      - >
+
+                                < -  CheckProtocolVersion
+
+            RequestUserJoin     - >
+
+                                < -  UserAccepted
+
+                                < -  UserJoined[All]
+
+            UserAcceptedAck     - >
+
+"""
+
 class StartConection(Command):
     """ C->S Command for informing the server that a client wants to start a
     connection with him and so proceed with handshaking."""

@@ -71,7 +71,9 @@ class CamelCaseChatServerController(Controller):
                         ]
         elif command == "StartConection":
             return [ CheckProtocolVersion(
-                        version = "0.2",
+                        host = input_message['host'],
+                        port = input_message['port'],
+                        version = "0.1",
                         url = "http://www.galaktia.com.ar"
                         )
                     ]
