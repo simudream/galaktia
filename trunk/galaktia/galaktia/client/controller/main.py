@@ -30,7 +30,7 @@ class GalaktiaClientWindow(pyglet.window.Window):
                 x=self.width//2, y=self.height//2,
                 anchor_x='center', anchor_y='center')
         self.keystate = key.KeyStateHandler()
-        self.push_handlers(self.keystate)
+	self.push_handlers(self.keystate)
         self.viewport = GalaktiaViewport()
 
     def on_draw(self):
