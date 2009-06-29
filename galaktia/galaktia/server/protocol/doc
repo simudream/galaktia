@@ -133,6 +133,8 @@ Client:                                                     Server:
 
                                 < -  UserExited[All]
 
+            UserExitedAck        - > 
+
 - StopPlayerSession: El cliente le envía al server un mensaje con su 
 session_id dicéndole que quiere cerrar la sesión de ese personaje.
 
@@ -142,5 +144,7 @@ Incluye el identificador del jugador que se va. Al recibir este mensaje,
 el cliente debe eliminarlo de su registro interno de jugadores en línea
 de visión o hacer todos los cambios necesarios para eliminar completamente
 el jugador del mundo virtual de galaktia.
+
+-UserExitedAck: Acknowledge del anterior
 
             
