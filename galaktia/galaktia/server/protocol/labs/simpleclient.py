@@ -46,9 +46,10 @@ class PygameClientController(Controller):
             logger.info('received ACK: %s', input_message['ack'])
             return []
             
-        elif command == "SomoneSaid":
+        elif command == "SomeoneSaid":
             string = input_message['action']
-            self.event_text.append(input_message['subject'] + ": " + string)
+            self.event_text[-1] = input_message['subject'] + ": " + string
+            self.event_text.append("Type to send chat")
             output_message = self.prompt()
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
@@ -81,7 +82,10 @@ class PygameClientController(Controller):
             return [RequestUserJoin(username = self.username)]
             
         elif command == "UserJoined":
-            self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado.")
+            if input_message['username'] == self.username:
+                self.event_text[-1] = "Te has conectado."
+            else:
+                self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado.")
             self.event_text.append("Type to send chat")
             output_message = self.prompt()
             if output_message is None:
