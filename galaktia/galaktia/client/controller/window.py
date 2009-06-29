@@ -1,5 +1,22 @@
 # -*- coding: utf-8 -*-
 import wx
+import os
+import pyglet
+from pyglet.window import key
+
+class NudeFrame(wx.Frame):
+    def __init__(self, parent, title):
+	wx.Frame.__init__(self, parent, -1, title, pos=(200, 200), size=(500, 500))
+	menuBar = wx.MenuBar()
+	menu = wx.Menu()
+    	menu.Append(wx.ID_EXIT, "E&xit\tAlt-X", "Exit the program")
+    	self.Bind(wx.EVT_MENU, self.OnQuit, id=wx.ID_EXIT)
+    	menuBar.Append(menu, "&File")
+    	self.SetMenuBar(menuBar)
+    	self.CreateStatusBar()
+    def OnQuit(self, evt):
+	self.Close()
+    
 class Frame1(wx.Frame):
     #
     # create a simple windows frame (sometimes called form)
@@ -113,8 +130,71 @@ class Frame1(wx.Frame):
 	username = self.usernameInput.GetValue()
 	password = self.passwordInput.GetValue()
 	self.SetStatusText('Logueado como: '+ username + ". Su password es: " + password)
+	frame2 = Frame2(NudeFrame(None,"") , "Logueado en Galaktia Client v0.1")
+	self.Show(False)
+	frame2.Show(True)
 	return
 #
+	
+class GalaktiaViewport(pyglet.graphics.Batch):
+
+    IMAGES_DIR = os.path.join(os.path.dirname( \
+            os.path.abspath(__file__)), os.pardir, 'assets', 'images')
+
+    def __init__(self):
+        super(GalaktiaViewport, self).__init__()
+        self.background = pyglet.graphics.OrderedGroup(0)
+        self.foreground = pyglet.graphics.OrderedGroup(1)
+        self.image = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'walter.gif'))
+        self.sprites = [
+            pyglet.sprite.Sprite(self.image, batch=self, group=self.foreground)
+        ]
+        self.walter = self.sprites[0] # TODO: quick'n'dirty
+        self.walter.x, self.walter.y = 380, 180
+
+class Frame2(NudeFrame,pyglet.event.EventDispatcher):
+    def __init__(self, parent, title):
+	NudeFrame.__init__(self,parent,title)
+	self.keystate = key.KeyStateHandler()
+        self.push_handlers(self.keystate)
+        self.viewport = GalaktiaViewport()
+	#self.sprites = [
+            #pyglet.sprite.Sprite(self.viewport.image, batch=self, group=self.foreground)
+        #]
+        #walter = self.sprites[0] # TODO: quick'n'dirty
+        #walter.x, walter.y = 380, 180
+
+    def on_draw(self):
+        self.clear()
+        self.draw_gl_rumble()
+        #self.label.draw()
+        self.viewport.draw()
+	
+    def draw_gl_rumble(self): 
+        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
+                ('v2i', (300, 300, 500, 200, 300, 100, 100, 200)),
+                ('c3B', (0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 0)))
+		
+    def on_key_press(self, symbol, modifiers):
+        print 'A key was pressed: %s %s' % (symbol, modifiers)
+        if symbol == pyglet.window.key.ESCAPE:
+            self.dispatch_event('on_close')
+	    
+    def on_text_motion(self, motion):
+        STEP = 20
+        motion_codes = [0, -1, 1, 0] # none, lower, upper, both
+        decode = lambda lower, upper: motion_codes[self.keystate[lower] \
+                | (self.keystate[upper] << 1)] * STEP
+        dx, dy = (decode(key.LEFT, key.RIGHT), decode(key.DOWN, key.UP))
+        if dx or dy:
+            walter = self.viewport.sprites[0] # TODO: quick'n'dirty
+            walter.x += dx
+            walter.y += dy
+            self.dispatch_event('on_draw')
+
+
+
+
 class wxPyApp(wx.App):
 #
     def OnInit(self):
