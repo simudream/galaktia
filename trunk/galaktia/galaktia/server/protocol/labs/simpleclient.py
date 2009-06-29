@@ -47,8 +47,8 @@ class PygameClientController(Controller):
             return []
             
         elif command == "SomoneSaid":
-            string = input_message['message']
-            self.event_text.append(input_message['username'] + ": " + string)
+            string = input_message['action']
+            self.event_text.append(input_message['subject'] + ": " + string)
             output_message = self.prompt()
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
