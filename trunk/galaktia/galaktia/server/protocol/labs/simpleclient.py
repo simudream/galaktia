@@ -40,11 +40,14 @@ class PygameClientController(Controller):
 
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
-        command = input_message['name']
+        command = input_message.get('name')
 	
 	""" Talk commands """
-	
-	if command == "SomoneSaid":	    
+    if command == None:
+        # TODO: implement
+        logger.info('received ACK: %s', input_message['ack'])
+        return []	
+	elif command == "SomoneSaid":	    
 	    string = input_message['message']
 	    self.event_text.append(input_message['username'] + ": " + string)
 	    self.prompt()
@@ -71,11 +74,11 @@ class PygameClientController(Controller):
 	else:
 	    self.event_text[-1] = string
 	    self.event_text.append("Type to send chat")
-	    self.event_text = self.event_text[-SCREEN_SIZE[1]/font_height:]
-	    output_message = self.prompt()
+	    self.event_text = self.event_text[-SCREEN_SIZE[1]/font_height:
+        output_message = self.prompt()
 	    if output_message is None:
-	   	reactor.stop() # the reactor singleton is not a good idea...
-		return []
+            reactor.stop() # the reactor singleton is not a good idea...
+            return []
 	    return [SayThis(text=output_message)]
 	   # raise ValueError, "Invalid command: %s" % command
 
