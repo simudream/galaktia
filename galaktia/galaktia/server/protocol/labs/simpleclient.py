@@ -33,6 +33,7 @@ class PygameClientController(Controller):
     def greet(self):
 
         pygame.display.set_caption("Simple Pygame Galaktia Client")
+        self.event_text = ["Starting connection..."]
         return [StartConection()]
 
     def process(self, input_message):
@@ -88,7 +89,7 @@ class PygameClientController(Controller):
             return [SayThis(message=output_message, session_id = self.session_id)]
             
         else:
-            self.event_text[-1] = string
+            #self.event_text[-1] = string
             self.event_text.append("Type to send chat")
             self.event_text = self.event_text[-SCREEN_SIZE[1]/font_height:]
             output_message = self.prompt()
