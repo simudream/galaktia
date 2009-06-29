@@ -50,12 +50,20 @@ class PygameClientController(Controller):
         elif command == "SomoneSaid":
             string = input_message['message']
             self.event_text.append(input_message['username'] + ": " + string)
-            self.prompt()
-            return []
+            output_message = self.prompt()
+            if output_message is None:
+                reactor.stop() # the reactor singleton is not a good idea...
+                return []
+            return [SayThis(message=output_message)]
         elif command == "SayThisAck":
-            return []
+            output_message = self.prompt()
+            if output_message is None:
+                reactor.stop() # the reactor singleton is not a good idea...
+                return []
+            return [SayThis(message=output_message)]
         elif command == "UserAccepted":
             if input_message['accepted']:
+                self.session_id = input_message['session_id']
                 return [UserAcceptedAck(ack = input_message['id'])]
             else:
                 return [UserAcceptedAck(ack = input_message['id'])]
@@ -65,12 +73,15 @@ class PygameClientController(Controller):
                 self.event_text.append("Bajate la ultima version de:" + input_message['url'])
             else:
                 self.event_text.append("Version "+ version)
-                self.prompt()
+                #self.prompt()
             return [RequestUserJoin(username = username)]
         elif command == "UserJoined":
             self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado." )
-            self.prompt()
-            return []
+            output_message = self.prompt()
+            if output_message is None:
+                reactor.stop() # the reactor singleton is not a good idea...
+                return []
+            return [SayThis(message=output_message, session_id = self.session_id)]
         else:
             self.event_text[-1] = string
             self.event_text.append("Type to send chat")
@@ -79,7 +90,7 @@ class PygameClientController(Controller):
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
                 return []
-            return [SayThis(text=output_message)]
+            return [SayThis(message=output_message, session_id = self.session_id)]
         # raise ValueError, "Invalid command: %s" % command
 
     def prompt(self):
