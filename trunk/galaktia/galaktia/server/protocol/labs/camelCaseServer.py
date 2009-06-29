@@ -30,7 +30,7 @@ class CamelCaseChatServerController(Controller):
         """ Implements processing by returning CamelCased input 
             Please see protocol specification for more on messages
         """
-        command = input_message['name']
+        command = input_message.get('name')
         if command == "SayThis":
             talking_user = input_message['subject']
             return [SomeoneSaid(
@@ -75,8 +75,9 @@ class CamelCaseChatServerController(Controller):
                         url = "http://www.galaktia.com.ar"
                         )
                     ]
-        elif command == "UserAcceptedAck":
+        elif command == None:
             # TODO: implement
+            logger.info('received ACK: %s', input_message['ack'])
             return []
         else:
             raise ValueError, "Invalid command: %s" % command

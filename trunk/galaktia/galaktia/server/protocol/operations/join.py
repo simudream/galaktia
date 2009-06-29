@@ -30,7 +30,7 @@ class UserAccepted(Command):
         rejected by server. If accepted, command also carries information
         about the session identifier and the player's initial state. """
     def __init__(self, **kwargs):
-        self['accepted'] = kwargs['accpeted']
+        self['accepted'] = kwargs['accepted']
         if self['accepted'] is True:
             self["session_id"] = kwargs['session_id']
             self["player_initial_state"] = kwargs['player_initial_state']
