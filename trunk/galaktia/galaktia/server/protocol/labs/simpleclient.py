@@ -54,14 +54,14 @@ class PygameClientController(Controller):
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
                 return []
-            return [SayThis(message=output_message)]
+            return [SayThis(message=output_message, session_id = self.session_id)]
             
         elif command == "SayThisAck":
             output_message = self.prompt()
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
                 return []
-            return [SayThis(message=output_message)]
+            return [SayThis(message=output_message, session_id = self.session_id)]
             
         elif command == "UserAccepted":
             if input_message['accepted']:
