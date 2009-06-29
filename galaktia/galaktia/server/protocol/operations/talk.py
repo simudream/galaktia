@@ -8,6 +8,16 @@ from galaktia.server.protocol.operations.action import ActionRequest, \
 from galaktia.server.protocol.model import Acknowledge
 
 
+"""
+***********************************************************************
+                               Talk
+***********************************************************************
+Client:                                                     Server:
+            SayThis             - >
+
+                                < -  SomeoneSaid[All]
+"""
+
 class SayThis(ActionRequest):
     """ C->S Command for p2p chatting"""
     def __init__(self, **kwargs):

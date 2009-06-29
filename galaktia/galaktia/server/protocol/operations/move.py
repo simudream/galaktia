@@ -7,6 +7,19 @@ from galaktia.server.protocol.operations.action import ActionRequest, \
                         ActionResponse, ActionUpdate
 from galaktia.server.protocol.model import Acknowledge
 
+"""
+***********************************************************************
+                               Move
+***********************************************************************
+Client:                                                     Server:
+            MoveDxDy           - >
+
+                                < -  PlayerMoved[Some]
+
+                                <-   PlayerEnteredLOS[Some]
+
+            PlayerSeenAck      - >
+"""
 
 class MoveDxDy(ActionRequest):
     """ C->S Command for moving a character"""
@@ -20,6 +33,7 @@ class PlayerEnteredLOS(ActionUpdate):
     def __init__(self, **kwargs):
         kwargs['action'] = None
         kwargs['object'] = kwargs['position']
+        self['description'] = kwargs['description']
         ActionRequest.__init__(self, **kwargs)
 
 class PlayerMoved(ActionUpdate):
