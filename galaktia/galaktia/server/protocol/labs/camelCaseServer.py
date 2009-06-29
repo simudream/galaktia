@@ -64,9 +64,9 @@ class CamelCaseChatServerController(Controller):
                         for aSession in self.sessions]
             else:
                 return [UserAccepted(
-                            host = self.sessions[session_id]['host'],
-                            port = self.sessions[session_id]['port'],
-                            accepted = False,
+                            host = input_message['host'],
+                            port = input_message['port'],
+                            accepted = False
                             )
                         ]
         elif command == "StartConection":
@@ -86,7 +86,7 @@ class CamelCaseChatServerController(Controller):
         
     def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """
-        return username
+        return str(username)
 
 
 def main(program, endpoint='server', host='127.0.0.1', port=6414):
