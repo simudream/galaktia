@@ -20,7 +20,7 @@ from galaktia.server.protocol.operations.join import *
 
 logger = logging.getLogger(__name__)
 
-CLIENT_VERSION = 0.1
+CLIENT_VERSION = "0.1"
 SCREEN_SIZE = (800, 600)
 pygame.init()
 font = pygame.font.SysFont("arial", 16)
@@ -73,7 +73,7 @@ class PygameClientController(Controller):
         elif command == "CheckProtocolVersion":
             version = input_message['version']
             if version != CLIENT_VERSION:
-                self.event_text.append("Bajate la ultima version de:" + input_message['url'])
+                self.event_text.append("Bajate la ultima version de: " + input_message['url'])
             else:
                 self.event_text.append("Version "+ version)
             self.event_text.append("Type Your Username Please...")
@@ -81,7 +81,8 @@ class PygameClientController(Controller):
             return [RequestUserJoin(username = self.username)]
             
         elif command == "UserJoined":
-            self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado." )
+            self.event_text.append("El usuario "+ input_message['username'] + " se ha conectado.")
+            self.event_text.append("Type to send chat")
             output_message = self.prompt()
             if output_message is None:
                 reactor.stop() # the reactor singleton is not a good idea...
