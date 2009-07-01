@@ -12,11 +12,23 @@ class Datagram(object):
 class Message(dict):
     """ Represents a message to be sent or received via a protocol """
 
-    def __init__(self, **kwargs):
-        self['host'] = kwargs.get('host')
-        self['port'] = kwargs.get('port')
+    def __init__(self, host=None, port=None, session=0, **kwargs):
+        self._host = host
+        self._port = port
+        self._session = session
+        
         self['id'] = time.time()
+        
         self.update(kwargs)
+    
+    def port(self):
+        return self._port
+    
+    def host(self):
+        return self._host
+    
+    def session(self):
+        return self._session
 
 class Command(Message):
     """ A client-server protocol command with an identifying name """
