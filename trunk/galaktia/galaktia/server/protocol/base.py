@@ -37,10 +37,10 @@ class BaseServer(DatagramProtocol):
 
     def send(self, output_message):
         """ Sends an output message (according to its host, port) """
-        destination = tuple(output_message[i] for i in ('host', 'port')) \
-                if output_message.get('host') else None
-        output_data = self.codec.encode(output_message).data
-        self.transport.write(output_data, destination)
+        
+        datagram = self.codec.encode(output_message)
+        destination = (datagram.host, datagram.port) if datagram.host is not None else None
+        self.transport.write(datagram.data, destination)
         logger.debug('Sent to %s: %s', destination or 'server', \
                 output_message)
 
