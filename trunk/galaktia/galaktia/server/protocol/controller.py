@@ -21,6 +21,9 @@ class Controller(object):
     def process(self, input_message):
         """ Returns an iterable of output messages in response to input """
         raise NotImplementedError
+    
+    def set_protocol(self, protocol):
+        self.protocol = protocol
 
 
 class AcknowledgeController(Controller):
@@ -28,5 +31,14 @@ class AcknowledgeController(Controller):
     def __init__(self):
         self._pendingAcknowledge = []
 
-    def acknowledged(self, message_id):
-        self._pendingAcknowledge.remove(message_id)
+    def acknowledged(self, message):
+        ack_id = message['ack']
+        self._pendingAcknowledge.remove(ack_id)
+        logger.info('received ACK: %s', ack_id)
+        
+    def send(self, m):
+        self.protocol.send(m)
+    
+    def send_all(self, message_list):
+        for output_message in message_list:
+            self.send(output_message)

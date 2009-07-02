@@ -15,42 +15,34 @@ from galaktia.server.protocol.controller import Controller
 from galaktia.server.protocol.operations.talk import *
 from galaktia.server.protocol.operations.join import *
 
+from galaktia.server.protocol.interface import ServerController
 
 
 logger = logging.getLogger(__name__)
 
-class CamelCaseChatServerController(Controller):
+class CamelCaseChatServerController(ServerController):
     """ Implementation of a simple chat server """
 
     def __init__(self):
         self.sessions = dict()
         Controller.__init__(self)
 
-    def process(self, input_message):
-        """ Implements processing by returning CamelCased input 
-            Please see protocol specification for more on messages
-        """
-        command = input_message.get('name')
-        if command == "SayThis":
-            talking_user = input_message['subject']
-            return [SomeoneSaid(
-                        username = talking_user,
-                        message = input_message['action'].title(), 
-                        host = self.sessions[aSession]['host'], 
-                        port = self.sessions[aSession]['port']
-                    ) for aSession in self.sessions ]
-        elif command == "RequestUserJoin":
-            username = input_message['username']
+    def on_say_this(self, talking_user, message):
+        self.send_all(
+              [SomeoneSaid(
+                username = talking_user,
+                message = message.title(), 
+                host = self.sessions[aSession]['host'], 
+                port = self.sessions[aSession]['port']) 
+              for aSession in self.sessions ])
+        
+    def on_request_user_join(self, username):
             session_id = self._generate_session_id(username)
             if session_id not in self.sessions:
-                self.sessions[session_id] = {
-                            'host' : input_message['host'],
-                            'port' : input_message['port'],
-                            'username' : username
-                            }
-                return [UserAccepted(
-                            host = self.sessions[session_id]['host'],
-                            port = self.sessions[session_id]['port'],
+                self._create_session(session_id,username)
+                self.send_all([UserAccepted(
+                            host = self.host,
+                            port = self.port,
                             accepted = True,
                             session_id = session_id,
                             player_initial_state = (randint(1,10),randint(1,10))
@@ -61,32 +53,37 @@ class CamelCaseChatServerController(Controller):
                             host = self.sessions[aSession]['host'],
                             port = self.sessions[aSession]['port']
                             )
-                        for aSession in self.sessions]
+                        for aSession in self.sessions])
             else:
-                return [UserAccepted(
-                            host = input_message['host'],
-                            port = input_message['port'],
+                self.send( UserAccepted(
+                            host = self.host,
+                            port = self.port,
                             accepted = False
                             )
-                        ]
-        elif command == "StartConection":
-            return [ CheckProtocolVersion(
-                        host = input_message['host'],
-                        port = input_message['port'],
-                        version = "0.1",
-                        url = "http://www.galaktia.com.ar"
                         )
-                    ]
-        elif command == None:
-            # TODO: implement
-            logger.info('received ACK: %s', input_message['ack'])
-            return []
-        else:
-            raise ValueError, "Invalid command: %s" % command
+                
+    def on_start_connection(self):
+        self.send(
+                   CheckProtocolVersion(
+                    host = self.host,
+                    port = self.port,
+                    version = "0.1",
+                    url = "http://www.galaktia.com.ar"
+                    )
+                  )
+   
+
         
     def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """
         return str(username)
+    
+    def _create_session(self,session_id,username):
+        self.sessions[session_id] = {
+                'host' : self.host,
+                'port' : self.port,
+                'username' : username
+                }
 
 
 def main(program, endpoint='server', host='127.0.0.1', port=6414):
