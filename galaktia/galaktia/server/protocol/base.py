@@ -24,6 +24,9 @@ class BaseServer(DatagramProtocol):
         """
         self.codec = codec
         self.controller = controller
+        # solución parche de un problema que tengo que discutir con Santi C.
+        # firma: manu
+        self.controller.set_protocol(self)
 
     def datagramReceived(self, input_data, (host, port)):
         """ Event handler for datagram reception """
@@ -34,10 +37,10 @@ class BaseServer(DatagramProtocol):
 
     def send(self, output_message):
         """ Sends an output message (according to its host, port) """
-        
-        datagram = self.codec.encode(output_message)
-        destination = (datagram.host, datagram.port) if datagram.host is not None else None
-        self.transport.write(datagram.data, destination)
+        destination = tuple(output_message[i] for i in ('host', 'port')) \
+                if output_message.get('host') else None
+        output_data = self.codec.encode(output_message).data
+        self.transport.write(output_data, destination)
         logger.debug('Sent to %s: %s', destination or 'server', \
                 output_message)
 
