@@ -79,10 +79,9 @@ class ServerController(AcknowledgeController):
             Please see protocol specification for more on messages
         """
         command = input_message.get('name')
-        print command
 
-        self.host = input_message['host']
-        self.port = input_message['port']
+        self.host = input_message.host
+        self.port = input_message.port
         
         if command == "SayThis":
             talking_user = input_message['subject']
