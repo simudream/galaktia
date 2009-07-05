@@ -13,3 +13,12 @@ class Tile(object):
         self.y=y
         self.z=z
         self.id=id
+
+
+    def __repr__(self):
+        return "<Tile object, located in x %i - y %i, layer %i, id i%>" %
+        (self.x, self.y, self.z, self.id)
+
+    def asTuple(self):
+        return (self.x, self.y, self.z, self.id)
+
