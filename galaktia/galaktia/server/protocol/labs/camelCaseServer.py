@@ -28,49 +28,33 @@ class CamelCaseChatServerController(ServerController):
         Controller.__init__(self)
 
     def on_say_this(self, talking_user, message):
-        self.send_all(
-              [SomeoneSaid(
+        return [SomeoneSaid(
                 username = talking_user,
                 message = message.title(), 
                 host = self.sessions[aSession]['host'], 
                 port = self.sessions[aSession]['port']) 
-              for aSession in self.sessions ])
+              for aSession in self.sessions ]
         
     def on_request_user_join(self, username):
             session_id = self._generate_session_id(username)
             if session_id not in self.sessions:
                 self._create_session(session_id,username)
-                self.send_all([UserAccepted(
-                            host = self.host,
-                            port = self.port,
-                            accepted = True,
-                            session_id = session_id,
-                            player_initial_state = (randint(1,10),randint(1,10))
-                            )
-                        ] + \
-                        [UserJoined(
-                            username = username,
+                retval = [UserJoined( username = username,
                             host = self.sessions[aSession]['host'],
-                            port = self.sessions[aSession]['port']
-                            )
-                        for aSession in self.sessions])
+                            port = self.sessions[aSession]['port'])
+                            for aSession in self.sessions]
+                retval.append(UserAccepted( host = self.host, port = self.port,
+                            accepted = True, session_id = session_id,
+                            player_initial_state = (randint(1,10),randint(1,10))
+                            ))
+                return retval
             else:
-                self.send( UserAccepted(
-                            host = self.host,
-                            port = self.port,
-                            accepted = False
-                            )
-                        )
-                
+                return [UserAccepted( host = self.host, port = self.port,
+                            accepted = False) ]
+
     def on_start_connection(self):
-        self.send(
-                   CheckProtocolVersion(
-                    host = self.host,
-                    port = self.port,
-                    version = "0.1",
-                    url = "http://www.galaktia.com.ar"
-                    )
-                  )
+        return [CheckProtocolVersion(host = self.host, port = self.port,
+                    version="0.1", url="http://www.galaktia.com.ar")]
    
 
         
@@ -90,7 +74,9 @@ def main(program, endpoint='server', host='127.0.0.1', port=6414):
     """ Main program: Starts a chat client or server on given host:port """
     class MockSession(object):
         def __init__(self, id):
-            self.password = id
+            self.id = id
+        def get_encryption_key(self):
+            return self.id
     class MockSessionDAO(object):
         def get(self, id):
             return MockSession(id)
@@ -107,3 +93,4 @@ if __name__ == '__main__': # This is how to run a main program
     reload(sys); sys.setdefaultencoding('utf-8')
     # log.startLogging(sys.stderr) # enables Twisted logging
     main(*sys.argv)
+

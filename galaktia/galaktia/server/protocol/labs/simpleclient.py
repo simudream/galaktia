@@ -67,13 +67,13 @@ class PygameClientController(Controller):
             if input_message['accepted']:
                 self.session_id = input_message['session_id']
                 self.x,self.y = input_message['player_initial_state']
-                return [UserAcceptedAck(ack = input_message['id'])]
+                return [UserAcceptedAck(ack = input_message['timestamp'])]
             else:
                 self.event_text[-1] = "El server no acepta ese username."
                 self.event_text.append("Type Other Username Please...")
                 self.username = self.prompt()
                 return [
-                    UserAcceptedAck(ack = input_message['id']),
+                    UserAcceptedAck(ack = input_message['timestamp']),
                     RequestUserJoin(username = self.username)
                     ]
                 
@@ -156,7 +156,9 @@ def main(program, endpoint='client', host='127.0.0.1', port=6414):
     """ Main program: Starts a chat client or server on given host:port """
     class MockSession(object):
         def __init__(self, id):
-            self.password = id
+            self.id = id
+        def get_encryption_key(self):
+            return self.id
     class MockSessionDAO(object):
         def get(self, id):
             return MockSession(id)

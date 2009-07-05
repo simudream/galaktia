@@ -3,7 +3,7 @@
 
 import sys, logging
 
-from galaktia.server.protocol.model import Command, Acknowledge
+from galaktia.server.protocol.model import Message, Acknowledge
 
 
 """
@@ -25,43 +25,47 @@ Client:                                                     Server:
 
 """
 
-class StartConection(Command):
-    """ C->S Command for informing the server that a client wants to start a
+class StartConection(Message):
+    """ C->S Message for informing the server that a client wants to start a
     connection with him and so proceed with handshaking."""
     pass
 
-class CheckProtocolVersion(Command):
-    """ S->C Command for informing client current server protocol"""
-    def __init__(self, **kwargs):
-        self['version'] = kwargs['version']
-        self['url'] = kwargs['url']
-        Command.__init__(self, **kwargs)
+class CheckProtocolVersion(Message):
+    """ S->C Message for informing client current server protocol"""
+    def __init__(self, version, url, **kwargs):
+        super(CheckProtocolVersion, self).__init__({'version': version, \
+                'url': url}, **kwargs)
 
-class RequestUserJoin(Command):
-    """ C->S Command for informing that a character with a certain username
+class RequestUserJoin(Message):
+    """ C->S Message for informing that a character with a certain username
     wants to enter Galaktia world. I'm Going in Boy!"""
-    def __init__(self, **kwargs):
-        self['username'] = kwargs['username']
-        Command.__init__(self, **kwargs)
+    def __init__(self, username, **kwargs):
+        super(RequestUserJoin, self).__init__({'username': username}, **kwargs)
 
-class UserAccepted(Command):
-    """ S->C Command for informing that a certain user was accepted or 
+class UserAccepted(Message):
+    """ S->C Message for informing that a certain user was accepted or 
         rejected by server. If accepted, command also carries information
         about the session identifier and the player's initial state. """
-    def __init__(self, **kwargs):
-        self['accepted'] = kwargs['accepted']
-        if self['accepted'] is True:
-            self["session_id"] = kwargs['session_id']
-            self["player_initial_state"] = kwargs['player_initial_state']
+    def __init__(self, accepted, session_id=None, \
+            player_initial_state=None, ack=None, **kwargs):
+        data = {'accepted': accepted}
+        if session_id is not None:
+            data['session_id'] = session_id
+        if player_initial_state is not None:
+            data['player_initial_state'] = player_initial_state
+        super(UserAccepted, self).__init__(data, **kwargs)
 
-        Command.__init__(self, **kwargs)
-
-class UserJoined(Command):
-    """ S->C Command for informing all clients that a new client logged in"""
-    def __init__(self, **kwargs):
-        self['username'] = kwargs['username']
-        Command.__init__(self, **kwargs)
+class UserJoined(Message):
+    """ S->C Message for informing all clients that a new client logged in"""
+    def __init__(self, username, **kwargs):
+        super(UserJoined, self).__init__({'username': username}, **kwargs)
 
 class UserAcceptedAck(Acknowledge):
-    """ C->S Command for acknowledgeing UserAccepted when accepted"""
-    pass
+    """ C->S Message for acknowledgeing UserAccepted when accepted"""
+    def __init__(self, ack, **kwargs):
+        super(UserAcceptedAck, self).__init__({'ack': ack}, **kwargs)
+
+# TODO: pasar al nuevo modelo de ACK (ver Message.acknowledge y Acknowledge)
+# Si las cosas estan bien pensadas ni tendriamos que escribir la clase
+# del mensaje de ACK por cada mensaje que debe confirmarse
+

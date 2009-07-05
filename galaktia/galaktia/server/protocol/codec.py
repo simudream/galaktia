@@ -37,17 +37,56 @@ class CompressionCodec(Codec):
 
 class EncryptionCodec(Codec):
     """ Encrypts and decrypts strings with AES method """
-    
-    def __init__(self, session_dao):
-        self._session_dao = session_dao
 
     def encode(self, decoded):
-        #TODO: Document that this method recieves a tuple with (data, session_id)
-        return decoded[0] # TODO: encrypt the string with AES (pycrypto)
+        """
+        :parameters:
+            decoded : tuple(str, str)
+                Decrypted data and encryption key
+
+        :returns:
+            tuple(str, str) with encrypted data and encryption key
+        """
+        return decoded # TODO: encrypt data str with AES (pycrypto)
 
     def decode(self, encoded):
-        #TODO: Document that this method recieves a tuple with (data, session_id)
-        return encoded[0] # TODO: decrypt the string with AES (pycrypto)
+        """
+        :parameters:
+            encoded : tuple(str, str)
+                Encrypted data and encryption key
+
+        :returns:
+            tuple(str, str) with decrypted data and encryption key
+        """
+        return encoded # TODO: decrypt data str with AES (pycrypto)
+
+class IdentifierPackerCodec(Codec):
+    """ Packs an identifier (int) and data (str) into a str and viceversa """
+
+    _struct = struct.Struct('!l')
+
+    def encode(self, decoded):
+        """
+        :parameters:
+            decoded : tuple(int, str)
+                Tuple with identifier (int) and data(str)
+
+        :returns:
+            str packing identifier (int) and data (str)
+        """
+        return self._struct.pack(decoded[0]) + decoded[1]
+
+    def decode(self, encoded):
+        """
+        :parameters:
+            encoded : str
+                String packing identifier (int) and data (str)
+
+        :returns:
+            tuple(int, str) with packing identifier and data
+        """
+        size = self._struct.size
+        return (self._struct.unpack(encoded[:size])[0], encoded[size:])
 
 class MultipleCodec(Codec):
     """ Applies multiple codecs iteratively """
@@ -74,32 +113,36 @@ class MultipleCodec(Codec):
 class ProtocolCodec(MultipleCodec):
     """ Codec that converts Datagram to Message and viceversa.
         Designed for a multi-layer protocol that includes message
-        serialization, compression and encryption. """
+        serialization, encryption, session id packing and compression. """
 
-    _packer = struct.Struct( '!l' )
+    _serializer = SerializationCodec()
+    _encipherer = EncryptionCodec()
+    _packer = IdentifierPackerCodec()
+    _compressor = CompressionCodec()
 
     def __init__(self, session_dao):
         self._session_dao = session_dao
-        
-        self._serializer = SerializationCodec()
-        self._cypher = EncryptionCodec(session_dao)
-        self._compresser = CompressionCodec()
 
     def encode(self, decoded):
-        data = self._serializer.encode(decoded)
-        data = self._cypher.encode((data, decoded.session))
-        data = self._packer.pack( decoded.session ) + data
-        data = self._compresser.encode(data)
-        
-        return Datagram(data, host=decoded.host, port=decoded.port)
+        host, port, session_id = decoded.host, decoded.port, decoded.session
+        # XXX decoded stores session or session_id ??
+        session = self._session_dao.get(session_id)
+        key = session.get_encryption_key()
+        serialized = self._serializer.encode(decoded)
+        encrypted, key = self._encipherer.encode((serialized, key))
+        packed = self._packer.encode((session.id, encrypted))
+        compressed = self._compressor.encode(packed)
+        retval = Datagram(compressed, host=host, port=port)
+        return retval
 
     def decode(self, encoded):
-        data = self._compresser.decode(encoded.data)
-        data, session = data[self._packer.size:], \
-            self._packer.unpack(data[:self._packer.size])[0]
-        data = self._cypher.decode((data, session))
-        data = self._serializer.decode(data)
-        
-        return Message(host=encoded.host, port=encoded.port, session=session,
-                       **dict((str(k), v) for k, v in data.iteritems()))
+        host, port = encoded.host, encoded.port
+        packed = self._compressor.decode(encoded.data)
+        session_id, encrypted = self._packer.decode(packed)
+        session = self._session_dao.get(session_id)
+        key = session.get_encryption_key()
+        serialized, key = self._encipherer.decode((encrypted, key))
+        data = self._serializer.decode(serialized)
+        retval = Message(data=data, host=host, port=port, session=session)
+        return retval
 

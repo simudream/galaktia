@@ -9,41 +9,50 @@ class Datagram(object):
     def __init__(self, data, host=None, port=None):
         self.data, self.host, self.port = data, host, port
 
+    def get_destination(self):
+        destination = (self.host, self.port)
+        return destination if None not in destination else None
+
 class Message(dict):
     """ Represents a message to be sent or received via a protocol """
 
-    def __init__(self, host=None, port=None, session=0, **kwargs):
-        self._host = host
-        self._port = port
-        self._session = session
+    def __init__(self, data=None, host=None, port=None, session=0):
+        self.host = host
+        self.port = port
+        self.session = session
+        self['name'] = self.__class__.__name__
+        self['timestamp'] = time.time()
+        self.update(data or {})
 
-        self['id'] = time.time()
-        
-        self.update(kwargs)
-    
-    def getPort(self):
-        return self._port
-    port = property(getPort)
-    
-    def getHost(self):
-        return self._host
-    host = property(getHost)
-    
-    def getSession(self):
-        return self._session
-    session = property(getSession)
+    # No need for Java-like getters and setters (especially in anti-
+    # Pythonic camelCase) when we can access attrs directly:
+    # def getHost(self): return self.host
+    # def getPort(self): return self.port
+    # def getSession(self): return self.session
+
+    def acknowledge(self, data=None, **kwargs):
+        ack_data = {'ack': self['timestamp'], 'name': self['name']}
+        ack_data.update(data or {})
+        return Acknowledge(ack_data, **kwargs)
 
 class Command(Message):
     """ A client-server protocol command with an identifying name """
-
-    def __init__(self, **kwargs):
-        self['name'] = self.__class__.__name__
-        Message.__init__(self, **kwargs)
+    # deprecated
 
 class Acknowledge(Message):
     """ Message for acknowledgeing a command """
 
-    def __init__(self, **kwargs):
-        self['ack'] = kwargs.get('ack')
-        self['id'] = time.time()
-        Message.__init__(self, **kwargs)
+    def acknowledge(self, data, **kwargs):
+        raise DeprecationWarning('Cannot acknowledge an Acknowledge message')
+
+class Session(object):
+    """ Represents a client-server session """
+
+    def __init__(self, id=0):
+        self.id = id
+        # self.user = ...
+        # self.player = ...
+
+    def get_encryption_key(self):
+        return self.id # TODO: should be a secret password
+
