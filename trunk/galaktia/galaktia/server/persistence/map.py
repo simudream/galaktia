@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 __docformat__='restructuredtext'
 
+# "import *"s ARE BAD
 from galaktia.server.persistence.GenericDao import *
 from galaktia.server.persistence.Tile import *
 
+# THIS CLASS SHOULD BE A TILE DAO, THAT EXTENDS THE GENERIC DAO
 class Map(object):
     """
     The Map class is the representation of the database. It is the only way to
