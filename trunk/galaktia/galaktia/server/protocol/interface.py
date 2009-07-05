@@ -82,26 +82,24 @@ class ServerController(AcknowledgeController):
 
         self.host = input_message.host
         self.port = input_message.port
-        
+
         if command == "SayThis":
             talking_user = input_message['subject']
             message = input_message['action']
             self.on_say_this(talking_user,message)
         elif command == "RequestUserJoin":
             username = input_message['username']
-            self.on_request_user_join(username)
+            return self.on_request_user_join(username)
         elif command == "StartConection":
-            self.on_start_connection()
+            return self.on_start_connection()
         elif command == None:
-            self.acknowledged(input_message)
-        else:
-            raise ValueError, "Invalid command: %s" % command
-        return []
-        
+            return self.acknowledged(input_message)
+        raise ValueError("Invalid command: %s" % command)
+
     def on_say_this(self, talking_user, message):
         raise NotImplementedError
     def on_request_user_join(self,username):
         raise NotImplementedError
     def on_start_connection(self):
         raise NotImplementedError
-    
+
