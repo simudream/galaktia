@@ -19,7 +19,7 @@ Client:                                                     Server:
 
             UserExitedAck        - > 
 
-- StopPlayerSession: El cliente le envía al server un mensaje con su 
+- LogoutRequest: El cliente le envía al server un mensaje con su 
 session_id dicéndole que quiere cerrar la sesión de ese personaje.
 
 - UserExited: El server le envía un mensaje a todos los jugadores 
@@ -30,25 +30,28 @@ de visión o hacer todos los cambios necesarios para eliminar completamente
 el jugador del mundo virtual de galaktia.
 """
 
-class StopPlayerSession(ActionRequest):
-    """ C->S Command for p2p chatting"""
+class LogoutRequest(ActionRequest):
+    """ C->S Command for logging off a player account"""
     def __init__(self, **kwargs):
         kwargs['action'] = None
         kwargs['object'] = None
         ActionRequest.__init__(self, **kwargs)
 
-class UserExited(ActionUpdate):
-    """ S->C Command for informing client that other client said something
-        in chat. """
+class LogoutResponse(ActionResponse):
+    """ S->C Command for allowing the user to disconnect"""
     def __init__(self, **kwargs):
-        kwargs['subject'] = kwargs['username']
+        kwargs['subject'] = None
+        kwargs['action'] = None
+        kwargs['object'] = None
+        ActionRequest.__init__(self, **kwargs)
+
+class UserExited(ActionUpdate):
+    """ S->C Command for informing client that other client logged off. """
+    def __init__(self, **kwargs):
+        kwargs['subject'] = kwargs['session_id']
         kwargs['action'] = None
         kwargs['object'] = None
         ActionUpdate.__init__(self, **kwargs)
-
-class UserExitedAck(Acknowledge):
-    """ C->S Acknowledge for UserExited Action"""
-    pass
 
 
 

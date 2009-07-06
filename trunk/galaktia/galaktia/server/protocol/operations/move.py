@@ -18,7 +18,6 @@ Client:                                                     Server:
 
                                 <-   PlayerEnteredLOS[Some]
 
-            PlayerSeenAck      - >
 """
 
 class MoveDxDy(ActionRequest):
@@ -34,17 +33,12 @@ class PlayerEnteredLOS(ActionUpdate):
         kwargs['action'] = None
         kwargs['object'] = kwargs['position']
         self['description'] = kwargs['description']
-        ActionRequest.__init__(self, **kwargs)
+        ActionUpdate.__init__(self, **kwargs)
 
 class PlayerMoved(ActionUpdate):
 
     def __init__(self, **kwargs):
-        kwargs['action'] = None
+        kwargs['action'] = kwargs['delta']
         kwargs['object'] = kwargs['position']
-        ActionRequest.__init__(self, **kwargs)
-
-class PlayerSeenAck(Acknowledge):
-    """ C->S Acknowledge for PlayerEnteredLOS Action"""
-    pass
-
+        ActionUpdate.__init__(self, **kwargs)
 
