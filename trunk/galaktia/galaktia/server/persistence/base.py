@@ -31,6 +31,16 @@ class GenericDAO(object):
         assert len(filters) > 0
         return self._query().filter_by(**filters).all()
 
+    #TODO: Test this function!
+    def advFilter(self, *filters):
+        """ Returns all entities matching the filters criteria, allowing the
+        use of non-equity filters """
+        assert len(filters) > 0
+        query = self._query()
+        for filter in filters:
+            query = query.filter(filter)
+        return query.all()
+
     def count(self, **filters):
         """ Counts the number of entities mathing the filters criteria """
         return self._query().filter_by(**filters).count()

@@ -28,6 +28,7 @@ class Sprite(Entity):
     __tablename__ = 'sprites'
     id = Column(Integer, primary_key=True)
     direction = Column(Integer)
+        # direction ranges from 0 to 7, starting North and counting clockwise.
     skin = Column(String(42))
         # 42 is The Answer to the Ultimate Question of Life, the Universe,
         # and Everything, as calculated by an enormous supercomputer over a

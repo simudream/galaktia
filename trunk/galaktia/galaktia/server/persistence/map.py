@@ -3,28 +3,27 @@
 __docformat__='restructuredtext'
 
 # "import *"s ARE BAD
-from galaktia.server.persistence.GenericDao import *
-from galaktia.server.persistence.Tile import *
+# Is this necessary? The modules are on the same path...
+import galaktia.server.persistence.GenericDao as GenericDao
+import galaktia.server.persistence.Tile as Tile
 
-# THIS CLASS SHOULD BE A TILE DAO, THAT EXTENDS THE GENERIC DAO
-class Map(object):
+class Map(GenericDAO):
     """
     The Map class is the representation of the database. It is the only way to
     querry the stored points.
     """
 
     def __init__(self, session):
-        self.layerDao=GenericDao(session, Tile)
+        self.dao=GenericDao(session, Tile)
 
     def getLayer(self, layer):
         """Returns a set of Tile objects with the selected id"""
-        # TODO: Check for negative numbers and other illegal values.
+        assert layer >= 0
         return self.dao.filter(Tile.layer==layer)
-
 
     def getTile(self, x, y, layer):
         """Returns the Tile in x, y, layer"""
-        # TODO: check for illegal values.
+        assert x >= 0 and y >= 0 and layer >= 0
         return self.dao.get(Tile.x==x, Tile.y==y, Tile.layer==layer)
 
     def getLayerSubsection(self, radius=2, x, y, layer):
@@ -37,8 +36,5 @@ class Map(object):
         smallX = (0 if x-radius < 0 else x-radius)
         bigY = y+radius
         smallY = (0 if y-radius < 0 else y-radius)
-        #return self.dao.filter(Tile.x <= bigX, Tile.x >= smallX, Tile.y <=
-        #        bigY, Tile.y >= smallY, )
-        # TODO: See the way to filter the results without using nasty tricks. I
-        # should modify GenericDAO (base.py)
-        return 0
+        return self.dao.advFilter(Tile.x <= bigX, Tile.x >= smallX, Tile.y <=
+                bigY, Tile.y >= smallY, )
