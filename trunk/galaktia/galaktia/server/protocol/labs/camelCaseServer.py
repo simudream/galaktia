@@ -1,60 +1,61 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, logging
-from random import randint
-
-from twisted.internet import reactor
-from twisted.python import log
-
-from galaktia.server.protocol.model import Datagram, Message
 from galaktia.server.protocol.base import BaseServer, BaseClient
 from galaktia.server.protocol.codec import ProtocolCodec
 from galaktia.server.protocol.controller import Controller
-
-from galaktia.server.protocol.operations.talk import *
+from galaktia.server.protocol.interface import GalaktiaServer
+from galaktia.server.protocol.model import Datagram, Message
 from galaktia.server.protocol.operations.join import *
+from galaktia.server.protocol.operations.talk import *
+from random import randint
+from twisted.internet import reactor
+from twisted.python import log
+import sys, logging
 
-from galaktia.server.protocol.interface import ServerController
+
+
+
 
 
 logger = logging.getLogger(__name__)
 
-class CamelCaseChatServerController(ServerController):
+class CamelCaseChatServer(GalaktiaServer):
     """ Implementation of a simple chat server """
 
     def __init__(self):
         self.sessions = dict()
-        Controller.__init__(self)
+        self.host = None
+        self.port = None
+        GalaktiaServer.__init__(self)
 
     def on_say_this(self, talking_user, message):
-        return [SomeoneSaid(
-                username = talking_user,
+        for aSession in self.sessions:
+            self.someone_said(username = talking_user,
                 message = message.title(), 
                 host = self.sessions[aSession]['host'], 
                 port = self.sessions[aSession]['port']) 
-              for aSession in self.sessions ]
+
         
     def on_request_user_join(self, username):
             session_id = self._generate_session_id(username)
             if session_id not in self.sessions:
                 self._create_session(session_id,username)
-                retval = [UserJoined( username = username,
+                for aSession in self.sessions:
+                    self.user_joined( username = username,
                             host = self.sessions[aSession]['host'],
                             port = self.sessions[aSession]['port'])
-                            for aSession in self.sessions]
-                retval.append(UserAccepted( host = self.host, port = self.port,
-                            accepted = True, session_id = session_id,
-                            player_initial_state = (randint(1,10),randint(1,10))
-                            ))
-                return retval
+                            
+                self.user_accepted( host = self.host, port = self.port,
+                        session_id = session_id,
+                        player_initial_state = (randint(1,10),randint(1,10))
+                        )
             else:
-                return [UserAccepted( host = self.host, port = self.port,
-                            accepted = False) ]
+                self.user_rejected( host = self.host, port = self.port)
 
     def on_start_connection(self):
-        return [CheckProtocolVersion(host = self.host, port = self.port,
-                    version="0.1", url="http://www.galaktia.com.ar")]
+        self.check_protocol_version(host = self.host, port = self.port,
+                    version="0.1", url="http://www.galaktia.com.ar")
    
 
         
@@ -72,18 +73,9 @@ class CamelCaseChatServerController(ServerController):
 
 def main(program, endpoint='server', host='127.0.0.1', port=6414):
     """ Main program: Starts a chat client or server on given host:port """
-    class MockSession(object):
-        def __init__(self, id):
-            self.id = id
-        def get_encryption_key(self):
-            return self.id
-    class MockSessionDAO(object):
-        def get(self, id):
-            return MockSession(id)
-    codec = ProtocolCodec(MockSessionDAO())
+    
     log_level = logging.DEBUG
-    controller = CamelCaseChatServerController()
-    protocol = BaseServer(codec, controller)
+    protocol = CamelCaseChatServer()
     logging.basicConfig(stream=sys.stderr, level=log_level)
     logger.info('Starting %s', endpoint)
     reactor.listenUDP(port, protocol)

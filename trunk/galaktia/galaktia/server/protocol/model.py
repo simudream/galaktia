@@ -31,9 +31,12 @@ class Message(dict):
     # def getSession(self): return self.session
 
     def acknowledge(self, data=None, **kwargs):
-        ack_data = {'ack': self['timestamp'], 'name': self['name']}
+        ack_data = {'ack': self['timestamp']}
         ack_data.update(data or {})
-        return Acknowledge(ack_data, **kwargs)
+        return Acknowledge(ack_data,
+                           host = self.host, 
+                           port = self.port, 
+                           **kwargs)
 
 class Command(Message):
     """ A client-server protocol command with an identifying name """
