@@ -22,7 +22,4 @@ class Controller(object):
         """ Returns an iterable of output messages in response to input """
         raise NotImplementedError
 
-    def set_protocol(self, protocol):
-        self.protocol = protocol
-
 

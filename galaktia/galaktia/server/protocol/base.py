@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from galaktia.server.protocol.model import Datagram, Message
+from twisted.internet.protocol import DatagramProtocol
 import logging
 
-from twisted.internet.protocol import DatagramProtocol
 
-from galaktia.server.protocol.model import Datagram, Message
 
 logger = logging.getLogger(__name__)
 
