@@ -60,11 +60,6 @@ class UserJoined(Message):
     def __init__(self, username, **kwargs):
         super(UserJoined, self).__init__({'username': username}, **kwargs)
 
-class UserAcceptedAck(Acknowledge):
-    """ C->S Message for acknowledgeing UserAccepted when accepted"""
-    def __init__(self, ack, **kwargs):
-        super(UserAcceptedAck, self).__init__({'ack': ack}, **kwargs)
-
 # TODO: pasar al nuevo modelo de ACK (ver Message.acknowledge y Acknowledge)
 # Si las cosas estan bien pensadas ni tendriamos que escribir la clase
 # del mensaje de ACK por cada mensaje que debe confirmarse

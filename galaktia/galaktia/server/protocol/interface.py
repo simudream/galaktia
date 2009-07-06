@@ -32,7 +32,19 @@ class GalaktiaClientController(EventDispatcher, Controller):
         # TODO: if-elses and switch-cases are for loser languages,
         # mapping is better
         #Talk commands
-        if command == "SomeoneSaid":
+        if command == "PlayerEnteredLOS":
+            session_id = input_message['subject']
+            (x,y) = input_message['object']
+            description = input_message['description']
+            self.dispatch_events('on_player_entered_los',
+                     session_id, (x,y), description )
+        elif command == "PlayerMoved":
+            other_session_id = input_message["subject"]
+            (dx, dy) = input_message["action"]
+            (x,y) = input_message["subject"]
+            self.dispatch_events('on_player_moved',
+                     other_session_id, (dx,dy), (x,y))
+        elif command == "SomeoneSaid":
             message = input_message['action']
             username = input_message['subject']
             self.dispatch_events('on_someone_said', username, message)
@@ -60,6 +72,9 @@ class GalaktiaClientController(EventDispatcher, Controller):
         return [input_message.acknowledge()]
 
 GalaktiaClientController.register_event_type('on_acknowledge')
+
+GalaktiaClientController.register_event_type('on_player_entered_los')
+GalaktiaClientController.register_event_type('on_player_moved')
 GalaktiaClientController.register_event_type('on_someone_said')
 GalaktiaClientController.register_event_type('on_user_accepted')
 GalaktiaClientController.register_event_type('on_user_rejected')
@@ -89,6 +104,8 @@ class GalaktiaClient(BaseClient):
         self.start_connection()
 
     # To be implemented by class user
+    def on_player_entered_los(self, session_id, (x,y), description):
+        raise NotImplementedError
     def on_someone_said(self, message, username):
         raise NotImplementedError
     def on_user_accepted(self, session_id, (x, y)):
@@ -102,14 +119,18 @@ class GalaktiaClient(BaseClient):
     
     
     # Convinience protocol methods
-    def start_connection(self):
-        logger.info('Starting connection...')
-        return [StartConection()]
-    def request_user_join(self,username):
-        self.send(RequestUserJoin(username = username))
+    def move_dx_dy(self,(dx,dy)):
+        m = MoveDxDy(session_id = self.session_id, delta = (dx,dy))
+        self.send(m)
     def say_this(self,message):
         m = SayThis(message=message, session_id = self.session_id)
         self.send(m)
+    def request_user_join(self,username):
+        self.send(RequestUserJoin(username = username))
+    def start_connection(self):
+        logger.info('Starting connection...')
+        return [StartConection()]
+    
     
    
     
@@ -127,8 +148,12 @@ class GalaktiaServerController(EventDispatcher, Controller):
             self.dispatch_events('on_acknowledge', input_message['ack'])
             return []
         
-
-        if command == "SayThis":
+        
+        if command == "MoveDxDy":
+            session_id = input_message['subject']
+            (dx, dy) = input_message['action']
+            self.dispatch_events('on_move_dx_dy', session_id, (dx,dy))
+        elif command == "SayThis":
             talking_user = input_message['subject']
             message = input_message['action']
             self.dispatch_event('on_say_this', talking_user, message)
@@ -138,6 +163,9 @@ class GalaktiaServerController(EventDispatcher, Controller):
             self.dispatch_event('on_request_user_join', username)
         elif command == "StartConection":
             self.dispatch_event('on_start_connection')
+        elif command == "LogoutRequest":
+            session_id = input_message['session_id']
+            self.dispatch_event('on_logout_request')
         else:
             raise ValueError("Invalid command: %s" % command)
         
@@ -145,9 +173,12 @@ class GalaktiaServerController(EventDispatcher, Controller):
         return []
 
 GalaktiaServerController.register_event_type('on_acknowledge')
+
+GalaktiaServerController.register_event_type('on_move_dx_dy')
 GalaktiaServerController.register_event_type('on_say_this')
 GalaktiaServerController.register_event_type('on_request_user_join')
 GalaktiaServerController.register_event_type('on_start_connection')
+GalaktiaServerController.register_event_type('on_logout_request')
 
 
 class GalaktiaServer(BaseServer):
@@ -173,21 +204,39 @@ class GalaktiaServer(BaseServer):
         self.host = host
         self.port = port
         BaseServer.datagramReceived(self, input_data, (host, port))
-    
-    # Event Handlers
-    # To be implemented by class user
+
     def on_acknowledge(self, ack):
         #TODO: implement
         pass
+    
+    # Event Handlers
+    # To be implemented by class user
+
+    def on_move_dx_dy(self, session_id, (dx,dy)):
+        raise NotImplementedError
     def on_say_this(self, talking_user, message):
         raise NotImplementedError
     def on_request_user_join(self, username):
         raise NotImplementedError
     def on_start_connection(self):
         raise NotImplementedError
+    def on_logout_request(self):
+        raise NotImplementedError
     
   
     # Convinience protocol methods
+    def player_entered_los(self, session_id, position, description):
+        m = PlayerEnteredLOS(session_id = session_id,
+                             position = position,
+                             description = description
+                             )
+        self.send(m)
+    def player_moved(self, (dx,dy), (x,y)):
+        m = PlayerMoved(session_id = self.session_id,
+                        delta = (dx,dy),
+                        position=(x,y))
+        self.send(m)
+    
     def someone_said(self, host, port, username, message):
         self.send(SomeoneSaid(
             username = username,

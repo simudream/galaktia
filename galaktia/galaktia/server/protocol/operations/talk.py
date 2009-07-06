@@ -28,9 +28,6 @@ class SayThis(ActionRequest):
         kwargs['object'] = kwargs.get('whisper_to')
         ActionRequest.__init__(self, **kwargs)
 
-class SayThisAck(Acknowledge):
-    """ S->C Acknowledge for SayThis Action"""
-    pass
 
 class SomeoneSaid(ActionUpdate):
     """ S->C Command for informing client that other client said something
@@ -40,9 +37,4 @@ class SomeoneSaid(ActionUpdate):
         kwargs['action'] = kwargs['message']
         kwargs['object'] = None
         ActionUpdate.__init__(self, **kwargs)
-
-class SomeoneSaidAck(Acknowledge):
-    """ C->S Acknowledge for SomeoneSaid Action"""
-    pass
-
 
