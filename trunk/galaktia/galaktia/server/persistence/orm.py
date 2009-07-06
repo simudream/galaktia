@@ -8,6 +8,10 @@ __docformat__='restructuredtext'
 # http://www.ibm.com/developerworks/aix/library/au-sqlalchemy/
 # http://stackoverflow.com/questions/860313/sqlalchemy-is-convoluted/860414
 
+# TODO: Add active session data storage. Message passing should be acomplished
+# by using wrapped priority queues.
+
+
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Table, Column, Integer, String, MetaData, ForeignKey
 from sqlalchemy import create_engine
@@ -28,11 +32,49 @@ class Sprite(Entity):
     __tablename__ = 'sprites'
     id = Column(Integer, primary_key=True)
     direction = Column(Integer)
-        # direction ranges from 0 to 7, starting North and counting clockwise.
+        # direction ranges from 0 to 7, starting North & counting clockwise.
     skin = Column(String(42))
         # 42 is The Answer to the Ultimate Question of Life, the Universe,
         # and Everything, as calculated by an enormous supercomputer over a
         # period of 7.5 million years
+
+class User(Entity):
+    """ Represents a User and essential account information"""
+    __tablename__= 'users'
+    name = Column(String(26), primary_key=True)
+        # My full name is 26 characters long
+    passwd = Column(String(42))
+        # Long passwords are safe.
+    email = Column(String(42))
+
+class Avatar(Entity):
+    """
+        An avatar is the incarnation of the user In-Game. It binds the User
+    to a Sprite and attributes such as Life Points and Items.
+    """
+    __tablename__= 'avatars'
+    id = Column(Integer, primary_key=True)
+        # id is the binding between the avatar and the avatar layer
+        # it can be used to bind items and other data to a certain avatar.
+    name = Column(String(42), primary_key=True)
+    level = Column(Integer)
+
+class Active(Entity):
+    """
+        There are certain objects in the world that are "active", or have their
+    own will. Those can be Statics (things like tables, chairs, decoration),
+    and Mobiles, such as Mobs and Users. Their location is represented by
+    this database abstraction.
+    """
+    __tablename__= 'actives'
+    # Users are *not* tiles, and since it really doesn't matter if they're
+    # stacked one over the other, we don't really care about layers. But we
+    # *do* care about instances!
+    id = Column(Integer)
+    x = Column(Integer)
+    y = Column(Integer)
+    instance = Column(Integer)
+
 
 def init_db(db_connection_string='sqlite:///:memory:'):
     """
