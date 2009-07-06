@@ -44,6 +44,10 @@ class GalaktiaClientWindow(pyglet.window.Window):
         self.draw_gl_rumble()
         self.label.draw()
         self.viewport.draw()
+    
+    def on_usermove(self):
+        self.viewport.clear()
+        self.viewport.draw()
 
     def draw_gl_rumble(self):
         for i in range(0,MAP_SIZE-1):
@@ -63,16 +67,19 @@ class GalaktiaClientWindow(pyglet.window.Window):
             self.dispatch_event('on_close')
 
     def on_text_motion(self, motion):
-        STEP = 20
+        STEP = A
         motion_codes = [0, -1, 1, 0] # none, lower, upper, both
         decode = lambda lower, upper: motion_codes[self.keystate[lower] \
                 | (self.keystate[upper] << 1)] * STEP
         dx, dy = (decode(key.LEFT, key.RIGHT), decode(key.DOWN, key.UP))
         if dx or dy:
             walter = self.viewport.sprites[0] # TODO: quick'n'dirty
-            walter.x += dx
-            walter.y += dy
+            walter.x += ((dx/STEP) * (B/2) + (dy/STEP) * (B/2))
+            walter.y += (-(dx/STEP) * (A/2) + (dy/STEP) * (A/2))
             self.dispatch_event('on_draw')
+            #self.on_usermove()
+            
+        
 
 if __name__ == '__main__':
     window = GalaktiaClientWindow()
