@@ -41,13 +41,13 @@ class Sprite(Entity):
 class User(Entity):
     """ Represents a User and essential account information"""
     __tablename__= 'users'
-    name = Column(String(26), primary_key=True, nullable = False)
+    name = Column(String(26), key='name', nullable = False)
         # My full name is 26 characters long
     passwd = Column(String(42), nullable = False)
         # Long passwords are safe.
     email = Column(String(42), nullable = False, key='email')
         # id is the binding between a user and his avatars
-    id = Column(Integer, nullable = False)
+    id = Column(Integer, nullable = False, primary_key=True)
 
 
 
@@ -66,7 +66,7 @@ class Avatar(Entity):
 class Active(Entity):
     """
         There are certain objects in the world that are "active", or have their
-    own will. Those can be Statics (things like tables, chairs, decoration),
+    own "will". Those can be Statics (things like tables, chairs, decoration),
     and Mobiles, such as Mobs and Users. Their location is represented by
     this database abstraction.
     """
@@ -74,10 +74,10 @@ class Active(Entity):
     # Users are *not* tiles, and since it really doesn't matter if they're
     # stacked one over the other, we don't really care about layers. But we
     # *do* care about instances!
-    id = Column(Integer, nullable = False)
+    id = Column(Integer, nullable = False, primary_key=True)
     x = Column(Integer, nullable = False)
     y = Column(Integer, nullable = False)
-    instance = Column(Integer)
+    instance = Column(Integer, nullable = false)
 
 
 def init_db(db_connection_string='sqlite:///:memory:'):
