@@ -22,18 +22,18 @@ Entity = declarative_base()
 class Tile(Entity):
     """ Represents map tiles with x, y coordinates on a z layer """
     __tablename__ = 'tiles'
-    x = Column(Integer, primary_key=True)
-    y = Column(Integer, primary_key=True)
-    z = Column(Integer, primary_key=True)
-    id = Column(Integer)
+    x = Column(Integer, primary_key=True, nullable = False)
+    y = Column(Integer, primary_key=True, nullable = False)
+    z = Column(Integer, primary_key=True, nullable = False)
+    id = Column(Integer, nullable = False)
 
 class Sprite(Entity):
     """ Represents a moving object with some "skin" appearance """
     __tablename__ = 'sprites'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True,  nullable = False)
     direction = Column(Integer)
         # direction ranges from 0 to 7, starting North & counting clockwise.
-    skin = Column(String(42))
+    skin = Column(String(42), nullable = False)
         # 42 is The Answer to the Ultimate Question of Life, the Universe,
         # and Everything, as calculated by an enormous supercomputer over a
         # period of 7.5 million years
@@ -41,11 +41,15 @@ class Sprite(Entity):
 class User(Entity):
     """ Represents a User and essential account information"""
     __tablename__= 'users'
-    name = Column(String(26), primary_key=True)
+    name = Column(String(26), primary_key=True, nullable = False)
         # My full name is 26 characters long
-    passwd = Column(String(42))
+    passwd = Column(String(42), nullable = False)
         # Long passwords are safe.
-    email = Column(String(42))
+    email = Column(String(42), nullable = False, key='email')
+        # id is the binding between a user and his avatars
+    id = Column(Integer, nullable = False)
+
+
 
 class Avatar(Entity):
     """
@@ -53,11 +57,11 @@ class Avatar(Entity):
     to a Sprite and attributes such as Life Points and Items.
     """
     __tablename__= 'avatars'
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, nullable = False)
         # id is the binding between the avatar and the avatar layer
         # it can be used to bind items and other data to a certain avatar.
-    name = Column(String(42), primary_key=True)
-    level = Column(Integer)
+    name = Column(String(42), primary_key=True, nullable = False)
+    level = Column(Integer, nullable = False)
 
 class Active(Entity):
     """
@@ -70,9 +74,9 @@ class Active(Entity):
     # Users are *not* tiles, and since it really doesn't matter if they're
     # stacked one over the other, we don't really care about layers. But we
     # *do* care about instances!
-    id = Column(Integer)
-    x = Column(Integer)
-    y = Column(Integer)
+    id = Column(Integer, nullable = False)
+    x = Column(Integer, nullable = False)
+    y = Column(Integer, nullable = False)
     instance = Column(Integer)
 
 
