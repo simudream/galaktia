@@ -1,0 +1,153 @@
+{% include "_header.django" %}
+
+<div id="wrapper">
+<!-- start page -->
+<div id="page">
+
+<div id="sidebar1" class="sidebar">
+<ul>
+<li>
+<h2>Noticias Recientes</h2>
+<ul>
+<li><a href="#">Creación de motor de ideas</a></li>
+<li><a href="#">Lanzamiento de página web</a></li>
+
+</ul>
+</li>
+
+
+<li>
+<h2>Desarrollado por...</h2>
+<ul>
+<li><a href="#">NoPattern Team</a></li>
+
+</ul>
+</li>
+</ul>
+</div>
+
+<!-- start content -->
+<div id="content">
+<div class="post">
+<h1 class="title"><a href="#">Bienvenido a Galaktia!</a></h1>
+<p class="byline"><small>Juego MMORPG desarrollado en <a href="http://www.python.org">Python</a></small></p>
+<div class="entry">
+
+<p>
+		Dejanos tu idea y si es aprobada la implementaremos cuando empiece el desarrollo...
+	</p>
+
+	<p> Ideas:</p>
+	
+
+	{% for visitor in visitors %}
+		<div class="cuadrito">
+	
+		{% comment %}
+		{% ifequal visitor.avatar None %}
+			<img heigth=50 width=50 align=middle src='images/unknown.jpg'></img>
+		{% else %}
+			<img align=middle src='img?img_id={{visitor.key}}'></img>	
+		{% endifequal %}
+		{% endcomment %}
+		
+		
+		{% if visitor.writer %}
+			<b>{{ visitor.writer|escape }}</b> wrote:
+        	{% else %}
+			Anónimo dijo::
+	        {% endif %}
+		
+		{% ifequal visitor.content "" %}
+			<blockquote><em>Nada</em>
+		{% else %}
+			<blockquote><em>{{ visitor.content|escape }}</em>
+		{% endifequal %}
+				</blockquote></div>
+	{% endfor %}
+	
+	<p>
+	{% for page in pages %}
+		<a href="/guestbook?page={{ page }}">
+		{{ page|add:1 }}</a>
+	{% endfor %}
+	</p>
+	
+	
+	
+	<form action="/sign" enctype="multipart/form-data" method="post" accept-charset="utf-8">
+		<p> Dejá tu idea! </p>
+		<p>
+			Tu Nombre: 
+				<input type="text" name="writer" value="{{nombre}}" cols=40 id="writer" maxlength=80 >   
+		</p>
+		<p>
+			Idea:
+			<br><textarea name="content" rows="5" cols=40 maxlength=80></textarea></br>
+		</p>
+<!--		<p>
+			<div><label>Avatar:</label></div>
+			<div><input type="file" name="img"/></div>
+		</p>-->
+		<p>
+			<input type="submit" value="Dale!">
+		</p>
+	</form>
+
+
+</div>
+</div>
+
+</div><!-- end content -->
+
+<!-- start sidebars -->
+<div id="sidebar2" class="sidebar">
+<ul>
+<li>
+<form id="searchform" method="get" action="#">
+<div>
+<h2>B u s c a r</h2>
+
+<input type="text" name="s" id="s" size="15" value="" />
+
+</div>
+</form>
+</li>
+<li>
+<h2>T a g s</h2>
+
+<p class="tag"><a href="#">galaktia</a> <a href="#">mmorpg</a> <a href="#">juego</a> <a href="#">game</a> <a href="#">space</a> <a href="#">espacio</a> <a href="#">python</a> <a href="#">pygame</a></p></li>
+
+<li>
+<h2>R a z a s</h2>
+<ul>
+
+<h3>Facción Azul</h3>
+<li><a href="#">Humanos</a></li>
+<li><a href="#">Wisp-man</a></li>
+<li><a href="#">Gigante gris de ojos azules</a></li>
+<li><a href="#">Robots inteligentes</a></li>
+
+<h3>Facción Roja</h3>
+<li><a href="#">Humanos</a></li>
+<li><a href="#">Bajitos y cerebreanos</a></li>
+<li><a href="#">Bestia como animal</a></li>
+<li><a href="#">Orcos espaciales</a></li>
+
+</ul>
+</li>
+</ul>
+</div>
+<!-- end sidebars -->
+<div style="clear: both;">&nbsp;</div>
+</div>
+<!-- end page -->
+</div>
+
+<div id="footer">
+<p class="copyright">&copy;Galaktia 2009 Todos los derechos reservados &nbsp;&bull;&nbsp; Diseño por <a href="http://www.freecsstemplates.org/">Free CSS Templates</a>.</p>
+
+<p class="link"><a href="#">Privacy Policy</a>&nbsp;&#8226;&nbsp;<a href="#">Terms of Use</a></p>
+</div>
+</body>
+</html>

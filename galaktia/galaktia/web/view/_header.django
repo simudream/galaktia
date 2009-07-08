@@ -1,0 +1,41 @@
+
+
+
+<body>
+
+<center><img align=center src="/images/logo.jpg" alt="galaktia" ></center><br>
+
+<!-- start header -->
+<div id="header">
+
+<div id="logo">
+<h1><a href="#"><span>Galaktia</span>Online</a></h1>
+
+<p>Python MMORPG</p>
+</div>
+</div>
+<div id="menu">
+<ul id="main">
+
+<li><a href="/">Ideas</a></li>
+<li><a href="#">Adelantos</a></li>
+
+<!--<li><a href="#">About Us</a></li>
+<li><a href="#">Contact Us</a></li>-->
+
+</ul>
+</div>
+
+<!-- end header -->
+
+
+<head>
+
+<meta name="keywords" content="galaktia, mmorpg, juego, game, space, espacio, python, pygame" />
+<meta name="description" content="Python based MMORPG" />
+<meta http-equiv="Content-Language" content="es-ar" />
+<link type="text/css" rel="stylesheet" href="/css/coolblack.css" />
+<!-- <link rel="shortcut icon" href="/favicon.ico" > -->
+
+
+</head>
