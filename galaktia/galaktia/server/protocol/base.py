@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from galaktia.server.protocol.model import Datagram, Message
-from twisted.internet.protocol import DatagramProtocol
 import logging
 
+from twisted.internet.protocol import DatagramProtocol
 
+from galaktia.server.protocol.model import Datagram, Message
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +27,26 @@ class BaseServer(DatagramProtocol):
 
     def datagramReceived(self, input_data, (host, port)):
         """ Event handler for datagram reception """
-        input_message = self.codec.decode(Datagram(input_data, host, port))
-        logger.debug('Received from %s:%d: %s', host, port, input_message)
+        datagram = Datagram(input_data, host, port)
+        try:
+            input_message = self.codec.decode(datagram)
+            logger.debug('Received from %s:%d: %s', host, port, input_message)
+        except Exception:
+            logger.exception('Failed to decode datagram from %s:%d: %s', \
+                    host, port, input_message)
+            return
+        #self.dispatch_events('on_receive', input_message)
         for output_message in self.controller.process(input_message):
             self.send(output_message)
 
     def send(self, output_message):
         """ Sends an output message (according to its host, port) """
-        datagram = self.codec.encode(output_message)
+        #self.dispatch_events('on_send', output_message)
+        try:
+            datagram = self.codec.encode(output_message)
+        except Exception:
+            logger.exception('Failed to encode message: %s', output_message)
+            return
         try:
             destination = datagram.get_destination()
             self.transport.write(datagram.data, destination)
