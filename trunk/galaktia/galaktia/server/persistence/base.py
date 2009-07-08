@@ -26,20 +26,12 @@ class GenericDAO(object):
         assert len(args) > 0 or len(kwargs) > 0
         return self._query().get(*args, **kwargs)
 
-    def filter(self, **filters):
+    def filter(self, *args, **kwargs):
         """ Returns all entities matching the filters criteria """
-        assert len(filters) > 0
-        return self._query().filter_by(**filters).all()
-
-    #TODO: Test this function!
-    def advFilter(self, *filters):
-        """ Returns all entities matching the filters criteria, allowing the
-        use of non-equity filters """
-        assert len(filters) > 0
-        query = self._query()
-        for filter in filters:
-            query = query.filter(filter)
-        return query.all()
+        # assert len(args) > 0 or len(kwargs) > 0
+        q = reduce(lambda q, f: q.filter(f), args, self._query())
+        q = q.filter_by(**kwargs) if kwargs else q
+        return q.all()
 
     def count(self, **filters):
         """ Counts the number of entities mathing the filters criteria """
@@ -49,20 +41,13 @@ class GenericDAO(object):
         """ Returns all entities """
         return self._query().all()
 
-    def save(self, entity):
-        """ Saves a transient (unsaved) entity to the session """
-        assert isinstance(entity, self.klass)
-        self.session.save(entity)
+    # def save(self, entity): ...
+    #     Deprecated in SQLAlchemy 0.5; use add instead
 
     def add(self, entity):
         """ Adds an entity to the session """
         assert isinstance(entity, self.klass)
         self.session.add(entity)
-
-    def expunge(self, entity):
-        """ Removes an entity from the session """
-        assert isinstance(entity, self.klass)
-        self.session.expunge(entity)
 
     def delete(self, entity):
         """ Deletes the given entity """
@@ -73,6 +58,15 @@ class GenericDAO(object):
         """ Deletes an entity by primary key """
         entity = self.get(entity_id)
         self.delete(entity)
+
+    def expunge(self, entity):
+        """ Removes an entity from the session """
+        assert isinstance(entity, self.klass)
+        self.session.expunge(entity)
+
+    def merge(self, entity):
+        """ Reconciles current state of an entity with existing data """
+        return self.session.merge(entity)
 
     def expire(self, entity):
         """ Marks entity attributes as out of date
