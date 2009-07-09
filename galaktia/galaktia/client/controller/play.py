@@ -90,22 +90,21 @@ class Grid():
         self.GRID_SIZE = 21
         self.grid = []
         self.tileset = GalaktiaTileSet()
-        for i in range(0,self.GRID_SIZE-1):
+        for i in range(0,self.GRID_SIZE):
             self.grid.append([])
-            for j in range(0,self.GRID_SIZE-1):
+            for j in range(0,2*(self.GRID_SIZE)):
                 self.grid[i].append('n')
-                self.grid[i].append('n')
-
-    def from_grid_to_px(self, x, y):
+                
+    def from_grid_to_px(self, i, j):
         rx = self.GRID_SIZE * self.B
         ry = self.GRID_SIZE * self.A
-        if x < 2*self.GRID_SIZE and y < self.GRID_SIZE:
-            if x%2 == 0:
-                ry = (y+0.5)*self.A
-                rx = (x+0.5)*self.B
+        if j < 2*self.GRID_SIZE and i < self.GRID_SIZE:
+            if int(j)%2 == 0:
+                ry = (i+0.5)*self.A
+                rx = (j+0.5)*self.B
             else:
-                ry = (y+1)*self.A
-                rx = (x+1)*self.B
+                ry = (i+1)*self.A
+                rx = (j+1)*self.B
         return rx, ry
     
     def from_px_to_grid(self,px,py):
@@ -122,18 +121,12 @@ class Grid():
         return int(rx), int(ry)
     
     def draw(self):
-        for i in range(0,self.GRID_SIZE-1):
-            for j in range(0,self.GRID_SIZE-1):
-                if self.grid[i][2*j] == 'n':
-                    pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
-                        ('v2f', (j*self.B, (i+0.5)*self.A, (j+0.5)*self.B, (i+1)*self.A, (j+1)*self.B, (i+0.5)*self.A, (j+0.5)*self.B, i*self.A)),
-                        ('c3B', (0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 255))
-                        )
-                if self.grid[i][2*j+1] == 'n':
-                    pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
-                        ('v2f', ((j+0.5)*self.B, (i+1)*self.A, (j+1)*self.B, (i+1.5)*self.A, (j+1.5)*self.B, (i+1)*self.A, (j+1)*self.B, (i+0.5)*self.A)),
-                        ('c3B', (0, 0, 255, 0, 0, 255, 0, 0, 255, 0, 0, 255))
-                        )
+        for i in range(0,self.GRID_SIZE):
+            for j in range(0,2*(self.GRID_SIZE)):
+                if self.grid[i][j] == 'n':
+                    tile = self.tileset.sprites[3] 
+                    tile.x, tile.y = self.from_grid_to_px(i,j)
+                    tile.draw()
                  
                     
     def moveSprite(self, x, y, dx, dy):
