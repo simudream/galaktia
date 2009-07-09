@@ -39,6 +39,16 @@ class User(Entity):
     email = Column(Unicode(42), unique=True, nullable=False)
         # id is the binding between a user and his avatars
 
+    def __init__(self, name, email, passwd):
+        self.name=name
+        self.email=email
+        self.passwd=passwd
+
+    def __repr__(self):
+        return "<User %s (%i)>" % (self.name, self.id)
+
+# Wouldn't be better if we keep this out of the database, in a special class
+# using lists or something?
 class Session(Entity):
     """ Represents the client-server session with a user """
     __tablename__ = 'sessions'
@@ -62,6 +72,20 @@ class SceneObject(Entity):
     __mapper_args__ = {'polymorphic_on': type} # leave as last class attr
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
+
+class Ground(SceneObject):
+    """ An object whose sole purpose is to aid the collision system to detect
+    boundaries and paths for the walk-able map."""
+    __tablename__ = 'ground'
+    __mapper_args__ = {'polymorphic_identity': u'ground'}
+    id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+    image = Column(Unicode(42))
+        # Image identifier, NOT the actual image.
+    def __init__(self, x, y, z=0):
+        self.x=x
+        self.y=y
+        self.z=z
+
 
 class Item(SceneObject):
     """ Represents an item """
