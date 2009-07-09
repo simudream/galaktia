@@ -19,15 +19,15 @@ class SceneObjectDAO(GenericDAO):
         if (layer < 0):
             raise Exception("Layer must be a non-negative integer")
         # assert layer >=0
-        return self.filter(SceneObject.z==layer)
+        return self.filter(self.klass.z==layer)
 
     # NOTE: Underscored methods and filenames are more Pythonic.
     #       We prefer to leave CamelCase only for classnames.
     #       See PEP 7 and PEP 8 for more on Python coding style.
     def get_by_coords(self, x, y, layer):
         """Returns the SceneObject in x, y, layer"""
-        return self.filter(SceneObject.x==x, SceneObject.y==y, \
-                SceneObject.z==layer)
+        return self.filter(self.klass.x==x, self.klass.y==y, \
+                self.klass.z==layer)
 
     def get_layer_subsection(self, x, y, layer, radius=2):
         """
@@ -39,13 +39,32 @@ class SceneObjectDAO(GenericDAO):
         smallX = x-radius
         bigY = y+radius
         smallY = y-radius
-        return self.filter(SceneObject.x <= bigX, \
-                SceneObject.x >= smallX, SceneObject.y <= bigY, \
-                SceneObject.y >= smallY, SceneObject.z == layer)
+        return self.filter(self.klass.x <= bigX, \
+                self.klass.x >= smallX, self.klass.y <= bigY, \
+                self.klass.y >= smallY, self.klass.z == layer)
+        
 
-    def move(self, id, x, y):
-        """ Moves the object to x, y """
-        pass
+class SpatialDAO(SceneObjectDAO):
+    def __init__(self, session):
+        super(SpatialDAO, self).__init__(session, Spacia)
+
+    def move(self, obj, x, y):
+        result = True()
+        #verificar que el xy destino sea adyacente al xy del sceneobject.
+        #Pedir todos los sceneobjects que están en el xy del type sprite
+        #o de type stationary
+
+        # Verify that moving from current xy is physically possible, i.e., 
+        # it's near.
+        assert (abs(x - obj.x) <= 1) and (abs(y - obj.y) <= 1)
+        elements = self.get_by_coords(x,y,obj.z)
+        if(not elements):
+            obj.x=x
+            obj.y=y
+        else:
+            resut=False
+        return result
+
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
@@ -106,7 +125,8 @@ class SpriteDAO(SceneObjectDAO):
         super(SpriteDAO, self).__init__(session, Sprite)
             # calls superclass constructor with args: session, klass
 
-class CharacterDAO(SceneObjectDAO):
+
+class CharacterDAO(SpriteDAO):
     """ This class represents the basic world environment, often called as
         'map'. The first (default) layer represents the path where the user can
         walk.
