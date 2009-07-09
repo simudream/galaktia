@@ -11,14 +11,6 @@ __docformat__='restructuredtext'
 # TODO: Add active session data storage. Message passing should be acomplished
 # by using wrapped priority queues.
 
-# XXX README: latest edits:
-# - Replaced String column types by Unicode
-# - New SceneObject hierarchy. Tile deprecated
-# - Replaced Active by Sprite
-# - Replaced Avatar by Character (with foreign key to User, null for NPCs)
-# - Deleted redundant nullable=False (primary key implies non-nullable)
-# - Etc.
-
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
@@ -31,24 +23,20 @@ class User(Entity):
     """ Represents a user, with his or her account information """
     __tablename__= 'users'
     id = Column(Integer, primary_key=True)
-    name = Column(Unicode(26), unique=True, nullable=False)
-        # My full name is 26 characters long
-            # hahahaha +1!
-    passwd = Column(Unicode(42), nullable=False)
-        # Long passwords are safe.
-    email = Column(Unicode(42), unique=True, nullable=False)
+    name = Column(Unicode(127), unique=True, nullable=False)
+    passwd = Column(Unicode(127), nullable=False)
+    email = Column(Unicode(127), unique=True, nullable=False)
         # id is the binding between a user and his avatars
 
-    def __init__(self, name, email, passwd):
-        self.name=name
-        self.email=email
-        self.passwd=passwd
-
-    def __repr__(self):
-        return "<User %s (%i)>" % (self.name, self.id)
+    # def __init__(self, name, email, passwd):
+        # Overriding __init__ in SQLAlchemy entities will cause problems
+        # unless you know what you are doing.
+        # All entity attributes should be present and with same name.
 
 # Wouldn't be better if we keep this out of the database, in a special class
 # using lists or something?
+    # Yes, maybe just keep in memory or via memcached,
+    # but we need a first implementation for release 0.1
 class Session(Entity):
     """ Represents the client-server session with a user """
     __tablename__ = 'sessions'
@@ -81,11 +69,6 @@ class Ground(SceneObject):
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
     image = Column(Unicode(42))
         # Image identifier, NOT the actual image.
-    def __init__(self, x, y, z=0):
-        self.x=x
-        self.y=y
-        self.z=z
-
 
 class Item(SceneObject):
     """ Represents an item """
@@ -122,9 +105,9 @@ class Character(Sprite):
     money = Column(Integer) # money points
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
 
-class Bag(Entity):
+class CharacterItems(Entity):
     """ Represents ownership of a certain number of items by a character """
-    __tablename__ = 'bags'
+    __tablename__ = 'character_items'
     character_id = Column(Integer, ForeignKey('characters.id'), \
             primary_key=True)
     item_id = Column(Integer, ForeignKey('items.id'), primary_key=True)
@@ -147,7 +130,7 @@ def init_db(db_connection_string='sqlite:///:memory:', echo=False):
         # e.g.: session = Session()
     Entity.metadata.bind = engine
     Entity.metadata.create_all() # TODO: drop/use existing or raise exception?
-        # XXX Check whether this works only when all entities were imported
+        # WARNING: Only tables for imported Entities are created
     return (engine, Entity.metadata, Session)
 
 if __name__ == '__main__':
