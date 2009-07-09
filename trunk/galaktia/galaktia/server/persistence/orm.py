@@ -37,6 +37,7 @@ class User(Entity):
 # using lists or something?
     # Yes, maybe just keep in memory or via memcached,
     # but we need a first implementation for release 0.1
+
 class Session(Entity):
     """ Represents the client-server session with a user """
     __tablename__ = 'sessions'
