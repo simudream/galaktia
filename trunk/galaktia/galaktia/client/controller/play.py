@@ -59,8 +59,9 @@ class GalaktiaClientWindow(pyglet.window.Window):
         
         
     
-    def on_usermove(self):
-        self.grid.draw()
+    def on_redraw(self):
+        #self.grid.draw()
+        self.clear()
         self.viewport.draw()
 
 
@@ -78,8 +79,8 @@ class GalaktiaClientWindow(pyglet.window.Window):
         if dx or dy:
             walter = self.viewport.sprites[0] # TODO: quick'n'dirty
             walter.x, walter.y = self.grid.moveSprite(walter.x,walter.y,math.floor(dx/STEP),math.floor(dy/STEP))  
-            self.dispatch_event('on_draw')
-            #self.viewport.draw()
+            #self.dispatch_event('on_redraw')
+            self.on_redraw()
             
             
 class Grid():
@@ -96,29 +97,31 @@ class Grid():
                 self.grid[i].append('n')
                 
     def from_grid_to_px(self, i, j):
+        print i,j
         rx = self.GRID_SIZE * self.B
         ry = self.GRID_SIZE * self.A
         if j < 2*self.GRID_SIZE and i < self.GRID_SIZE:
             if int(j)%2 == 0:
-                ry = (i+0.5)*self.A
-                rx = (j+0.5)*self.B
+                ry = (i-0.5)*self.A
+                rx = (j/2-0.5)*self.B
             else:
-                ry = (i+1)*self.A
-                rx = (j+1)*self.B
-        return rx, ry
+                ry = (i-1)*self.A
+                rx = (j/2-1)*self.B
+        print int(rx),int(ry)
+        return int(rx), int(ry)
     
     def from_px_to_grid(self,px,py):
-        rx = self.GRID_SIZE
-        ry = 2*self.GRID_SIZE
-        if px < 10000 and py < 10000:
-            if int(py)%self.A == 0:
-                rx = 2*math.floor(px/self.B)-1
-                ry = math.floor(py/self.A) - 1
+        rx = 2*(self.GRID_SIZE-1)
+        ry = (self.GRID_SIZE-1)
+        if px < 1051 and py < 601:
+            if int(px)%self.B == 0:
+                rx = 2*(px//self.B)-1
+                ry = (py//self.A) - 1
             else:
-                rx = math.floor(px/self.B)*2
-                ry = math.floor(py/self.A)
+                rx = (px//self.B)*2
+                ry = (py//self.A)
         
-        return int(rx), int(ry)
+        return int(ry), int(rx)
     
     def draw(self):
         for i in range(0,self.GRID_SIZE):
