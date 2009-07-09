@@ -29,44 +29,34 @@ cubierta la confiabilidad.
 """
 
 
-class ActionCommand(Command):
+class ActionMessage(Message):
     """ ?->? Generic command involved in the game actions protocol """
 
     def __init__(self, **kwargs):
         self['subject'] = kwargs['subject']
         self['action'] = kwargs['action']
         self['object'] = kwargs['object']
-        Command.__init__(self, **kwargs)
+        Message.__init__(self, **kwargs)
 
-class ActionRequest(ActionCommand):
+class ActionRequest(ActionMessage):
     """ C->S Generic command that the client uses to inform the server that
         certain action wants to be taken. Waits for acknowledge"""
 
     def __init__(self, **kwargs):
         # Client to Server requests always carry session identifiers
         kwargs['subject'] = kwargs['session_id']
-        ActionCommand.__init__(self, **kwargs)
+        ActionMessage.__init__(self, **kwargs)
 
 
-class ActionResponse(ActionCommand):
+class ActionResponse(Message):
     """ S->C Generic command that the server uses to inform the client about the
         outcome of certain action he requested to do. """
 
     pass
 
-class ActionUpdate(ActionCommand):
+class ActionUpdate(ActionMessage):
     """ S->C Generic command that the server uses to inform the client about
         an action performed by other client or the game system"""
 
     pass
-
-class ActionAccept(Acknowledge):
-    """ C->S Generic command to confirm the server that an external action
-        was received"""
-
-    def __init__(self, **kwargs):
-        # Client to Server requests always carry session identifiers
-        self['session_id'] = kwargs['session_id']
-        Acknowledge.__init__(self, **kwargs)
-
 
