@@ -62,6 +62,18 @@ class SceneObject(Entity):
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
 
+class Spatial(SceneObject):
+    """  """
+    __tablename__ = 'spatials'
+    __mapper_args__ = {'polymorphic_identity': u'spatial'}
+    id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+
+class Stationary(Spatial):
+    """  """
+    __tablename__ = 'stationaries'
+    __mapper_args__ = {'polymorphic_identity': u'stationary'}
+    id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+
 class Ground(SceneObject):
     """ An object whose sole purpose is to aid the collision system to detect
     boundaries and paths for the walk-able map."""
@@ -79,7 +91,7 @@ class Item(SceneObject):
     cost = Column(Integer) # how much money to pay for buying it
                            # or None if not for sell
 
-class Sprite(SceneObject):
+class Sprite(Spatial):
     """ Represents a moving object with some "skin" appearance """
     __tablename__ = 'sprites'
     __mapper_args__ = {'polymorphic_identity': u'sprite'}
@@ -105,6 +117,7 @@ class Character(Sprite):
     life = Column(Integer) # life points
     money = Column(Integer) # money points
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
+    connected = Column(Boolean)
 
 class CharacterItems(Entity):
     """ Represents ownership of a certain number of items by a character """
