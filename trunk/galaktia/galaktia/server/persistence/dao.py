@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 __docformat__='restructuredtext'
 
-# Is this necessary? The modules are on the same path... Yes!
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User
 
@@ -44,35 +43,37 @@ class SceneObjectDAO(GenericDAO):
                 SceneObject.y >= smallY, SceneObject.z == layer)
 
 
-# I don't know how to subclass SceneObjectDAO and tell the superclass to return
-# only Ground objects.
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
         'map'. The first (default) layer represents the path where the user can
         walk.
     """
     def __init__(self, session):
-        super(GroundDAO, self).__init__(session)
+        super(GroundDAO, self).__init__(session, Ground)
+            # calls superclass constructor with args: session, klass
 
 
 class UserDAO(GenericDAO):
     def __init__(self, session):
-        self.klass = User
-        self.dao = GenericDAO(session, User)
+        super(UserDAO, self).__init__(session, User)
+            # calls superclass constructor with args: session, klass
 
     # XXX: Ugly bug. Try creating a user and then getting it by this method...
     # You'll find out that you get '(InterfaceError) Error binding parameter 0'
     # PS: use dao.User, otherwise if you use the User class from orm it thinks
     # it is *NOT* the same class. I hate you, classloader.
+        # This is due to User.__init__, that should not be overriden
     def get_user(self, id):
-        return self.dao.get(User.id==id)
+        return self.get(User.id==id)
+            # why not?: user_dao.get(user_id)
 
     def add_user(self, user):
         """ Adds an User to the database """
         if (isinstance(user, User)):
-            self.dao.add(user)
+            self.add(user)
         else:
             raise Exception("This is not a User! >:(")
+                # why not?: user_dao.add(User(...))
 
     def delete_user(self, user):
         """ Deletes the User. Behaviour changes according the parameter. If
@@ -84,6 +85,8 @@ class UserDAO(GenericDAO):
             self.dao.delete_by_id(user)
         else:
             raise Exception("This is not a User! >:(")
+                # why not?: user_dao.delete(user)
+                #           user_dao.delete_by(user_id)
 
 # Excellent job! :) :) :)
 # Keep subclassing GenericDAO and providing more methods that
