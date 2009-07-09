@@ -3,7 +3,8 @@
 __docformat__='restructuredtext'
 
 from galaktia.server.persistence.base import GenericDAO
-from galaktia.server.persistence.orm import SceneObject, Ground, User
+from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
+     Sprite, Character 
 
 class SceneObjectDAO(GenericDAO):
     """
@@ -42,6 +43,9 @@ class SceneObjectDAO(GenericDAO):
                 SceneObject.x >= smallX, SceneObject.y <= bigY, \
                 SceneObject.y >= smallY, SceneObject.z == layer)
 
+    def move(self, id, x, y):
+        """ Moves the object to x, y """
+        pass
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
@@ -67,28 +71,49 @@ class UserDAO(GenericDAO):
         return self.get(User.id==id)
             # why not?: user_dao.get(user_id)
 
-    def add_user(self, user):
-        """ Adds an User to the database """
-        if (isinstance(user, User)):
-            self.add(user)
-        else:
-            raise Exception("This is not a User! >:(")
-                # why not?: user_dao.add(User(...))
-
     def delete_user(self, user):
         """ Deletes the User. Behaviour changes according the parameter. If
         user is an int, then it will delete by id; if user is an User object
         then it will delete that object"""
         if (isinstance(user, User)):
-            self.dao.delete(user)
+            self.delete(user)
         elif (isinstance(user, int)):
-            self.dao.delete_by_id(user)
+            self.delete_by_id(user)
         else:
             raise Exception("This is not a User! >:(")
                 # why not?: user_dao.delete(user)
                 #           user_dao.delete_by(user_id)
 
-# Excellent job! :) :) :)
+
+
+
+class ItemDAO(SceneObjectDAO):
+    """ This class represents the basic world environment, often called as
+        'map'. The first (default) layer represents the path where the user can
+        walk.
+    """
+    def __init__(self, session):
+        super(ItemDAO, self).__init__(session, Item)
+            # calls superclass constructor with args: session, klass
+
+
+class SpriteDAO(SceneObjectDAO):
+    """ This class represents the basic world environment, often called as
+        'map'. The first (default) layer represents the path where the user can
+        walk.
+    """
+    def __init__(self, session):
+        super(SpriteDAO, self).__init__(session, Sprite)
+            # calls superclass constructor with args: session, klass
+
+class CharacterDAO(SceneObjectDAO):
+    """ This class represents the basic world environment, often called as
+        'map'. The first (default) layer represents the path where the user can
+        walk.
+    """
+    def __init__(self, session):
+        super(CharacterDAO, self).__init__(session, Character)
+            # calls superclass constructor with args: session, klass
 # Keep subclassing GenericDAO and providing more methods that
 # are particularly useful for each Entity class.
 # By the way, I recommend writing all DAOs in this file.
