@@ -49,7 +49,7 @@ class SpatialDAO(SceneObjectDAO):
         super(SpatialDAO, self).__init__(session, Spacia)
 
     def move(self, obj, x, y):
-        result = True()
+        result = True
         #verificar que el xy destino sea adyacente al xy del sceneobject.
         #Pedir todos los sceneobjects que están en el xy del type sprite
         #o de type stationary
