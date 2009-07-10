@@ -4,15 +4,16 @@ __docformat__='restructuredtext'
 
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
-     Sprite, Character 
+     Sprite, Character, Spatial, Stationary
 
 class SceneObjectDAO(GenericDAO):
     """
     Data Access Object for SceneObject entities.
     """
+    ENTITY_CLASS=SceneObject
 
     def __init__(self, session):
-        super(SceneObjectDAO, self).__init__(session, SceneObject)
+        super(SceneObjectDAO, self).__init__(session, self.ENTITY_CLASS)
 
     def get_layer(self, layer):
         """Returns a set of SceneObject objects with the selected id"""
@@ -43,49 +44,48 @@ class SceneObjectDAO(GenericDAO):
                 self.klass.x >= smallX, self.klass.y <= bigY, \
                 self.klass.y >= smallY, self.klass.z == layer)
         
+    def get_near(self, obj, radius=2):
+        return self.get_layer_subsection(obj.x, obj.y, obj.z, radius)
 
 class SpatialDAO(SceneObjectDAO):
-    def __init__(self, session):
-        super(SpatialDAO, self).__init__(session, Spacia)
+    ENTITY_CLASS=Spatial
 
     def move(self, obj, x, y):
         result = True
-        #verificar que el xy destino sea adyacente al xy del sceneobject.
-        #Pedir todos los sceneobjects que están en el xy del type sprite
-        #o de type stationary
-
-        # Verify that moving from current xy is physically possible, i.e., 
+        # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
-        assert (abs(x - obj.x) <= 1) and (abs(y - obj.y) <= 1)
+        # assert (abs(x - obj.x) <= 1) and (abs(y - obj.y) <= 1)
+        if(obj.x==x and obj.y==y):
+            return True
+            # If you want to move to the same place you're in, then return
+            # true
+        if(abs(x-obj.x)>1) or (abs(y-obj.y)>1):
+            return False
         elements = self.get_by_coords(x,y,obj.z)
         if(not elements):
             obj.x=x
             obj.y=y
         else:
-            resut=False
+            result = False
         return result
 
+class StationaryDAO(SpatialDAO):
+    ENTITY_CLASS=Stationary
+    def move(self):
+        pass
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
         'map'. The first (default) layer represents the path where the user can
         walk.
     """
-    def __init__(self, session):
-        super(GroundDAO, self).__init__(session, Ground)
-            # calls superclass constructor with args: session, klass
-
+    ENTITY_CLASS=Ground
 
 class UserDAO(GenericDAO):
     def __init__(self, session):
         super(UserDAO, self).__init__(session, User)
             # calls superclass constructor with args: session, klass
 
-    # XXX: Ugly bug. Try creating a user and then getting it by this method...
-    # You'll find out that you get '(InterfaceError) Error binding parameter 0'
-    # PS: use dao.User, otherwise if you use the User class from orm it thinks
-    # it is *NOT* the same class. I hate you, classloader.
-        # This is due to User.__init__, that should not be overriden
     def get_user(self, id):
         return self.get(User.id==id)
             # why not?: user_dao.get(user_id)
@@ -103,37 +103,14 @@ class UserDAO(GenericDAO):
                 # why not?: user_dao.delete(user)
                 #           user_dao.delete_by(user_id)
 
-
-
-
 class ItemDAO(SceneObjectDAO):
-    """ This class represents the basic world environment, often called as
-        'map'. The first (default) layer represents the path where the user can
-        walk.
-    """
-    def __init__(self, session):
-        super(ItemDAO, self).__init__(session, Item)
-            # calls superclass constructor with args: session, klass
+    ENTITY_CLASS=Item
 
 
-class SpriteDAO(SceneObjectDAO):
-    """ This class represents the basic world environment, often called as
-        'map'. The first (default) layer represents the path where the user can
-        walk.
-    """
-    def __init__(self, session):
-        super(SpriteDAO, self).__init__(session, Sprite)
-            # calls superclass constructor with args: session, klass
+class SpriteDAO(SpatialDAO):
+    ENTITY_CLASS=Sprite
 
 
 class CharacterDAO(SpriteDAO):
-    """ This class represents the basic world environment, often called as
-        'map'. The first (default) layer represents the path where the user can
-        walk.
-    """
-    def __init__(self, session):
-        super(CharacterDAO, self).__init__(session, Character)
-            # calls superclass constructor with args: session, klass
-# Keep subclassing GenericDAO and providing more methods that
-# are particularly useful for each Entity class.
-# By the way, I recommend writing all DAOs in this file.
+    ENTITY_CLASS=Character
+
