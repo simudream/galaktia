@@ -81,6 +81,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
 
 GalaktiaClientController.register_event_type('on_acknowledge')
 
+GalaktiaClientController.register_event_type('on_greet')
 GalaktiaClientController.register_event_type('on_player_entered_los')
 GalaktiaClientController.register_event_type('on_player_moved')
 GalaktiaClientController.register_event_type('on_someone_said')
@@ -94,7 +95,7 @@ GalaktiaClientController.register_event_type('on_user_exited')
 
 class ClientProtocolInterface(BaseClient):
     """ Convenience client interface """
-    def __init__(self):
+    def __init__(self, (host, port)):
         class MockSession(object):
             def __init__(self, id):
                 self.id = id
@@ -104,7 +105,7 @@ class ClientProtocolInterface(BaseClient):
             def get(self, id):
                 return MockSession(id)
         BaseClient.__init__(self, ProtocolCodec(MockSessionDAO()),
-                             GalaktiaClientController())
+                             GalaktiaClientController(), host, port)
         self.session_id = None
         self.controller.push_handlers(self)
     
@@ -122,8 +123,6 @@ class ClientProtocolInterface(BaseClient):
     def on_user_accepted(self, session_id, (x, y)):
         raise NotImplementedError
     def on_user_rejected(self):
-        raise NotImplementedError
-    def on_version_received(self, version, url):
         raise NotImplementedError
     def on_user_joined(self, username):
         raise NotImplementedError

@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os
-import pyglet
+import os, sys, logging
+
 from pyglet.window import key
 from pyglet.gl import *
 
@@ -9,11 +9,12 @@ from galaktia.client.controller.game import GameHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.server.protocol.interface import ClientProtocolInterface
 
-import galaktia.client.controller.pygletreactor as pygletreactor
-#pygletreactor.install() # <- this must come before...
-from twisted.internet import reactor, task # <- ...importing this reactor!
+import pyglet
 
+from twisted.internet import reactor
+from twisted.python import log
 
+logger = logging.getLogger(__name__)
 
 
 
@@ -22,14 +23,17 @@ CLIENT_VERSION = "0.1"
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
-    def __init__(self):
-        super(GalaktiaWindow, self).__init__(caption='Galaktia')
+    def __init__(self, (host, port)):
+        
+        pyglet.window.Window.__init__(self, caption='Galaktia')
+        ClientProtocolInterface.__init__(self, (host, port))
         self.keystate = key.KeyStateHandler()
         self.push_handlers(self.keystate)
 
     def set_window_handler(self, handler):
         self.handler = handler
 
+    # TERMINAL 
     def on_mouse_motion(self, x, y, dx, dy):
         self.handler.on_mouse_motion(x, y, dx, dy)
     def on_mouse_press(self, x, y, button, modifiers):
@@ -54,6 +58,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
 
 
+    # PROTOCOL 
     def on_greet(self):
         self.start_connection()
     def on_check_protocol_version(self, version, url):
@@ -61,15 +66,12 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
             raise ValueError, "Version muy vieja del cliente, necesitas la %s. " % version + \
                 "Te la podes bajar de %s" % url
 
-
     def on_user_accepted(self, session_id, (x, y)):
         self.session_id = session_id
         new_handler = GameHandler(self, (x,y))
         self.set_window_handler(new_handler)
 
     def on_user_rejected(self):
-        raise NotImplementedError
-    def on_version_received(self, version, url):
         raise NotImplementedError
     def on_someone_said(self, message, username):
         raise NotImplementedError
@@ -90,9 +92,27 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
 
 
-if __name__ == '__main__':
-    window = GalaktiaWindow()
+   
+    
+def main(program, host='127.0.0.1', port=6414):
+    
+    window = GalaktiaWindow((host,port))
     login_handler = LoginHandler(window)
     window.set_window_handler(login_handler)
 
-    pyglet.app.run()
+
+    log_level = logging.DEBUG
+    logging.basicConfig(stream=sys.stderr, level=log_level)
+    logger.info('Starting Galaktia Client')
+    
+    listen_port = 0 # dinamically assign client port
+    reactor.listenUDP(listen_port, window)
+    reactor.callInThread(pyglet.app.run)
+    reactor.run()
+
+if __name__ == '__main__': # This is how to run a main program
+    reload(sys); sys.setdefaultencoding('utf-8')
+    # log.startLogging(sys.stderr) # enables Twisted logging
+    main(*sys.argv)
+
+
