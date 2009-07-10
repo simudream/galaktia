@@ -69,10 +69,10 @@ class Spatial(SceneObject):
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
 
 class Stationary(Spatial):
-    """  """
+    """ Objects that you can't move. (i.e.: a wall) """
     __tablename__ = 'stationaries'
     __mapper_args__ = {'polymorphic_identity': u'stationary'}
-    id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+    id = Column(Integer, ForeignKey('spatials.id'), primary_key=True)
 
 class Ground(SceneObject):
     """ An object whose sole purpose is to aid the collision system to detect
@@ -95,7 +95,7 @@ class Sprite(Spatial):
     """ Represents a moving object with some "skin" appearance """
     __tablename__ = 'sprites'
     __mapper_args__ = {'polymorphic_identity': u'sprite'}
-    id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+    id = Column(Integer, ForeignKey('spatials.id'), primary_key=True)
     direction = Column(Integer)
         # direction ranges from 0 to 7, starting North & counting clockwise.
     speed = Column(Integer) # how fast can the sprite move
@@ -107,6 +107,9 @@ class Sprite(Spatial):
     controller = Column(Unicode(127))
         # controller identifies the component that handles actions
         # on interaction events with this sprite
+    show = Column(Boolean)
+        # Show determines if the object will be shown on screen, or considered
+        # disconnected.
 
 class Character(Sprite):
     """ Represents a character (controlled by a user if user_id not None) """
@@ -117,7 +120,6 @@ class Character(Sprite):
     life = Column(Integer) # life points
     money = Column(Integer) # money points
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
-    connected = Column(Boolean)
 
 class CharacterItems(Entity):
     """ Represents ownership of a certain number of items by a character """
