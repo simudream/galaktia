@@ -109,14 +109,15 @@ class ClientProtocolInterface(BaseClient):
         self.controller.push_handlers(self)
     
     # Event Handlers
-    # Already implemented
     def on_greet(self):
-        self.start_connection()
-
-    # To be implemented by class user
+        raise NotImplementedError
+    def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
+        raise NotImplementedError
     def on_player_entered_los(self, session_id, (x,y), description):
         raise NotImplementedError
     def on_someone_said(self, message, username):
+        raise NotImplementedError
+    def on_check_protocol_version(self, version, url):
         raise NotImplementedError
     def on_user_accepted(self, session_id, (x, y)):
         raise NotImplementedError
@@ -178,7 +179,9 @@ class GalaktiaServerController(EventDispatcher, Controller):
 
         elif command == "RequestUserJoin":
             username = input_message['username']
-            self.dispatch_event('on_request_user_join', username)
+            host = input_message.host
+            port = input_message.port
+            self.dispatch_event('on_request_user_join', host, port, username)
         elif command == "StartConection":
             host = input_message.host
             port = input_message.port
@@ -207,7 +210,8 @@ class ServerProtocolInterface(BaseServer):
     #Overrides
     def __init__(self):
 
-        self.sessions = {}
+        self.sessions = dict()
+
         class MockSession(object):
             def __init__(self, id):
                 self.id = id
@@ -258,16 +262,18 @@ class ServerProtocolInterface(BaseServer):
                         position=(x,y))
         self.send(m)
     
-    def someone_said(self, host, port, username, message):
-        self.send(SomeoneSaid(
-            username = username,
-            message = message, 
-            host = host, 
-            port = port))
+    def someone_said(self, session_list, username, message):
+        for aSession in session_list:
+            self.send(SomeoneSaid(
+                username = username,
+                message = message, 
+                host = self.sessions[aSession][host], 
+                port = self.sessions[aSession][port]))
             
 
-    def user_accepted(self, host, port, session_id, player_initial_state):
-        self.send(UserAccepted( host = host, port = port,
+    def user_accepted(self, session_id, player_initial_state):
+        self.send(UserAccepted( host = self.sessions[session_id][host],
+                            port = self.sessions[session_id][port],
                             accepted = True, session_id = session_id,
                             player_initial_state = player_initial_state
                             ))
@@ -279,22 +285,23 @@ class ServerProtocolInterface(BaseServer):
     def check_protocol_version(self, host, port, version, url):
         self.send(CheckProtocolVersion(host = host, port = port,
                     version=version, url=url))
-    def user_joined(self, session_id, username):
-        self.send(UserJoined( username = username,
-                    host = self.sessions[session_id][host],
-                    port = self.sessions[session_id][port]))
+    def user_joined(self, session_list, username):
+        for aSession in session_list:
+            self.send(UserJoined( username = username,
+                    host = self.sessions[aSession][host],
+                    port = self.sessions[aSession][port]))
     
     def logout_response(self, session_id):
         self.send(LogoutResponse(
             host = self.sessions[session_id][host],
             port = self.sessions[session_id][port]
         ))
-    def user_exited(self, dest_list, session_id ):
-        for aSession in dest_list:
+    def user_exited(self, session_list, username ):
+        for aSession in session_list:
             m = UserExited(
                 host = self.sessions[aSession][host],
                 port = self.sessions[aSession][host],
-                session_id  = session_id
+                username  = username
             )
             self.send(m)
         

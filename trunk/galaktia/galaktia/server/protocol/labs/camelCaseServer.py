@@ -1,72 +1,71 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from galaktia.server.protocol.base import BaseServer, BaseClient
-from galaktia.server.protocol.codec import ProtocolCodec
-from galaktia.server.protocol.controller import Controller
-from galaktia.server.protocol.interface import GalaktiaServer
-from galaktia.server.protocol.model import Datagram, Message
-from galaktia.server.protocol.operations.join import *
-from galaktia.server.protocol.operations.talk import *
+
+
+
+from galaktia.server.protocol.interface import ServerProtocolInterface
+
 from random import randint
 from twisted.internet import reactor
 from twisted.python import log
 import sys, logging
 
 
-
-
-
-
 logger = logging.getLogger(__name__)
 
-class CamelCaseChatServer(GalaktiaServer):
+
+SERVER_VERSION = "0.1"
+
+class CamelCaseChatServer(ServerProtocolInterface):
     """ Implementation of a simple chat server """
 
     def __init__(self):
-        self.sessions = dict()
-        self.host = None
-        self.port = None
-        GalaktiaServer.__init__(self)
+        ServerProtocolInterface.__init__(self)
 
     def on_say_this(self, talking_user, message):
-        for aSession in self.sessions:
-            self.someone_said(username = talking_user,
-                message = message.title(), 
-                host = self.sessions[aSession]['host'], 
-                port = self.sessions[aSession]['port']) 
+        self.someone_said(
+                session_list = self.sessions.keys(),
+                username = talking_user,
+                message = message.title()
+                )
 
-        
-    def on_request_user_join(self, username):
+    def on_request_user_join(self, host, port, username):
+            # TODO: instanciar el usuario en la base de datos
             session_id = self._generate_session_id(username)
             if session_id not in self.sessions:
-                self._create_session(session_id,username)
-                for aSession in self.sessions:
-                    self.user_joined( username = username,
-                            host = self.sessions[aSession]['host'],
-                            port = self.sessions[aSession]['port'])
-                            
-                self.user_accepted( host = self.host, port = self.port,
+                self._store_session(session_id, host, port, username)
+                self.user_joined( username = username,
+                            session_list = self.sessions.keys())
+
+                self.user_accepted( 
                         session_id = session_id,
                         player_initial_state = (randint(1,10),randint(1,10))
                         )
             else:
-                self.user_rejected( host = self.host, port = self.port)
+                self.user_rejected( host = host, port = port)
 
-    def on_start_connection(self):
-        self.check_protocol_version(host = self.host, port = self.port,
-                    version="0.1", url="http://www.galaktia.com.ar")
-   
+    def on_start_connection(self, (host, port)):
+        self.check_protocol_version(host = host, port = port,
+                    version = SERVER_VERSION, url="http://www.galaktia.com.ar")
 
-        
+    def on_logout_request(self, session):
+        username = self.sessions[session]['username']
+        self.logout_response(session)
+        del self.sessions[session]
+        self.user_exited(self.sessions.keys(), username)
+
+    def on_move_dx_dy(self, session_id, (dx,dy)):
+        raise NotImplementedError
+
     def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """
         return str(username)
-    
-    def _create_session(self,session_id,username):
+
+    def _store_session(self,session_id, host, port, username):
         self.sessions[session_id] = {
-                'host' : self.host,
-                'port' : self.port,
+                'host' : host,
+                'port' : port,
                 'username' : username
                 }
 
@@ -77,7 +76,7 @@ def main(program, endpoint='server', host='127.0.0.1', port=6414):
     log_level = logging.DEBUG
     protocol = CamelCaseChatServer()
     logging.basicConfig(stream=sys.stderr, level=log_level)
-    logger.info('Starting %s', endpoint)
+    logger.info("Starting %s", endpoint)
     reactor.listenUDP(port, protocol)
     reactor.run()
 
