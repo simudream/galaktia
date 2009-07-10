@@ -21,14 +21,14 @@ logger = logging.getLogger(__name__)
 
 class GalaktiaClientController(EventDispatcher, Controller):
     def greet(self):
-        self.dispatch_events('on_greet')
+        self.dispatch_event('on_greet')
 
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
         command = input_message.get('name')
         
         if command == None:
-            self.dispatch_events('on_acknowledge', input_message['ack'])
+            self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
         
         # TODO: if-elses and switch-cases are for loser languages,
@@ -38,42 +38,42 @@ class GalaktiaClientController(EventDispatcher, Controller):
             session_id = input_message['subject']
             (x,y) = input_message['object']
             description = input_message['description']
-            self.dispatch_events('on_player_entered_los',
+            self.dispatch_event('on_player_entered_los',
                      session_id, (x,y), description )
         elif command == "PlayerMoved":
             other_session_id = input_message["subject"]
             (dx, dy) = input_message["action"]
             (x,y) = input_message["subject"]
-            self.dispatch_events('on_player_moved',
+            self.dispatch_event('on_player_moved',
                      other_session_id, (dx,dy), (x,y))
         elif command == "SomeoneSaid":
             message = input_message['action']
             username = input_message['subject']
-            self.dispatch_events('on_someone_said', username, message)
+            self.dispatch_event('on_someone_said', username, message)
         elif command == "UserAccepted":
             if input_message['accepted']:
                 self.session_id = input_message['session_id']
                 x, y = input_message['player_initial_state']
-                self.dispatch_events('on_user_accepted', session_id, (x,y))
+                self.dispatch_event('on_user_accepted', session_id, (x,y))
             else:                
-                self.dispatch_events('on_user_rejected')
+                self.dispatch_event('on_user_rejected')
         
         # Join commands
         elif command == "CheckProtocolVersion":
             version = input_message['version']
             url = input_message['url']
-            self.dispatch_events('on_check_protocol_version', version, url)
+            self.dispatch_event('on_check_protocol_version', version, url)
 
         elif command == "UserJoined":
             username = input_message['username']
-            self.dispatch_events('on_user_joined', username)
+            self.dispatch_event('on_user_joined', username)
         
         # Exit Commands
         elif command == "LogoutResponse":
-            self.dispatch_events('on_logout_response')
+            self.dispatch_event('on_logout_response')
         elif command == "UserExited":
             session_id = input_message['subject']
-            self.dispatch_events('on_user_exited', session_id)
+            self.dispatch_event('on_user_exited', session_id)
         else:
             raise ValueError, "Invalid command: %s" % command
         
@@ -163,14 +163,14 @@ class GalaktiaServerController(EventDispatcher, Controller):
         command = input_message.get('name')
 
         if command == "Acknowledge":
-            self.dispatch_events('on_acknowledge', input_message['ack'])
+            self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
         
         
         if command == "MoveDxDy":
             session_id = input_message['subject']
             (dx, dy) = input_message['action']
-            self.dispatch_events('on_move_dx_dy', session_id, (dx,dy))
+            self.dispatch_event('on_move_dx_dy', session_id, (dx,dy))
         elif command == "SayThis":
             talking_user = input_message['subject']
             message = input_message['action']
