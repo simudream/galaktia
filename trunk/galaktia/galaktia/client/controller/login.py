@@ -6,7 +6,7 @@ from galaktia.client.controller.widget import TextWidget
 from pyglet.gl import glViewport, glMatrixMode, glLoadIdentity, glOrtho
 import pyglet.gl as gl
 
-from galaktia.client.controller.play import GameHandler
+from galaktia.client.controller.game import GameHandler
 
 class LoginViewport(pyglet.graphics.Batch):
 
@@ -88,6 +88,8 @@ class LoginHandler():
             self.focus.caret.mark = 0
             self.focus.caret.position = len(self.focus.document.text)
 
+    def on_close(self):
+        self.window.dispatch_event('on_close')
 
     def on_draw(self):
         self.window.clear()
@@ -102,8 +104,8 @@ class LoginHandler():
             self.window.dispatch_event('on_close')
         elif symbol == pyglet.window.key.ENTER:
             self.ingresar()
-        if symbol == pyglet.window.key.TAB:
-            this = self.widgets.index_of(self.focus)
+        elif symbol == pyglet.window.key.TAB:
+            this = self.widgets.index(self.focus)
             self.set_focus(self.widgets[1-this])
 
     def on_resize(self,width, height):
