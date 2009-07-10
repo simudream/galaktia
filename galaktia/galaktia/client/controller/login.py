@@ -39,7 +39,7 @@ class LoginHandler():
 
         self.widgets = [
             TextWidget('', self.window.width//4 + 50, self.window.height//4 - 10, self.window.width//2, self.viewport),
-            TextWidget('', self.window.width//4 + 50, self.window.height//5 - 10, self.window.width//2, self.viewport),
+            TextWidget('', self.window.width//4 + 50, self.window.height//5 - 10, self.window.width//2, self.viewport)
         ]
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
@@ -103,16 +103,8 @@ class LoginHandler():
         elif symbol == pyglet.window.key.ENTER:
             self.ingresar()
         if symbol == pyglet.window.key.TAB:
-            if modifiers & pyglet.window.key.MOD_SHIFT:
-                dy = -1
-            else:
-                dy = 1
-            if self.focus in self.widgets:
-                i = self.widgets.index(self.focus)
-            else:
-                i = 0
-                dy = 0
-            self.set_focus(self.widgets[(i + dy) % len(self.widgets)])
+            this = self.widgets.index_of(self.focus)
+            self.set_focus(self.widgets[1-this])
 
     def on_resize(self,width, height):
         glViewport(0, 0, width, height)
@@ -122,5 +114,6 @@ class LoginHandler():
         glMatrixMode(gl.GL_MODELVIEW)
         
     def ingresar(self):
+        username = self.widgets[0].text()
         self.window.request_user_join(username)
         

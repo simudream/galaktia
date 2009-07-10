@@ -50,6 +50,7 @@ class BaseServer(DatagramProtocol):
         try:
             destination = datagram.get_destination()
             self.transport.write(datagram.data, destination)
+            print "hola"
             logger.debug('Sent to %s: %s', destination or 'server', \
                     output_message)
         except Exception:
