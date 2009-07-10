@@ -1,69 +1,98 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import os
 import pyglet
 from pyglet.window import key
+from pyglet.gl import *
 
-class GalaktiaViewport(pyglet.graphics.Batch):
+from galaktia.client.controller.game import GameHandler
+from galaktia.client.controller.login import LoginHandler
+from galaktia.server.protocol.interface import ClientProtocolInterface
 
-    IMAGES_DIR = os.path.join(os.path.dirname( \
-            os.path.abspath(__file__)), os.pardir, 'assets', 'images')
+import galaktia.client.controller.pygletreactor as pygletreactor
+#pygletreactor.install() # <- this must come before...
+from twisted.internet import reactor, task # <- ...importing this reactor!
+
+
+
+
+
+
+CLIENT_VERSION = "0.1"
+
+class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def __init__(self):
-        super(GalaktiaViewport, self).__init__()
-        self.background = pyglet.graphics.OrderedGroup(0)
-        self.foreground = pyglet.graphics.OrderedGroup(1)
-        image = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'walter.gif'))
-        self.sprites = [
-            pyglet.sprite.Sprite(image, batch=self, group=self.foreground)
-        ]
-        walter = self.sprites[0] # TODO: quick'n'dirty
-        walter.x, walter.y = 380, 180
-
-class GalaktiaClientWindow(pyglet.window.Window):
-
-    def __init__(self):
-        super(GalaktiaClientWindow, self).__init__(caption='Galaktia')
-        self.label = pyglet.text.Label(u'¡Bienvenido a Galaktia!',
-                font_name='Arial', font_size=36, bold=True,
-                x=self.width//2, y=self.height//2,
-                anchor_x='center', anchor_y='center')
+        super(GalaktiaWindow, self).__init__(caption='Galaktia')
         self.keystate = key.KeyStateHandler()
         self.push_handlers(self.keystate)
-        self.viewport = GalaktiaViewport()
 
-    def on_draw(self):
-        self.clear()
-        self.draw_gl_rumble()
-        self.label.draw()
-        self.viewport.draw()
+    def set_window_handler(self, handler):
+        self.handler = handler
 
-    def draw_gl_rumble(self):
-        pyglet.graphics.draw(4, pyglet.gl.GL_QUADS,
-                ('v2i', (300, 300, 500, 200, 300, 100, 100, 200)),
-                ('c3B', (0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 0))
-        )
-
-    def on_key_press(self, symbol, modifiers):
-        print 'A key was pressed: %s %s' % (symbol, modifiers)
-        if symbol == pyglet.window.key.ESCAPE:
-            self.dispatch_event('on_close')
-
+    def on_mouse_motion(self, x, y, dx, dy):
+        self.handler.on_mouse_motion(x, y, dx, dy)
+    def on_mouse_press(self, x, y, button, modifiers):
+        self.handler.on_mouse_press(x, y, button, modifiers)
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        self.handler.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+    def on_text(self, text):
+        self.handler.on_text(text)
     def on_text_motion(self, motion):
-        STEP = 20
-        motion_codes = [0, -1, 1, 0] # none, lower, upper, both
-        decode = lambda lower, upper: motion_codes[self.keystate[lower] \
-                | (self.keystate[upper] << 1)] * STEP
-        dx, dy = (decode(key.LEFT, key.RIGHT), decode(key.DOWN, key.UP))
-        if dx or dy:
-            walter = self.viewport.sprites[0] # TODO: quick'n'dirty
-            walter.x += dx
-            walter.y += dy
-            self.dispatch_event('on_draw')
+        self.handler.on_text_motion(motion)
+    def on_text_motion_select(self, motion):
+        self.handler.on_text_motion_select(motion)
+    def on_draw(self):
+        self.handler.on_draw()
+    def on_key_press(self, symbol, modifiers):
+       self.handler.on_key_press(symbol,modifiers)
+    def on_resize(self,width, height):
+        self.handler.on_resize(width, height)
+    def on_close(self):
+        reactor.stop()
+        return True
+
+
+
+    def on_greet(self):
+        self.start_connection()
+    def on_check_protocol_version(self, version, url):
+        if version != CLIENT_VERSION:
+            raise ValueError, "Version muy vieja del cliente, necesitas la %s. " % version + \
+                "Te la podes bajar de %s" % url
+
+
+    def on_user_accepted(self, session_id, (x, y)):
+        self.session_id = session_id
+        new_handler = GameHandler(self, (x,y))
+        self.set_window_handler(new_handler)
+
+    def on_user_rejected(self):
+        raise NotImplementedError
+    def on_version_received(self, version, url):
+        raise NotImplementedError
+    def on_someone_said(self, message, username):
+        raise NotImplementedError
+
+
+    def on_player_entered_los(self, session_id, (x,y), description):
+        raise NotImplementedError
+    def on_user_joined(self, username):
+        raise NotImplementedError
+    def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
+        raise NotImplementedError
+    def on_user_exited(self, session_id):
+        raise NotImplementedError
+    def on_logout_response(self):
+        raise NotImplementedError
+
+
+
+
 
 if __name__ == '__main__':
-    window = GalaktiaClientWindow()
-    window.push_handlers(pyglet.window.event.WindowEventLogger())
-    pyglet.app.run()
+    window = GalaktiaWindow()
+    login_handler = LoginHandler(window)
+    window.set_window_handler(login_handler)
 
+    pyglet.app.run()

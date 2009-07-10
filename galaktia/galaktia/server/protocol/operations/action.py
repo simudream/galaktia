@@ -3,7 +3,7 @@
 
 import sys, logging
 
-from galaktia.server.protocol.model import Command, Acknowledge
+from galaktia.server.protocol.model import Message
 """
 - Operaciones del protocolo relacionadas con las acciones del jugador:
 Todas son de la forma "sujeto acción objeto" (ejemplo: un mensaje de
