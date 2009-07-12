@@ -48,6 +48,16 @@ class Session(Entity):
     character_id = Column(Integer, ForeignKey('characters.id')) # efficiency?
     last_activity = Column(DateTime) # last time session was active
 
+class PendingMessage(Entity):
+    """ Represents a message to be resent for protocol reliability """
+    __tablename__ 'pending_messages'
+    session_id = Column(Integer, primary_key=True)
+    timestamp = Column(Float, primary_key=True)
+    ack = Column(Float)
+    last_sent = Column(Float)
+    serialization = Column(UnicodeText)
+    # include name ?? (message['name'])
+
 class SceneObject(Entity):
     """ Anything that exists in the world """
     __tablename__ = 'scene_objects'
