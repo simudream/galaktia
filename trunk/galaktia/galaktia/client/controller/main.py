@@ -68,21 +68,27 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         else:
             print "Client Version O.K."
 
+    #def on_user_accepted(self, session_id, (x, y)):
+    #    self.session_id = session_id
+    #    new_handler = GameHandler(self, (x,y))
+    #    self.set_window_handler(new_handler)
+    
     def on_user_accepted(self, session_id, (x, y)):
-        self.session_id = session_id
-        new_handler = GameHandler(self, (x,y))
-        self.set_window_handler(new_handler)
+        print "User accepted! session_id = %s, starting coords = (%d, %d). \
+            Try opening other clients at the same time :D..." % (session_id, x, y)
+
+    def on_user_joined(self, username):
+        print "User joined: %s" % username
 
     def on_user_rejected(self):
-        raise NotImplementedError
+        print "User rejected by server"
     def on_someone_said(self, message, username):
         raise NotImplementedError
 
 
     def on_player_entered_los(self, session_id, (x,y), description):
         raise NotImplementedError
-    def on_user_joined(self, username):
-        raise NotImplementedError
+    
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
         raise NotImplementedError
     def on_user_exited(self, session_id):

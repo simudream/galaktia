@@ -53,7 +53,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
             self.dispatch_event('on_someone_said', username, message)
         elif command == "UserAccepted":
             if input_message['accepted']:
-                self.session_id = input_message['session_id']
+                session_id = input_message['session_id']
                 x, y = input_message['player_initial_state']
                 self.dispatch_event('on_user_accepted', session_id, (x,y))
             else:                
@@ -269,13 +269,13 @@ class ServerProtocolInterface(BaseServer):
             self.send(SomeoneSaid(
                 username = username,
                 message = message, 
-                host = self.sessions[aSession][host], 
-                port = self.sessions[aSession][port]))
+                host = self.sessions[aSession]['host'], 
+                port = self.sessions[aSession]['port']))
             
 
     def user_accepted(self, session_id, player_initial_state):
-        self.send(UserAccepted( host = self.sessions[session_id][host],
-                            port = self.sessions[session_id][port],
+        self.send(UserAccepted( host = self.sessions[session_id]['host'],
+                            port = self.sessions[session_id]['port'],
                             accepted = True, session_id = session_id,
                             player_initial_state = player_initial_state
                             ))
