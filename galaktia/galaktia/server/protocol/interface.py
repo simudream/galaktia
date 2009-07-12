@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 class GalaktiaClientController(EventDispatcher, Controller):
     def greet(self):
         self.dispatch_event('on_greet')
+        return []
 
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
@@ -77,7 +78,9 @@ class GalaktiaClientController(EventDispatcher, Controller):
         else:
             raise ValueError, "Invalid command: %s" % command
         
-        return [input_message.acknowledge()]
+        return []
+        #TODO: acknowledge
+        #return [input_message.acknowledge()]
 
 GalaktiaClientController.register_event_type('on_acknowledge')
 
@@ -287,19 +290,19 @@ class ServerProtocolInterface(BaseServer):
     def user_joined(self, session_list, username):
         for aSession in session_list:
             self.send(UserJoined( username = username,
-                    host = self.sessions[aSession][host],
-                    port = self.sessions[aSession][port]))
+                    host = self.sessions[aSession]['host'],
+                    port = self.sessions[aSession]['port']))
     
     def logout_response(self, session_id):
         self.send(LogoutResponse(
-            host = self.sessions[session_id][host],
-            port = self.sessions[session_id][port]
+            host = self.sessions[session_id]['host'],
+            port = self.sessions[session_id]['port']
         ))
     def user_exited(self, session_list, username ):
         for aSession in session_list:
             m = UserExited(
-                host = self.sessions[aSession][host],
-                port = self.sessions[aSession][host],
+                host = self.sessions[aSession]['host'],
+                port = self.sessions[aSession]['host'],
                 username  = username
             )
             self.send(m)
