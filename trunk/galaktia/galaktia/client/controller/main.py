@@ -65,6 +65,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         if version != CLIENT_VERSION:
             raise ValueError, "Version muy vieja del cliente, necesitas la %s. " % version + \
                 "Te la podes bajar de %s" % url
+        else:
+            print "Client Version O.K."
 
     def on_user_accepted(self, session_id, (x, y)):
         self.session_id = session_id
@@ -106,13 +108,33 @@ def main(program, host='127.0.0.1', port=6414):
     logger.info('Starting Galaktia Client')
     
     listen_port = 0 # dinamically assign client port
-    reactor.listenUDP(listen_port, window)
-    reactor.callInThread(pyglet.app.run)
-    reactor.run()
+    
+    # This is one possible way:
+    #reactor.listenUDP(listen_port, window)
+    #reactor.callInThread(pyglet.app.run)
+    #reactor.run()
+    #pyglet.app.run()
+    
+    
+    # This is another...
+    import threading
+
+    class PygletThread(threading.Thread):
+        def run(self):
+            pyglet.app.run()
+            
+    class TwistedThread(threading.Thread):
+        def run(self):
+            reactor.listenUDP(listen_port, window)
+            reactor.run()
+
+    PygletThread().start()
+    # Try commenting the line below...
+    # pyglet isn't functioning either way.
+    TwistedThread().start()
 
 if __name__ == '__main__': # This is how to run a main program
     reload(sys); sys.setdefaultencoding('utf-8')
-    # log.startLogging(sys.stderr) # enables Twisted logging
     main(*sys.argv)
 
 
