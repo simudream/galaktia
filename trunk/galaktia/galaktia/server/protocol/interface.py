@@ -10,8 +10,10 @@ from twisted.internet import reactor
 from twisted.python import log
 import sys, logging
 
-from galaktia.server.protocol.operations.talk import *
 from galaktia.server.protocol.operations.join import *
+from galaktia.server.protocol.operations.talk import *
+from galaktia.server.protocol.operations.move import *
+from galaktia.server.protocol.operations.exit import *
 
 
 logger = logging.getLogger(__name__)

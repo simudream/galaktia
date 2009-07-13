@@ -15,7 +15,7 @@ class Rectangle(object):
 
 class TextWidget(object):
     def __init__(self, text, x, y, width, batch):
-        self.document = pyglet.text.document.UnformattedDocument(text+"hola")
+        self.document = pyglet.text.document.UnformattedDocument(text)
         self.document.set_style(0, len(self.document.text), 
             dict(color=(0, 0, 0, 255))
         )
