@@ -3,9 +3,10 @@
 
 import sys, logging
 
+
 from galaktia.server.protocol.operations.action import ActionRequest, \
                         ActionResponse, ActionUpdate
-from galaktia.server.protocol.model import Acknowledge
+from galaktia.server.protocol.base import Message
 
 
 """
@@ -39,7 +40,7 @@ class LogoutRequest(ActionRequest):
 
 class LogoutResponse(Message):
     """ S->C Command for allowing the user to disconnect"""
-    def __init__(self, **kwargs)
+    def __init__(self, **kwargs):
         Message.__init__(self, **kwargs)
 
 class UserExited(ActionUpdate):
