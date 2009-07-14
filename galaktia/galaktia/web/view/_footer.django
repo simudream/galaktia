@@ -1,0 +1,14 @@
+<div id="footer">
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-9759663-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+<p class="copyright">&copy;Galaktia 2009 Todos los derechos reservados &nbsp;&bull;&nbsp; Diseño por <a href="http://www.freecsstemplates.org/">Free CSS Templates</a>.</p>
+
+<p class="link"><a href="#">Privacy Policy</a>&nbsp;&#8226;&nbsp;<a href="#">Terms of Use</a></p>
+</div>
