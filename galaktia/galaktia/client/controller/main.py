@@ -5,7 +5,7 @@ import os, sys, logging
 from pyglet.window import key
 from pyglet.gl import *
 
-from galaktia.client.controller.game import GameHandler
+from galaktia.client.controller.chat import ChatHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.server.protocol.interface import ClientProtocolInterface
 
@@ -54,7 +54,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_resize(width, height)
     def on_close(self):
         reactor.stop()
-        self.logout_request()
+        sys.exit(0)
         return True
 
 
@@ -73,8 +73,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         logger.info("User accepted! session_id = %s, starting coords = (%d, %d)." % (session_id, x, y) +\
             "Try opening other clients at the same time :D...")
         self.session_id = session_id
-        new_handler = GameHandler(self, (x,y))
-        self.set_window_handler(new_handler)
+        new_handler = ChatHandler(self)
+        self.set_window_handler(None)
+        return
         
 
     def on_user_joined(self, username):

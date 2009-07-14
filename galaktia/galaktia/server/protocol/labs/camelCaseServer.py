@@ -22,6 +22,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
     def __init__(self):
         ServerProtocolInterface.__init__(self)
+        self.n_users = 0
 
     def on_say_this(self, talking_user, message):
         self.someone_said(
@@ -50,17 +51,19 @@ class CamelCaseChatServer(ServerProtocolInterface):
                     version = SERVER_VERSION, url="http://www.galaktia.com.ar")
 
     def on_logout_request(self, session):
-        username = self.sessions[session]['username']
-        self.logout_response(session)
-        del self.sessions[session]
-        self.user_exited(self.sessions.keys(), username)
+        if session is not None:
+            username = self.sessions[session]['username']
+            self.logout_response(session)
+            del self.sessions[session]
+            self.user_exited(self.sessions.keys(), username)
 
     def on_move_dx_dy(self, session_id, (dx,dy)):
         raise NotImplementedError
 
     def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """
-        return str(username)
+        self.n_users +=1
+        return self.n_users
 
     def _store_session(self,session_id, host, port, username):
         self.sessions[session_id] = {
