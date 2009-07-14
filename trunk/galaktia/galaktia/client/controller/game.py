@@ -19,11 +19,15 @@ class GameViewport(pyglet.graphics.Batch):
         self.background = pyglet.graphics.OrderedGroup(0)
         self.foreground = pyglet.graphics.OrderedGroup(1)
         walter = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'walter.gif'))
-        self.sprites = [
-            pyglet.sprite.Sprite(walter, batch=self, group=self.foreground)
-        ]
-        walter = self.sprites[0] # TODO: quick'n'dirty
-        walter.x, walter.y = x,y
+        for i in xrange(10):
+            print "antes!"
+        self.sprites = []
+            #pyglet.sprite.Sprite(walter, batch=self, group=self.foreground)
+        #]
+        for i in xrange(10):
+            print "llegué!"
+        #walter = self.sprites[0] # TODO: quick'n'dirty
+        #walter.x, walter.y = x,y
 
 
 class GameHandler(object):

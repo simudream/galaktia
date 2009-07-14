@@ -191,7 +191,7 @@ class GalaktiaServerController(EventDispatcher, Controller):
             port = input_message.port
             self.dispatch_event('on_start_connection', (host,port))
         elif command == "LogoutRequest":
-            session_id = input_message['session_id']
+            session_id = input_message.get('subject')
             self.dispatch_event('on_logout_request', session_id)
         else:
             raise ValueError("Invalid command: %s" % command)
