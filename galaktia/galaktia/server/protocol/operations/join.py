@@ -46,9 +46,9 @@ class UserAccepted(Message):
     """ S->C Message for informing that a certain user was accepted or 
         rejected by server. If accepted, command also carries information
         about the session identifier and the player's initial state. """
-    def __init__(self, accepted, session_id=None, \
+    def __init__(self, accepted, username, session_id=None, \
             player_initial_state=None, ack=None, **kwargs):
-        data = {'accepted': accepted}
+        data = {'accepted': accepted, 'username': username }
         if session_id is not None:
             data['session_id'] = session_id
         if player_initial_state is not None:

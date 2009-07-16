@@ -1,7 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os, sys, logging
+from galaktia.client.controller.pygletreactor import install
+reactor = install()
 
+
+import os, sys, logging
 from pyglet.window import key
 from pyglet.gl import *
 
@@ -33,9 +36,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def set_window_handler(self, handler):
         self.handler = handler
-    def change_handler(self,Hclass):
-        nh = Hclass(self)
-        self.set_window_handler(nh)
+
 
 
     # USER TERMINAL 
@@ -74,11 +75,12 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         else:
             logger.info("Client Version OK :D")
 
-    def on_user_accepted(self, session_id, (x, y)):
+    def on_user_accepted(self, session_id, username, (x, y)):
         logger.info("User accepted! session_id = %s, starting coords = (%d, %d)." % (session_id, x, y) +\
             "Try opening other clients at the same time :D...")
         self.session_id = session_id
-        self.change_handler(ChatHandler)
+        new_handler = ChatHandler(self, username)
+        self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):
         logger.info("User joined: %s" % username) 
@@ -88,7 +90,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
 
     def on_someone_said(self, message, username):
-        raise NotImplementedError
+        self.handler.on_someone_said(message, username)
     def on_player_entered_los(self, session_id, (x,y), description):
         raise NotImplementedError
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
@@ -119,17 +121,10 @@ def main(program, host='127.0.0.1', port=6414):
 
     listen_port = 0 # dinamically assign client port
 
-    import threading
-    
+    reactor.listenUDP(listen_port, window)
+    reactor.run()
 
-    # We'll run twisted in a separate thread
-    class TwistedThread(threading.Thread):
-        def run(self):
-            reactor.listenUDP(listen_port, window)
-            reactor.run()
 
-    TwistedThread().start()
-    pyglet.app.run()
 
 if __name__ == '__main__': # This is how to run a main program
     reload(sys); sys.setdefaultencoding('utf-8')
