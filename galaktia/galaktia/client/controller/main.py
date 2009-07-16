@@ -9,6 +9,7 @@ from galaktia.client.controller.chat import ChatHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.server.protocol.interface import ClientProtocolInterface
 
+
 import pyglet
 
 from twisted.internet import reactor
@@ -32,6 +33,10 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def set_window_handler(self, handler):
         self.handler = handler
+    def change_handler(self,Hclass):
+        nh = Hclass(self)
+        self.set_window_handler(nh)
+
 
     # USER TERMINAL 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -73,10 +78,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         logger.info("User accepted! session_id = %s, starting coords = (%d, %d)." % (session_id, x, y) +\
             "Try opening other clients at the same time :D...")
         self.session_id = session_id
-        new_handler = ChatHandler(self)
-        self.set_window_handler(None)
-        return
-        
+        self.change_handler(ChatHandler)
 
     def on_user_joined(self, username):
         logger.info("User joined: %s" % username) 
@@ -110,6 +112,7 @@ def main(program, host='127.0.0.1', port=6414):
     window.set_window_handler(login_handler)
 
 
+
     log_level = logging.DEBUG
     logging.basicConfig(stream=sys.stderr, level=log_level)
     logger.info('Starting Galaktia Client')
@@ -117,6 +120,7 @@ def main(program, host='127.0.0.1', port=6414):
     listen_port = 0 # dinamically assign client port
 
     import threading
+    
 
     # We'll run twisted in a separate thread
     class TwistedThread(threading.Thread):
