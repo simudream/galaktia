@@ -24,10 +24,10 @@ class CamelCaseChatServer(ServerProtocolInterface):
         ServerProtocolInterface.__init__(self)
         self.n_users = 0
 
-    def on_say_this(self, talking_user, message):
+    def on_say_this(self, talking_user_id, message):
         self.someone_said(
                 session_list = self.sessions.keys(),
-                username = talking_user,
+                username = self.sessions[talking_user_id]['username'],
                 message = message.title()
                 )
 
@@ -41,7 +41,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
                 self.user_accepted( 
                         session_id = session_id,
-                        player_initial_state = (randint(1,10),randint(1,10))
+                        player_initial_state = (randint(0,9),randint(0,9))
                         )
             else:
                 self.user_rejected( host = host, port = port)

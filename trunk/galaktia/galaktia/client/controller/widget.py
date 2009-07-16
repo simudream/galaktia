@@ -39,3 +39,5 @@ class TextWidget(object):
                 0 < y - self.layout.y < self.layout.height)
     def text(self):
         return self.document.text
+    def empty(self):
+        self.document.text = ""

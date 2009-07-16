@@ -21,16 +21,20 @@ class LoginViewport(pyglet.graphics.Batch):
 
 class ChatHandler():
 
-    def __init__(self, window):
+    def __init__(self, window, username):
         self.viewport = LoginViewport()
         self.window = window
         self.welcomeLabel = pyglet.text.Label(u'¡Super Chat!',
                 font_name='Arial', font_size=36, bold=True,
                 x=self.window.width//4, y=self.window.height//2,
                 anchor_x='center', anchor_y='center')
+        self.usernameLabel = pyglet.text.Label(u''+username,
+                font_name='Arial', font_size=12, bold=True,
+                x=12, y=10,
+                anchor_x='left', anchor_y='center')
         self.widgets = [
-            TextWidget('', self.window.width//4 + 50, self.window.height//4 - 10, self.window.width//2, self.viewport),
-            TextWidget('', self.window.width//4 + 50, self.window.height//5 - 10, self.window.width//2, self.viewport)
+            TextWidget('', 100, 10, self.window.width//2, self.viewport),
+            
         ]
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
@@ -86,6 +90,7 @@ class ChatHandler():
         self.window.clear()
         self.viewport.draw()
         self.welcomeLabel.draw()
+        self.usernameLabel.draw()
 
 
 
@@ -93,10 +98,8 @@ class ChatHandler():
         if symbol == pyglet.window.key.ESCAPE:
             self.window.dispatch_event('on_close')
         elif symbol == pyglet.window.key.ENTER:
-            self.ingresar()
-        elif symbol == pyglet.window.key.TAB:
-            this = self.widgets.index(self.focus)
-            self.set_focus(self.widgets[1-this])
+            self.chatear()
+
 
     def on_resize(self,width, height):
         glViewport(0, 0, width, height)
@@ -104,7 +107,12 @@ class ChatHandler():
         glLoadIdentity()
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
-        
-    def ingresar(self):
-        username = self.widgets[0].text()
-        self.window.request_user_join(username)
+    
+    def on_someone_said(self, message, username):
+        print "%s: %s" % (username, message)
+    
+    def chatear(self):
+        chatbox = self.widgets[0]
+        message = chatbox.text()
+        chatbox.empty()
+        self.window.say_this(message)

@@ -56,8 +56,9 @@ class GalaktiaClientController(EventDispatcher, Controller):
         elif command == "UserAccepted":
             if input_message['accepted']:
                 session_id = input_message['session_id']
+                username = input_message['username']
                 x, y = input_message['player_initial_state']
-                self.dispatch_event('on_user_accepted', session_id, (x,y))
+                self.dispatch_event('on_user_accepted', session_id, username, (x,y))
             else:                
                 self.dispatch_event('on_user_rejected')
         
@@ -125,7 +126,7 @@ class ClientProtocolInterface(BaseClient):
         raise NotImplementedError
     def on_check_protocol_version(self, version, url):
         raise NotImplementedError
-    def on_user_accepted(self, session_id, (x, y)):
+    def on_user_accepted(self, session_id, username, (x, y)):
         raise NotImplementedError
     def on_user_rejected(self):
         raise NotImplementedError
@@ -177,9 +178,9 @@ class GalaktiaServerController(EventDispatcher, Controller):
             (dx, dy) = input_message['action']
             self.dispatch_event('on_move_dx_dy', session_id, (dx,dy))
         elif command == "SayThis":
-            talking_user = input_message['subject']
+            talking_user_id = input_message['subject']
             message = input_message['action']
-            self.dispatch_event('on_say_this', talking_user, message)
+            self.dispatch_event('on_say_this', talking_user_id, message)
 
         elif command == "RequestUserJoin":
             username = input_message['username']
@@ -243,7 +244,7 @@ class ServerProtocolInterface(BaseServer):
 
     def on_move_dx_dy(self, session_id, (dx,dy)):
         raise NotImplementedError
-    def on_say_this(self, talking_user, message):
+    def on_say_this(self, talking_user_id, message):
         raise NotImplementedError
     def on_request_user_join(self, username):
         raise NotImplementedError
@@ -268,6 +269,7 @@ class ServerProtocolInterface(BaseServer):
     
     def someone_said(self, session_list, username, message):
         for aSession in session_list:
+            print self.sessions[aSession]['host'], self.sessions[aSession]['port']
             self.send(SomeoneSaid(
                 username = username,
                 message = message, 
@@ -279,6 +281,7 @@ class ServerProtocolInterface(BaseServer):
         self.send(UserAccepted( host = self.sessions[session_id]['host'],
                             port = self.sessions[session_id]['port'],
                             accepted = True, session_id = session_id,
+                            username = self.sessions[session_id]['username'],
                             player_initial_state = player_initial_state
                             ))
         
