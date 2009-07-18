@@ -73,7 +73,7 @@ class SceneObject(Entity):
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
 
 class Spatial(SceneObject):
-    """  """
+    """ Represents any object with volume in the world. """
     __tablename__ = 'spatials'
     __mapper_args__ = {'polymorphic_identity': u'spatial'}
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
@@ -85,21 +85,20 @@ class Stationary(Spatial):
     id = Column(Integer, ForeignKey('spatials.id'), primary_key=True)
 
 class Ground(SceneObject):
-    """ An object whose sole purpose is to aid the collision system to detect
-    boundaries and paths for the walk-able map."""
+    """ The basic map information for the client. """
     __tablename__ = 'ground'
     __mapper_args__ = {'polymorphic_identity': u'ground'}
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
     image = Column(Unicode(42))
         # Image identifier, NOT the actual image.
 
-class Item(SceneObject):
-    """ Represents an item """
+class Item(Entity):
+    """ Represents the class of an item """
     __tablename__ = 'items'
-    __mapper_args__ = {'polymorphic_identity': u'item'}
-    id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+    id = Column(Integer, primary_key=True)
     cost = Column(Integer) # how much money to pay for buying it
                            # or None if not for sell
+    level = Column(Integer)
 
 class Sprite(Spatial):
     """ Represents a moving object with some "skin" appearance """
@@ -117,7 +116,7 @@ class Sprite(Spatial):
     controller = Column(Unicode(127))
         # controller identifies the component that handles actions
         # on interaction events with this sprite
-    show = Column(Boolean)
+    show = Column(Boolean, default=False)
         # Show determines if the object will be shown on screen, or considered
         # disconnected.
 
@@ -126,18 +125,23 @@ class Character(Sprite):
     __tablename__ = 'characters'
     __mapper_args__ = {'polymorphic_identity': u'character'}
     id = Column(Integer, ForeignKey('sprites.id'), primary_key=True)
-    level = Column(Integer, nullable=False) # player "level" (?)
+    level = Column(Integer, nullable=False, default=1) # player "level" (?)
     life = Column(Integer) # life points
     money = Column(Integer) # money points
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
 
-class CharacterItems(Entity):
+
+
+class CharacterItem(Sprite):
     """ Represents ownership of a certain number of items by a character """
     __tablename__ = 'character_items'
-    character_id = Column(Integer, ForeignKey('characters.id'), \
-            primary_key=True)
-    item_id = Column(Integer, ForeignKey('items.id'), primary_key=True)
-    count = Column(Integer)
+    __mapper_args___ = {'polymorphic_identity': u'drop'}
+    id = Column(Integer, ForeignKey('sprites.id'), primary_key=True)
+    character_id = Column(Integer, ForeignKey('characters.id'))
+    item_class = Column(Integer, ForeignKey('items.id'))
+    ammo = Column(Integer)
+    bag = Column(Integer)
+        # 0 for "bank" bag, 1 for "user" bag.
 
 def init_db(db_connection_string='sqlite:///:memory:', echo=False):
     """
