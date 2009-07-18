@@ -55,7 +55,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def on_draw(self):
         self.handler.on_draw()
     def on_key_press(self, symbol, modifiers):
-       self.handler.on_key_press(symbol,modifiers)
+        self.handler.on_key_press(symbol,modifiers)
+    def on_key_release(self,symbol, modifiers):
+        self.handler.on_key_release(symbol,modifiers)
     def on_resize(self,width, height):
         self.handler.on_resize(width, height)
     def on_close(self):
@@ -89,8 +91,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         logger.info("User was rejected by server")
 
 
-    def on_someone_said(self, message, username):
-        self.handler.on_someone_said(message, username)
+    def on_someone_said(self, username, message):
+        print u''+"%s: %s" % (str(username), str(message))
+        self.handler.on_someone_said(username, message)
     def on_player_entered_los(self, session_id, (x,y), description):
         raise NotImplementedError
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
