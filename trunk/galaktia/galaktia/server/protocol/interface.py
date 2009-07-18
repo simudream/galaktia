@@ -76,8 +76,8 @@ class GalaktiaClientController(EventDispatcher, Controller):
         elif command == "LogoutResponse":
             self.dispatch_event('on_logout_response')
         elif command == "UserExited":
-            session_id = input_message['subject']
-            self.dispatch_event('on_user_exited', session_id)
+            username = input_message['subject']
+            self.dispatch_event('on_user_exited', username)
         else:
             raise ValueError, "Invalid command: %s" % command
         
@@ -134,7 +134,7 @@ class ClientProtocolInterface(BaseClient):
         raise NotImplementedError
     def on_logout_response(self):
         raise NotImplementedError
-    def on_user_exited(self, session_id):
+    def on_user_exited(self, username):
         raise NotImplementedError
     
     
@@ -304,9 +304,10 @@ class ServerProtocolInterface(BaseServer):
         ))
     def user_exited(self, session_list, username ):
         for aSession in session_list:
+
             m = UserExited(
                 host = self.sessions[aSession]['host'],
-                port = self.sessions[aSession]['host'],
+                port = self.sessions[aSession]['port'],
                 username  = username
             )
             self.send(m)

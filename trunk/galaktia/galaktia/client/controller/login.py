@@ -88,15 +88,16 @@ class LoginHandler():
             self.focus.caret.mark = 0
             self.focus.caret.position = len(self.focus.document.text)
 
-    def on_close(self):
-        self.window.dispatch_event('on_close')
-
     def on_draw(self):
         self.window.clear()
         self.viewport.draw()
         self.welcomeLabel.draw()
         self.usernameLabel.draw()
         self.passwordLabel.draw()
+
+    def on_close(self):
+        self.window.exit()
+        exit()
 
 
     def on_key_press(self, symbol, modifiers):
