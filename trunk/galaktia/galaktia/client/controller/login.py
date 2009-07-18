@@ -107,6 +107,8 @@ class LoginHandler():
         elif symbol == pyglet.window.key.TAB:
             this = self.widgets.index(self.focus)
             self.set_focus(self.widgets[1-this])
+    def on_key_release(self,symbol,modifiers):
+        pass
 
     def on_resize(self,width, height):
         glViewport(0, 0, width, height)

@@ -26,7 +26,7 @@ class ChatHandler():
         self.window = window
         self.welcomeLabel = pyglet.text.Label(u'¡Super Chat!',
                 font_name='Arial', font_size=36, bold=True,
-                x=self.window.width//4, y=self.window.height//2,
+                x=self.window.width//4, y=self.window.height-40,
                 anchor_x='center', anchor_y='center')
         self.usernameLabel = pyglet.text.Label(u''+username,
                 font_name='Arial', font_size=12, bold=True,
@@ -34,8 +34,10 @@ class ChatHandler():
                 anchor_x='left', anchor_y='center')
         self.widgets = [
             TextWidget('', 100, 10, self.window.width//2, self.viewport),
-            
         ]
+        
+        self.messages = []
+        
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
         self.set_focus(self.widgets[0])
@@ -91,6 +93,8 @@ class ChatHandler():
         self.viewport.draw()
         self.welcomeLabel.draw()
         self.usernameLabel.draw()
+        for message in self.messages:
+            message.draw()
 
 
 
@@ -99,8 +103,11 @@ class ChatHandler():
             self.window.dispatch_event('on_close')
         elif symbol == pyglet.window.key.ENTER:
             self.chatear()
-
-
+    def on_key_release(self,symbol, modifiers):
+        if symbol == pyglet.window.key.ENTER:
+            chatbox = self.widgets[0]
+            chatbox.empty()
+            
     def on_resize(self,width, height):
         glViewport(0, 0, width, height)
         glMatrixMode(gl.GL_PROJECTION)
@@ -108,11 +115,18 @@ class ChatHandler():
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
     
-    def on_someone_said(self, message, username):
+    def on_someone_said(self, username, message):
         print "%s: %s" % (username, message)
+        for label in self.messages:
+            label.y += 20
+        self.messages.append(pyglet.text.Label(u''+"%s: %s" % (str(username), str(message)),
+                font_name='Arial', font_size=12, bold=True,
+                x=50, y=40+20,
+                anchor_x='left', anchor_y='center'))
+        
+        
     
     def chatear(self):
         chatbox = self.widgets[0]
         message = chatbox.text()
-        chatbox.empty()
         self.window.say_this(message)

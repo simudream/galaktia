@@ -36,7 +36,7 @@ class ActionMessage(Message):
         self['subject'] = kwargs['subject']
         self['action'] = kwargs['action']
         self['object'] = kwargs['object']
-        Message.__init__(self, kwargs)
+        Message.__init__(self, data=kwargs.get('data'), host=kwargs.get('host'), port=kwargs.get('port'), session=0)
 
 class ActionRequest(ActionMessage):
     """ C->S Generic command that the client uses to inform the server that

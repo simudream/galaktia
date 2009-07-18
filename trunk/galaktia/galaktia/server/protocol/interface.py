@@ -122,7 +122,7 @@ class ClientProtocolInterface(BaseClient):
         raise NotImplementedError
     def on_player_entered_los(self, session_id, (x,y), description):
         raise NotImplementedError
-    def on_someone_said(self, message, username):
+    def on_someone_said(self, username, message):
         raise NotImplementedError
     def on_check_protocol_version(self, version, url):
         raise NotImplementedError
@@ -269,7 +269,6 @@ class ServerProtocolInterface(BaseServer):
     
     def someone_said(self, session_list, username, message):
         for aSession in session_list:
-            print self.sessions[aSession]['host'], self.sessions[aSession]['port']
             self.send(SomeoneSaid(
                 username = username,
                 message = message, 
