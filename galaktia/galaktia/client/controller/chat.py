@@ -30,10 +30,10 @@ class ChatHandler():
                 anchor_x='center', anchor_y='center')
         self.usernameLabel = pyglet.text.Label(u''+username,
                 font_name='Arial', font_size=12, bold=True,
-                x=12, y=10,
+                x=10, y=24,
                 anchor_x='left', anchor_y='center')
         self.widgets = [
-            TextWidget('', 100, 10, self.window.width//2, self.viewport),
+            TextWidget('', 130, 10, int(self.window.width//1.5), self.viewport),
         ]
         
         self.messages = []
@@ -86,7 +86,8 @@ class ChatHandler():
             self.focus.caret.position = len(self.focus.document.text)
 
     def on_close(self):
-        self.window.dispatch_event('on_close')
+        self.window.logout_request()
+        
 
     def on_draw(self):
         self.window.clear()
@@ -116,16 +117,16 @@ class ChatHandler():
         glMatrixMode(gl.GL_MODELVIEW)
     
     def on_someone_said(self, username, message):
-        print "%s: %s" % (username, message)
+        self.show_message("%s: %s" % (username, message))
+
+    def show_message(self, message):
         for label in self.messages:
             label.y += 20
-        self.messages.append(pyglet.text.Label(u''+"%s: %s" % (str(username), str(message)),
+        self.messages.append(pyglet.text.Label(u''+message,
                 font_name='Arial', font_size=12, bold=True,
                 x=50, y=40+20,
                 anchor_x='left', anchor_y='center'))
-        
-        
-    
+
     def chatear(self):
         chatbox = self.widgets[0]
         message = chatbox.text()

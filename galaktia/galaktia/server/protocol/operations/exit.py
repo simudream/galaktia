@@ -41,7 +41,7 @@ class LogoutRequest(ActionRequest):
 class LogoutResponse(Message):
     """ S->C Command for allowing the user to disconnect"""
     def __init__(self, **kwargs):
-        Message.__init__(self)
+        Message.__init__(self, **kwargs)
 
 class UserExited(ActionUpdate):
     """ S->C Command for informing client that other client logged off. """

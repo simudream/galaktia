@@ -61,9 +61,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def on_resize(self,width, height):
         self.handler.on_resize(width, height)
     def on_close(self):
-        reactor.stop()
-        sys.exit(0)
-        return True
+        self.handler.on_close()
+
 
 
 
@@ -85,10 +84,18 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):
-        logger.info("User joined: %s" % username) 
+        m = "User joined: %s" % username
+        logger.info(m)
+        self.handler.show_message(m)
+    def on_user_exited(self, username):
+        m = "User left room: %s" % username
+        logger.info(m)
+        self.handler.show_message(m)
+
 
     def on_user_rejected(self):
-        logger.info("User was rejected by server")
+        m = "User was rejected by server"
+        logger.info(m)
 
 
     def on_someone_said(self, username, message):
@@ -98,15 +105,17 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         raise NotImplementedError
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
         raise NotImplementedError
-    def on_user_exited(self, session_id):
-        raise NotImplementedError
+    
+
     def on_logout_response(self):
         logger.info("Client application terminated")
-        sys.exit(0)
+        self.exit()
 
 
 
-
+    def exit(self):
+        reactor.stop()
+        return True
 
    
     

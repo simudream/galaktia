@@ -35,9 +35,9 @@ class CamelCaseChatServer(ServerProtocolInterface):
             # TODO: instanciar el usuario en la base de datos
             session_id = self._generate_session_id(username)
             if session_id not in self.sessions:
-                self._store_session(session_id, host, port, username)
                 self.user_joined( username = username,
                             session_list = self.sessions.keys())
+                self._store_session(session_id, host, port, username)
 
                 self.user_accepted( 
                         session_id = session_id,
@@ -73,13 +73,13 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 }
 
 
-def main(program, endpoint='server', host='127.0.0.1', port=6414):
+def main(program, host='127.0.0.1', port=6414):
     """ Main program: Starts a chat client or server on given host:port """
-    
+    port = int(port)
     log_level = logging.DEBUG
     protocol = CamelCaseChatServer()
     logging.basicConfig(stream=sys.stderr, level=log_level)
-    logger.info("Starting %s", endpoint)
+    logger.info("Starting %s", "server")
     reactor.listenUDP(port, protocol)
     reactor.run()
 
