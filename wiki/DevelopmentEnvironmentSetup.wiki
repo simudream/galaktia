@@ -29,6 +29,15 @@ This document explains how to install libraries, tools and other dependencies re
 
   _Oh, please! Get an operating system!_
 
+  But, just in case you need to run the svn version on Windows, here's how you do it:
+  First, obviously, you install Python. Don't forget to add the python directory to your PATH variable.
+  Then you need to install (manually) before running setup.py:
+  * Twisted http://twistedmatrix.com/trac/wiki/Downloads
+  * Python for Windows extensions https://sourceforge.net/projects/pywin32/
+
+  Finally, run setup.py and enjoy.
+
+
 ==Ubuntu Linux==
 
   * *Python 2.6*: comes out-of-the-box
