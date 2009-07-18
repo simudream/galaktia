@@ -6,7 +6,7 @@ from time import time
 
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
-     Sprite, Character, Spatial, Stationary, PendingMessage
+     CharacterItem, Sprite, Character, Spatial, Stationary, PendingMessage
 
 class SceneObjectDAO(GenericDAO):
     """
@@ -46,35 +46,52 @@ class SceneObjectDAO(GenericDAO):
                 self.klass.x >= smallX, self.klass.y <= bigY, \
                 self.klass.y >= smallY, self.klass.z == layer)
         
-    def get_near(self, obj, radius=2):
-        return self.get_layer_subsection(obj.x, obj.y, obj.z, radius)
+    def get_near(self, obj, radius=2, return_self=False):
+        list = self.get_layer_subsection(obj.x, obj.y, obj.z, radius)
+        if not return_self:
+            list.remove(obj)
+        return list
 
 class SpatialDAO(SceneObjectDAO):
     ENTITY_CLASS=Spatial
 
-    def move(self, obj, x, y):
+    def move(self, obj, x, y, z=None):
         result = True
         # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
         # assert (abs(x - obj.x) <= 1) and (abs(y - obj.y) <= 1)
-        if(obj.x==x and obj.y==y):
+        if(obj.z == None):
+            z=obj.z
+        if(obj.x==x and obj.y==y and obj.z==z):
             return True
             # If you want to move to the same place you're in, then return
             # true
-        if(abs(x-obj.x)>1) or (abs(y-obj.y)>1):
+        if(abs(x-obj.x)>1) or (abs(y-obj.y)>1) or (abs(z-obj.z)>1):
             return False
-        elements = self.get_by_coords(x,y,obj.z)
+        # XXX: DO NOT CHANGE. When you inherit this class you will overwrite
+        # ENTITY_CLASS, returning *only* the heir's objects, NOT Spatials.
+        # This hack prevents you from breaking the correct behaviour of the
+        # method after being inherited.
+        self.sdao = SpatialDAO(self.session)
+        elements = self.sdao.get_by_coords(x,y,z)
         if(not elements):
             obj.x=x
             obj.y=y
+            obj.z=z
         else:
             result = False
         return result
 
 class StationaryDAO(SpatialDAO):
+    """ Stationary objects are used for collision purposes. They represent
+        walls and any other collidable, non-movable objects.
+    """
     ENTITY_CLASS=Stationary
-    def move(self):
-        pass
+    def move(self, obj, x, y):
+        """ Since moving Stationary objects is NOT allowed by usual means, you
+        should not use this function. It will always return True.
+        """
+        return True
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
@@ -84,6 +101,7 @@ class GroundDAO(SceneObjectDAO):
     ENTITY_CLASS=Ground
 
 class UserDAO(GenericDAO):
+    """ Class that provides the basic user management class """
     def __init__(self, session):
         super(UserDAO, self).__init__(session, User)
             # calls superclass constructor with args: session, klass
@@ -92,22 +110,11 @@ class UserDAO(GenericDAO):
         return self.get(User.id==id)
             # why not?: user_dao.get(user_id)
 
-    def delete_user(self, user):
-        """ Deletes the User. Behaviour changes according the parameter. If
-        user is an int, then it will delete by id; if user is an User object
-        then it will delete that object"""
-        if (isinstance(user, User)):
-            self.delete(user)
-        elif (isinstance(user, int)):
-            self.delete_by_id(user)
-        else:
-            raise Exception("This is not a User! >:(")
-                # why not?: user_dao.delete(user)
-                #           user_dao.delete_by(user_id)
-
 class ItemDAO(SceneObjectDAO):
     ENTITY_CLASS=Item
 
+class CharacterItemDAO(Sprite):
+    ENTITY_CLASS=CharacterItem
 
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
