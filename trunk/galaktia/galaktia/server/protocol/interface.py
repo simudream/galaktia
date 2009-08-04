@@ -211,7 +211,7 @@ GalaktiaServerController.register_event_type('on_logout_request')
 
 class ServerProtocolInterface(BaseServer):
     """ Convenience server interface """
-    
+
     #Overrides
     def __init__(self):
 
@@ -229,7 +229,7 @@ class ServerProtocolInterface(BaseServer):
         BaseServer.__init__(self, ProtocolCodec(MockSessionDAO()), 
                             GalaktiaServerController())
         self.controller.push_handlers(self)
-        
+
     def datagramReceived(self, input_data, (host, port)):
         self.host = host
         self.port = port
@@ -238,7 +238,7 @@ class ServerProtocolInterface(BaseServer):
     def on_acknowledge(self, ack):
         #TODO: implement
         pass
-    
+
     # Event Handlers
     # To be implemented by class user
 
@@ -252,21 +252,27 @@ class ServerProtocolInterface(BaseServer):
         raise NotImplementedError
     def on_logout_request(self, session):
         raise NotImplementedError
-    
-  
+
+
     # Convinience protocol methods
-    def player_entered_los(self, session_id, position, description):
-        m = PlayerEnteredLOS(session_id = session_id,
-                             position = position,
-                             description = description
-                             )
-        self.send(m)
-    def player_moved(self, (dx,dy), (x,y)):
-        m = PlayerMoved(session_id = self.session_id,
-                        delta = (dx,dy),
-                        position=(x,y))
-        self.send(m)
-    
+    def player_entered_los(self, session_list, session_id, position, description):
+        for aSession in session_list:
+            m = PlayerEnteredLOS(session_id = session_id,
+                    host = self.sessions[aSession]['host'],
+                    port = self.sessions[aSession]['port'],
+                    position = position,
+                    description = description
+                    )
+            self.send(m)
+    def player_moved(self, session_list, mover_session, (dx,dy), (x,y)):
+        for aSession in session_list:
+            m = PlayerMoved(session_id = mover_session,
+                host = self.sessions[aSession]['host'],
+                port = self.sessions[aSession]['port'],
+                delta = (dx,dy),
+                position=(x,y))
+            self.send(m)
+
     def someone_said(self, session_list, username, message):
         for aSession in session_list:
             self.send(SomeoneSaid(
@@ -274,7 +280,6 @@ class ServerProtocolInterface(BaseServer):
                 message = message, 
                 host = self.sessions[aSession]['host'], 
                 port = self.sessions[aSession]['port']))
-            
 
     def user_accepted(self, session_id, player_initial_state):
         self.send(UserAccepted( host = self.sessions[session_id]['host'],
@@ -283,7 +288,7 @@ class ServerProtocolInterface(BaseServer):
                             username = self.sessions[session_id]['username'],
                             player_initial_state = player_initial_state
                             ))
-        
+
     def user_rejected(self, host, port):
         self.send(UserAccepted( host = host, port = port,
                             accepted = False)
@@ -296,7 +301,7 @@ class ServerProtocolInterface(BaseServer):
             self.send(UserJoined( username = username,
                     host = self.sessions[aSession]['host'],
                     port = self.sessions[aSession]['port']))
-    
+
     def logout_response(self, session_id):
         self.send(LogoutResponse(
             host = self.sessions[session_id]['host'],
@@ -311,7 +316,6 @@ class ServerProtocolInterface(BaseServer):
                 username  = username
             )
             self.send(m)
-        
 
 
 

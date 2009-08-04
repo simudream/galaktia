@@ -38,7 +38,7 @@ class ChatHandler():
             TextWidget('', 130, 10, int(self.window.width//3), self.viewport),
         ]
         self.grid_size = 30
-        self.x = self.grid_size*(x+10)
+        self.x = self.grid_size*(x+13)
         self.y = self.grid_size*(y+5)
 
         self.messages = []
@@ -100,10 +100,12 @@ class ChatHandler():
         self.usernameLabel.draw()
         for x in xrange(10):
             for y in xrange(10):
-                self.piso.blit(self.grid_size*(x+10),self.grid_size*(y+5))
+                self.piso.blit(self.grid_size*(x+13),self.grid_size*(y+5))
         for message in self.messages:
             message.draw()
-        self.walter.blit(self.x, self.y)
+        for walter in self.window.peers.values():
+            x,y = walter
+            self.walter.blit(self.grid_size*(x+13),self.grid_size*(y+5))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:

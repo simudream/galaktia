@@ -39,6 +39,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.keystate = key.KeyStateHandler()
         self.push_handlers(self.keystate)
 
+        self.peers = {}
+
     def set_window_handler(self, handler):
         self.handler = handler
 
@@ -93,11 +95,11 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.chat_entered.play()
         logger.info(m)
         self.handler.show_message(m)
+
     def on_user_exited(self, username):
         m = "User left room: %s" % username
         logger.info(m)
         self.handler.show_message(m)
-
 
     def on_user_rejected(self):
         m = "User was rejected by server"
@@ -108,9 +110,14 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         print u''+"%s: %s" % (str(username), str(message))
         self.handler.on_someone_said(username, message)
     def on_player_entered_los(self, session_id, (x,y), description):
-        raise NotImplementedError
+        self.peers[session_id] = (x,y)
+        m = "new walter in game... he's "+description
+        logger.info(m)
+
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
-        raise NotImplementedError
+        self.peers[other_session_id] = (x,y)
+        m = "player %s moved to %s" % (str(other_session_id),str((x,y)))
+        logger.info(m)
 
     def on_logout_response(self):
         logger.info("Client application terminated")

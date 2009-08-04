@@ -37,11 +37,16 @@ class CamelCaseChatServer(ServerProtocolInterface):
             if session_id not in self.sessions:
                 self.user_joined( username = username,
                             session_list = self.sessions.keys())
+
                 self._store_session(session_id, host, port, username)
 
+                (start_x, start_y) = (randint(0,9),randint(0,9))
+                self.player_entered_los(self.sessions.keys(), session_id, (start_x, start_y), "Cute")
+
+                self.sessions[session_id]['pos'] = (start_x, start_y)
                 self.user_accepted( 
                         session_id = session_id,
-                        player_initial_state = (randint(0,9),randint(0,9))
+                        player_initial_state = (start_x, start_y)
                         )
             else:
                 self.user_rejected( host = host, port = port)
@@ -58,7 +63,10 @@ class CamelCaseChatServer(ServerProtocolInterface):
             self.user_exited(self.sessions.keys(), username)
 
     def on_move_dx_dy(self, session_id, (dx,dy)):
-        raise NotImplementedError
+        (x,y) = self.sessions[session_id]['pos']
+        (newx, newy) = ( (x+dx)%10, (y+dy)%10)
+        self.sessions[session_id]['pos'] = (newx, newy)
+        player_moved(self, self.sessions.keys(), session_id, (dx,dy), (newx,newy))
 
     def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """
