@@ -18,6 +18,13 @@ class LoginViewport(pyglet.graphics.Batch):
         self.background = pyglet.graphics.OrderedGroup(0)
         self.foreground = pyglet.graphics.OrderedGroup(1)
 
+ARROW_KEY_TO_VERSOR = {
+    65362 : (0,1),
+    65361 : (-1,0),
+    65364 : (0,-1),
+    65363 : (1,0)
+}
+
 
 class ChatHandler():
 
@@ -74,6 +81,9 @@ class ChatHandler():
     def on_text_motion(self, motion):
         if self.focus:
             self.focus.caret.on_text_motion(motion)
+        else:
+            (dx,dy) = ARROW_KEY_TO_VERSOR[motion]
+            self.window.move_dx_dy((dx,dy))
 
     def on_text_motion_select(self, motion):
         if self.focus:
@@ -117,11 +127,16 @@ class ChatHandler():
                 self.focus = None
             else:
                 self.set_focus(self.widgets[0])
+                chatbox = self.widgets[0]
+                chatbox.empty()
 
     def on_key_release(self,symbol, modifiers):
         if symbol == pyglet.window.key.ENTER:
-            chatbox = self.widgets[0]
-            chatbox.empty()
+            if self.focus:
+                chatbox = self.widgets[0]
+                chatbox.empty()
+            else:
+                self.focus = None
 
     def on_resize(self,width, height):
         glViewport(0, 0, width, height)

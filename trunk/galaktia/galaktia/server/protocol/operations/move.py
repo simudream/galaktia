@@ -39,6 +39,7 @@ class PlayerEnteredLOS(ActionUpdate):
 class PlayerMoved(ActionUpdate):
 
     def __init__(self, **kwargs):
+        kwargs['subject'] = kwargs['session_id']
         kwargs['action'] = kwargs['delta']
         kwargs['object'] = kwargs['position']
         ActionUpdate.__init__(self, **kwargs)

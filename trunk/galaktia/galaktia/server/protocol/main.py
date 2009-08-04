@@ -67,7 +67,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         (x,y) = self.sessions[session_id]['pos']
         (newx, newy) = ( (x+dx)%10, (y+dy)%10)
         self.sessions[session_id]['pos'] = (newx, newy)
-        player_moved(self, self.sessions.keys(), session_id, (dx,dy), (newx,newy))
+        self.player_moved(self.sessions.keys(), session_id, (dx,dy), (newx,newy))
 
     def _generate_session_id(self,username):
         """ Assigns a unique identifier to the requested username """

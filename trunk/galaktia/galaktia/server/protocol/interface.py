@@ -29,11 +29,11 @@ class GalaktiaClientController(EventDispatcher, Controller):
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
         command = input_message.get('name')
-        
+
         if command == None:
             self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
-        
+
         # TODO: if-elses and switch-cases are for loser languages,
         # mapping is better
         #Talk commands
@@ -46,7 +46,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
         elif command == "PlayerMoved":
             other_session_id = input_message["subject"]
             (dx, dy) = input_message["action"]
-            (x,y) = input_message["subject"]
+            (x,y) = input_message["object"]
             self.dispatch_event('on_player_moved',
                      other_session_id, (dx,dy), (x,y))
         elif command == "SomeoneSaid":
@@ -270,7 +270,7 @@ class ServerProtocolInterface(BaseServer):
                 host = self.sessions[aSession]['host'],
                 port = self.sessions[aSession]['port'],
                 delta = (dx,dy),
-                position=(x,y))
+                position = (x,y))
             self.send(m)
 
     def someone_said(self, session_list, username, message):
