@@ -39,14 +39,16 @@ class ChatHandler():
                 font_name='Arial', font_size=12, bold=True,
                 x=10, y=24,
                 anchor_x='left', anchor_y='center')
+        self.chatInformLabel = pyglet.text.Label(u'Press enter to chat',
+                font_name='Arial', font_size=12, bold=True,
+                x=10, y=24,
+                anchor_x='left', anchor_y='center')
         self.walter = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'walter.gif'))
         self.piso = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'piso.gif'))
         self.widgets = [
             TextWidget('', 130, 10, int(self.window.width//3), self.viewport),
         ]
-        self.grid_size = 30
-        self.x = self.grid_size*(x+13)
-        self.y = self.grid_size*(y+5)
+        self.grid_size = 24
 
         self.messages = []
         self.chat_width = 40
@@ -109,14 +111,16 @@ class ChatHandler():
         if self.focus:
             self.viewport.draw()
             self.usernameLabel.draw()
+        else:
+            self.chatInformLabel.draw()
         for x in xrange(10):
             for y in xrange(10):
-                self.piso.blit(self.grid_size*(x+13),self.grid_size*(y+5))
+                self.piso.blit(self.grid_size*(x+18),self.grid_size*(y+5))
         for message in self.messages:
             message.draw()
         for walter in self.window.peers.values():
             x,y = walter
-            self.walter.blit(self.grid_size*(x+13),self.grid_size*(y+5))
+            self.walter.blit(self.grid_size*(x+18),self.grid_size*(y+5))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
@@ -147,6 +151,12 @@ class ChatHandler():
 
     def on_someone_said(self, username, message):
         self.show_message("%s: %s" % (username, message))
+
+    def on_user_exited(self,session_id, username):
+        m = "User left room: %s" % username
+        self.show_message(m)
+        del self.window.peers[session_id]
+
 
     def show_message(self, message):
         self.shift_messages()

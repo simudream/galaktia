@@ -24,7 +24,7 @@ class LoginHandler():
     def __init__(self, window):
         self.viewport = LoginViewport()
         self.window = window
-        self.welcomeLabel = pyglet.text.Label(u'¡Bienvenido a Galaktia!',
+        self.welcomeLabel = pyglet.text.Label(u'¡Welcome to Galaktia!',
                 font_name='Arial', font_size=36, bold=True,
                 x=self.window.width//2, y=self.window.height//2,
                 anchor_x='center', anchor_y='center')
