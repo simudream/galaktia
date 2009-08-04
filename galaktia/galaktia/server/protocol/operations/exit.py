@@ -46,9 +46,9 @@ class LogoutResponse(Message):
 class UserExited(ActionUpdate):
     """ S->C Command for informing client that other client logged off. """
     def __init__(self, **kwargs):
-        kwargs['subject'] = kwargs['username']
+        kwargs['subject'] = kwargs['session_id']
         kwargs['action'] = None
-        kwargs['object'] = None
+        kwargs['object'] = kwargs['username']
         ActionUpdate.__init__(self, **kwargs)
 
 

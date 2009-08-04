@@ -15,7 +15,7 @@ import sys, logging
 logger = logging.getLogger(__name__)
 
 
-SERVER_VERSION = "0.1"
+SERVER_VERSION = "0.2"
 
 class CamelCaseChatServer(ServerProtocolInterface):
     """ Implementation of a simple chat server """
@@ -63,7 +63,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
             username = self.sessions[session]['username']
             self.logout_response(session)
             del self.sessions[session]
-            self.user_exited(self.sessions.keys(), username)
+            self.user_exited(self.sessions.keys(), session, username)
 
     def on_move_dx_dy(self, session_id, (dx,dy)):
         (x,y) = self.sessions[session_id]['pos']

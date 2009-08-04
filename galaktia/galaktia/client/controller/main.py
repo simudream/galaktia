@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 
-CLIENT_VERSION = "0.1"
+CLIENT_VERSION = "0.2"
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
@@ -92,14 +92,11 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def on_user_joined(self, username):
         m = "User joined: %s" % username
-        self.chat_entered.play()
         logger.info(m)
         self.handler.show_message(m)
 
-    def on_user_exited(self, username):
-        m = "User left room: %s" % username
-        logger.info(m)
-        self.handler.show_message(m)
+    def on_user_exited(self, session_id, username):
+        self.handler.on_user_exited(session_id, username)
 
     def on_user_rejected(self):
         m = "User was rejected by server"
