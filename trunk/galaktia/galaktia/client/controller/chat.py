@@ -27,6 +27,11 @@ ARROW_KEY_TO_VERSOR = {
 
 
 class ChatHandler():
+    grid_size = 20
+    PADDING_LEFT = 18
+    PADDING_DOWN = 5
+    chat_width = 40
+    MAP_DIM = 20
 
     def __init__(self, window, username, (x, y)):
         self.viewport = LoginViewport()
@@ -48,10 +53,8 @@ class ChatHandler():
         self.widgets = [
             TextWidget('', 130, 10, int(self.window.width//3), self.viewport),
         ]
-        self.grid_size = 24
 
         self.messages = []
-        self.chat_width = 40
 
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
@@ -113,14 +116,14 @@ class ChatHandler():
             self.usernameLabel.draw()
         else:
             self.chatInformLabel.draw()
-        for x in xrange(10):
-            for y in xrange(10):
-                self.piso.blit(self.grid_size*(x+18),self.grid_size*(y+5))
+        for x in xrange(self.MAP_DIM):
+            for y in xrange(self.MAP_DIM):
+                self.piso.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
         for message in self.messages:
             message.draw()
         for walter in self.window.peers.values():
             x,y = walter
-            self.walter.blit(self.grid_size*(x+18),self.grid_size*(y+5))
+            self.walter.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
@@ -161,21 +164,23 @@ class ChatHandler():
     def show_message(self, message):
         self.shift_messages()
         while len(message) > self.chat_width:
-            self.append_line(message[:self.chat_width])
+            next_line = message[:self.chat_width]
+            self.append_line(next_line)
             self.shift_messages()
             message = message[self.chat_width:]
         self.append_line(message)
 
-        if len(self.messages) > 20:
-            self.messages = self.messages[1:21]
     def shift_messages(self):
         for label in self.messages:
             label.y += 16
     def append_line(self, line):
+        print "appending line: %s" % line
         self.messages.append(pyglet.text.Label(u''+line,
-                font_name='Tahoma', font_size=8, bold=True,
+                font_name='Courier New', font_size=8, bold=False,
                 x=20, y=60,
                 anchor_x='left', anchor_y='center'))
+        if len(self.messages) > 20:
+            self.messages = self.messages[1:21]
     def chatear(self):
         chatbox = self.widgets[0]
         message = chatbox.text()

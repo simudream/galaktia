@@ -39,6 +39,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.keystate = key.KeyStateHandler()
         self.push_handlers(self.keystate)
 
+        icon = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'logo2.jpg'))
+        self.set_icon(icon)
+
         self.peers = {}
 
     def set_window_handler(self, handler):
