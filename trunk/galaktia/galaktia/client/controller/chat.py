@@ -46,7 +46,7 @@ class ChatHandler():
 
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
-        self.set_focus(self.widgets[0])
+
     def on_mouse_motion(self, x, y, dx, dy):
         for widget in self.widgets:
             if widget.hit_test(x, y):
@@ -95,9 +95,10 @@ class ChatHandler():
 
     def on_draw(self):
         self.window.clear()
-        self.viewport.draw()
         self.welcomeLabel.draw()
-        self.usernameLabel.draw()
+        if self.focus:
+            self.viewport.draw()
+            self.usernameLabel.draw()
         for x in xrange(10):
             for y in xrange(10):
                 self.piso.blit(self.grid_size*(x+13),self.grid_size*(y+5))
@@ -111,7 +112,12 @@ class ChatHandler():
         if symbol == pyglet.window.key.ESCAPE:
             self.window.dispatch_event('on_close')
         elif symbol == pyglet.window.key.ENTER:
-            self.chatear()
+            if self.focus:
+                self.chatear()
+                self.focus = None
+            else:
+                self.set_focus(self.widgets[0])
+
     def on_key_release(self,symbol, modifiers):
         if symbol == pyglet.window.key.ENTER:
             chatbox = self.widgets[0]
