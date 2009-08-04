@@ -41,3 +41,25 @@ class TextWidget(object):
         return self.document.text
     def empty(self):
         self.document.text = ""
+
+class PasswordDocument(pyglet.text.document.UnformattedDocument):
+    def __init__(self, text, field):
+        super(PasswordDocument,self).__init__(text)
+        self.field = field
+        
+    def insert_text(self,start,text):
+        self.field.passwd = self.field.passwd[:start] + text + self.field.passwd[start:]
+        super(PasswordDocument,self).insert_text(start,'*'*len(text))
+        
+    def delete_text(self,start,end):
+        self.field.passwd = self.field.passwd[:start] + self.field.password[end:]
+        super(PasswordDocument,self).delete_text(start,end)
+    
+class PasswordField(TextWidget):
+    def __init__(self, text, x, y, width, batch):
+        super(PasswordField,self).__init__(text,x,y,width,batch)
+        self.passwd = text
+        self.document = PasswordDocument(text,self)
+        
+    def text(self):
+        return self.passwd
