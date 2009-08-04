@@ -8,6 +8,10 @@ import os, sys, logging
 from pyglet.window import key
 from pyglet.gl import *
 
+#enable transparency
+glEnable(GL_BLEND)
+glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
 from galaktia.client.controller.chat import ChatHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.server.protocol.interface import ClientProtocolInterface
