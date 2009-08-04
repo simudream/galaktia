@@ -45,12 +45,12 @@ class TextWidget(object):
 class myCaret(pyglet.text.caret.Caret):
     def __init__(self, layout):
         super(myCaret,self).__init__(layout)
-        
+
     def on_text(self,text):
         super(myCaret,self).on_text('*'*len(text))
         self._layout.document.insert_password_text(self._position,text)
 
-        
+
 
 class PasswordDocument(pyglet.text.document.UnformattedDocument):
     def __init__(self, text, field):
@@ -59,16 +59,12 @@ class PasswordDocument(pyglet.text.document.UnformattedDocument):
 
     def insert_password_text(self,start,text):
         self.field.passwd = self.field.passwd[:start] + text + self.field.passwd[start:]
-        print 'add:'+self.field.passwd
-        
+
     def delete_text(self,start,end):
         self.field.passwd = self.field.passwd[:start] + self.field.passwd[end:]
         super(PasswordDocument,self).delete_text(start,end)
-        print 'delete:'+self.field.passwd
-        
-        
-        
-    
+
+
 class PasswordField(TextWidget):
     def __init__(self, text, x, y, width, batch):
         super(PasswordField,self).__init__(text,x,y,width,batch)
@@ -87,3 +83,56 @@ class PasswordField(TextWidget):
 
     def text(self):
         return self.passwd
+        
+class ChatWidget(object):
+
+
+    chat_width = 40
+    def __init__(self):
+        self.messages = []
+
+    def show_message(self, message):
+        self.shift_messages()
+        is_first = True
+        while len(message) > self.chat_width:
+            next_line = message[:self.chat_width]
+            if is_first:
+                self.formatted_line(next_line)
+                is_first = False
+            else:
+                self.append_line(next_line)
+            self.shift_messages()
+            message = message[self.chat_width:]
+        if is_first:
+            self.formatted_line(message)
+        else:
+            self.append_line(message)
+
+
+    def shift_messages(self):
+        for label in self.messages:
+            label.y += 16
+    def append_line(self, line):
+        self.messages.append(pyglet.text.Label(u''+line,
+                font_name='Courier New', font_size=8, bold=False,
+                x=20, y=60,
+                anchor_x='left', anchor_y='center'))
+        if len(self.messages) > 20:
+            self.messages = self.messages[1:21]
+
+    def formatted_line(self, line):
+        splitted = line.split(":")
+        if len(splitted) == 1:
+            splitted.append("")
+        uname = splitted[0]
+        message = splitted[1:]
+
+        self.messages.append(pyglet.text.Label(u''+line,
+                font_name='Courier New', font_size=8, bold=False,
+                x=20, y=60,
+                anchor_x='left', anchor_y='center'))
+        if len(self.messages) > 20:
+            self.messages = self.messages[1:21]
+    def draw(self):
+        for message in self.messages:
+            message.draw()

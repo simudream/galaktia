@@ -2,11 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import pyglet, os
-from galaktia.client.controller.widget import TextWidget
+from galaktia.client.controller.widget import TextWidget, ChatWidget
 from pyglet.gl import glViewport, glMatrixMode, glLoadIdentity, glOrtho
 import pyglet.gl as gl
-
-from galaktia.client.controller.game import GameHandler
 
 class LoginViewport(pyglet.graphics.Batch):
 
@@ -26,11 +24,11 @@ ARROW_KEY_TO_VERSOR = {
 }
 
 
+
 class ChatHandler():
     grid_size = 20
     PADDING_LEFT = 18
     PADDING_DOWN = 5
-    chat_width = 40
     MAP_DIM = 20
 
     def __init__(self, window, username, (x, y)):
@@ -49,12 +47,12 @@ class ChatHandler():
                 x=10, y=24,
                 anchor_x='left', anchor_y='center')
         self.walter = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'walter.gif'))
+        self.walter2 = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'walter2.gif'))
         self.piso = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'piso.gif'))
         self.widgets = [
             TextWidget('', 130, 10, int(self.window.width//3), self.viewport),
         ]
-
-        self.messages = []
+        self.chat_widget = ChatWidget()
 
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
@@ -87,8 +85,11 @@ class ChatHandler():
         if self.focus:
             self.focus.caret.on_text_motion(motion)
         else:
-            (dx,dy) = ARROW_KEY_TO_VERSOR[motion]
-            self.window.move_dx_dy((dx,dy))
+            try:
+                (dx,dy) = ARROW_KEY_TO_VERSOR[motion]
+                self.window.move_dx_dy((dx,dy))
+            except:
+                pass
 
     def on_text_motion_select(self, motion):
         if self.focus:
@@ -119,11 +120,15 @@ class ChatHandler():
         for x in xrange(self.MAP_DIM):
             for y in xrange(self.MAP_DIM):
                 self.piso.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
-        for message in self.messages:
-            message.draw()
-        for walter in self.window.peers.values():
-            x,y = walter
-            self.walter.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
+
+        self.chat_widget.draw()
+
+        for walter in self.window.peers:
+            x,y = self.window.peers[walter]
+            if self.window.session_id == walter:
+                self.walter2.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
+            else:
+                self.walter.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
@@ -153,34 +158,13 @@ class ChatHandler():
         glMatrixMode(gl.GL_MODELVIEW)
 
     def on_someone_said(self, username, message):
-        self.show_message("%s: %s" % (username, message))
+        self.chat_widget.show_message("%s: %s" % (username, message))
 
     def on_user_exited(self,session_id, username):
         m = "User left room: %s" % username
         self.show_message(m)
         del self.window.peers[session_id]
 
-
-    def show_message(self, message):
-        self.shift_messages()
-        while len(message) > self.chat_width:
-            next_line = message[:self.chat_width]
-            self.append_line(next_line)
-            self.shift_messages()
-            message = message[self.chat_width:]
-        self.append_line(message)
-
-    def shift_messages(self):
-        for label in self.messages:
-            label.y += 16
-    def append_line(self, line):
-        print "appending line: %s" % line
-        self.messages.append(pyglet.text.Label(u''+line,
-                font_name='Courier New', font_size=8, bold=False,
-                x=20, y=60,
-                anchor_x='left', anchor_y='center'))
-        if len(self.messages) > 20:
-            self.messages = self.messages[1:21]
     def chatear(self):
         chatbox = self.widgets[0]
         message = chatbox.text()
