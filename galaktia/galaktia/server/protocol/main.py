@@ -37,7 +37,8 @@ class CamelCaseChatServer(ServerProtocolInterface):
             if session_id not in self.sessions:
                 self.user_joined( username = username,
                             session_list = self.sessions.keys())
-
+                for aSession in self.sessions:
+                    self.player_entered_los([session_id], aSession, self.sessions[aSession]['pos'], "Cute")
                 self._store_session(session_id, host, port, username)
 
                 (start_x, start_y) = (randint(0,9),randint(0,9))
