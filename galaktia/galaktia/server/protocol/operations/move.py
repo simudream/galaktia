@@ -30,6 +30,7 @@ class MoveDxDy(ActionRequest):
 class PlayerEnteredLOS(ActionUpdate):
 
     def __init__(self, **kwargs):
+        kwargs['subject'] = kwargs['session_id']
         kwargs['action'] = None
         kwargs['object'] = kwargs['position']
         self['description'] = kwargs['description']
