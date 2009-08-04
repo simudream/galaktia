@@ -44,7 +44,7 @@ class LoginHandler():
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
         self.set_focus(self.widgets[0])
-    
+
     def on_mouse_motion(self, x, y, dx, dy):
         for widget in self.widgets:
             if widget.hit_test(x, y):
@@ -72,11 +72,11 @@ class LoginHandler():
     def on_text_motion(self, motion):
         if self.focus:
             self.focus.caret.on_text_motion(motion)
-      
+
     def on_text_motion_select(self, motion):
         if self.focus:
             self.focus.caret.on_text_motion_select(motion)
-        
+
     def set_focus(self, focus):
         if self.focus:
             self.focus.caret.visible = False
@@ -99,7 +99,6 @@ class LoginHandler():
         self.window.exit()
         exit()
 
-
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
             self.window.dispatch_event('on_close')
@@ -117,8 +116,8 @@ class LoginHandler():
         glLoadIdentity()
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
-        
+
     def ingresar(self):
         username = self.widgets[0].text()
         self.window.request_user_join(username)
-        
+

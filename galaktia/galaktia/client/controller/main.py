@@ -27,9 +27,14 @@ CLIENT_VERSION = "0.1"
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
+    IMAGES_DIR = os.path.join(os.path.dirname( \
+            os.path.abspath(__file__)), os.pardir, 'assets', 'images')
+    SOUND_DIR = os.path.join(os.path.dirname( \
+            os.path.abspath(__file__)), os.pardir, 'assets', 'audio')
+
     def __init__(self, (host, port)):
-        
-        pyglet.window.Window.__init__(self, caption='Galaktia')
+
+        pyglet.window.Window.__init__(self,  width=800, height=600,caption='Galaktia')
         ClientProtocolInterface.__init__(self, (host, port))
         self.keystate = key.KeyStateHandler()
         self.push_handlers(self.keystate)
@@ -80,11 +85,12 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         logger.info("User accepted! session_id = %s, starting coords = (%d, %d)." % (session_id, x, y) +\
             "Try opening other clients at the same time :D...")
         self.session_id = session_id
-        new_handler = ChatHandler(self, username)
+        new_handler = ChatHandler(self, username, (x, y))
         self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):
         m = "User joined: %s" % username
+        self.chat_entered.play()
         logger.info(m)
         self.handler.show_message(m)
     def on_user_exited(self, username):
@@ -105,34 +111,28 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         raise NotImplementedError
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
         raise NotImplementedError
-    
 
     def on_logout_response(self):
         logger.info("Client application terminated")
         self.exit()
 
-
-
     def exit(self):
         reactor.stop()
         return True
 
-   
-    
+
+
 def main(program, host='127.0.0.1', port=6414):
-    
+
     window = GalaktiaWindow((host,port))
     login_handler = LoginHandler(window)
     window.set_window_handler(login_handler)
-
-
 
     log_level = logging.DEBUG
     logging.basicConfig(stream=sys.stderr, level=log_level)
     logger.info('Starting Galaktia Client')
 
     listen_port = 0 # dinamically assign client port
-
     reactor.listenUDP(listen_port, window)
     reactor.run()
 

@@ -22,7 +22,7 @@ class GalaktiaViewport(pyglet.graphics.Batch):
         ]
         walter = self.sprites[0] # TODO: quick'n'dirty
         walter.x, walter.y = math.sqrt(3)*30/2, 30/2
-        
+
 class GalaktiaTileSet(pyglet.graphics.Batch):
 
     IMAGES_DIR = os.path.join(os.path.dirname( \
@@ -49,16 +49,13 @@ class GalaktiaClientWindow(pyglet.window.Window):
         self.push_handlers(self.keystate)
         self.viewport = GalaktiaViewport()
         self.grid = Grid()
-        
-        
+
     def on_draw(self):
         self.clear()
         self.grid.draw()
         self.label.draw()
         self.viewport.draw()
-        
-        
-    
+
     def on_usermove(self):
         self.grid.draw()
         self.viewport.draw()
