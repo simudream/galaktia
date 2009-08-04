@@ -15,7 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.schema import Column, ForeignKey
-from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime
+from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime, \
+     UnicodeText
 
 Entity = declarative_base()
 
@@ -50,7 +51,7 @@ class Session(Entity):
 
 class PendingMessage(Entity):
     """ Represents a message to be resent for protocol reliability """
-    __tablename__ 'pending_messages'
+    __tablename__ = 'pending_messages'
     session_id = Column(Integer, primary_key=True)
     timestamp = Column(Float, primary_key=True)
     ack = Column(Float)
