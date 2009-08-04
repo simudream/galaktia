@@ -7,6 +7,7 @@ from time import time
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
      CharacterItem, Sprite, Character, Spatial, Stationary, PendingMessage
+from galaktia.server.protocol.codec import SerializationCodec
 
 class SceneObjectDAO(GenericDAO):
     """
@@ -59,8 +60,7 @@ class SpatialDAO(SceneObjectDAO):
         result = True
         # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
-        # assert (abs(x - obj.x) <= 1) and (abs(y - obj.y) <= 1)
-        if(obj.z == None):
+        if(z == None):
             z=obj.z
         if(obj.x==x and obj.y==y and obj.z==z):
             return True
@@ -113,16 +113,15 @@ class UserDAO(GenericDAO):
 class ItemDAO(SceneObjectDAO):
     ENTITY_CLASS=Item
 
-class CharacterItemDAO(Sprite):
-    ENTITY_CLASS=CharacterItem
 
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
 
-
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character
 
+class CharacterItemDAO(SpriteDAO):
+    ENTITY_CLASS=CharacterItem
 
 class PendingMessageDAO(GenericDAO):
     ENTITY_CLASS=PendingMessage

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from galaktia.server.persistence.dao import StationaryDAO
-from galaktia.server.persistence.orm import Stationary, init_db
+from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO
+from galaktia.server.persistence.orm import Stationary, Character, init_db
 import sys
 # This script generates the basic structure of the database, containing only
 # Stationary entities.
@@ -27,6 +27,8 @@ def parse(text):
             i += 1
             if (char=="-"):
                 k +=1
+                i=0
+                j=0
                 break
         j += 1
     return objects
@@ -46,5 +48,14 @@ if __name__=='__main__':
     lista = parse(text)
     for each in lista:
         sdao.add(each)
-        print "Adding <Stationary (",each.x, each.y, each.z,")>"
+        print "Adding <Stationary (",each.x, each.y, each.z,")> (that's j, i, k)"
+    cdao = CharacterDAO(c)
+    walter = Character()
+    walter.x=1
+    walter.y=1
+    walter.z=0
+    walter.level=1
+    walter.name=u"walter"
+    cdao.add(walter)
     sdao.session.commit()
+    print "Walter se llama", walter.name
