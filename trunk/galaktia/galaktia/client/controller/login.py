@@ -38,8 +38,8 @@ class LoginHandler():
                 anchor_x='center', anchor_y='center')
 
         self.widgets = [
-            TextWidget('', self.window.width//4 + 50, self.window.height//4 - 10, self.window.width//2, self.viewport),
-            PasswordField('', self.window.width//4 + 50, self.window.height//5 - 10, self.window.width//2, self.viewport)
+            TextWidget('a', self.window.width//4 + 50, self.window.height//4 - 10, self.window.width//2, self.viewport),
+            PasswordField('a', self.window.width//4 + 50, self.window.height//5 - 10, self.window.width//2, self.viewport)
         ]
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
