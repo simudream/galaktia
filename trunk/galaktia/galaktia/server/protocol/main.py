@@ -42,6 +42,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 for aSession in filter(lambda x: x != session_id, self.sessions):
                     self.player_entered_los([session_id], aSession, self.sessions[aSession]['pos'], "Cute")
 
+
                 (start_x, start_y) = (randint(0,9),randint(0,9))
                 self.player_entered_los(self.sessions.keys(), session_id, (start_x, start_y), "Cute")
 
