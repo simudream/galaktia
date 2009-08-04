@@ -28,7 +28,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         self.someone_said(
                 session_list = self.sessions.keys(),
                 username = self.sessions[talking_user_id]['username'],
-                message = message.title()
+                message = message
                 )
 
     def on_request_user_join(self, host, port, username):
