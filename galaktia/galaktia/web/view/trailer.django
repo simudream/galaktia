@@ -1,0 +1,19 @@
+<html>
+<head>
+    {% include "_header.django" %}
+
+    <title>Galaktia Online</title>
+
+</head>
+
+
+<body marginwidth="0" marginheight="0" height="100%" style="background:#000000">
+<div id="wrapper" style="background:#000000" height="100%">
+<div id="page" align="center" height="100%">
+    <embed style="border:none" height="70%" width="100%" name="plugin" src="flash/trailer.swf" type="application/x-shockwave-flash"/>
+    {% include "_footer.django" %}
+</div>
+
+</div>
+</body>
+</html>

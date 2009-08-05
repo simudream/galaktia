@@ -14,9 +14,9 @@ handlers:
 #   static_files: static/text/robots.txt
 #   upload: static/text/robots.txt
 # 
-# - url: /favicon.ico
-#   static_files: static/images/favicon3.ico
-#   upload: static/images/favicon3.ico
+- url: /favicon.ico
+  static_files: assets/images/favicon.ico
+  upload: assets/images/favicon.ico
 
 # *************
 #  STATIC DIRS
@@ -25,13 +25,14 @@ handlers:
 - url: /images
   static_dir: assets/images
 
-
 - url: /css
   static_dir: assets/css
 
+- url: /js
+  static_dir: assets/js
 
-# - url: /js
-#   static_dir: assets/js
+- url: /flash
+  static_dir: assets/flash
 
 
 # ***********************

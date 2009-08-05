@@ -49,13 +49,13 @@ class UserAccepted(Message):
     def __init__(self, accepted, username=None, session_id=None, \
             player_initial_state=None, ack=None, **kwargs):
         data = {'accepted': accepted }
-        
+
         if username is not None:
             data['username'] = username
-        
+
         if session_id is not None:
             data['session_id'] = session_id
-            
+
         if player_initial_state is not None:
             data['player_initial_state'] = player_initial_state
         super(UserAccepted, self).__init__(data, **kwargs)
@@ -65,7 +65,4 @@ class UserJoined(Message):
     def __init__(self, username, **kwargs):
         super(UserJoined, self).__init__({'username': username}, **kwargs)
 
-# TODO: pasar al nuevo modelo de ACK (ver Message.acknowledge y Acknowledge)
-# Si las cosas estan bien pensadas ni tendriamos que escribir la clase
-# del mensaje de ACK por cada mensaje que debe confirmarse
 
