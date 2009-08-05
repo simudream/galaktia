@@ -162,7 +162,7 @@ class ChatHandler():
 
     def on_user_exited(self,session_id, username):
         m = "User left room: %s" % username
-        self.show_message(m)
+        self.chat_widget.show_message(m)
         del self.window.peers[session_id]
 
     def chatear(self):
