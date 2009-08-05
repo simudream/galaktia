@@ -123,6 +123,15 @@ class ItemDAO(SceneObjectDAO):
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
 
+    def dismiss(self, obj):
+        """
+            Dismiss or disconnect a Sprite. This will hide the object from
+            being fetched by the move function. Equivalent to obj.show=False,
+            obj.collide=False
+        """
+        obj.show=False
+        obj.collide=False
+
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character
 
