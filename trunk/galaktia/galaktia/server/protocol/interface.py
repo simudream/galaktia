@@ -256,20 +256,21 @@ class ServerProtocolInterface(BaseServer):
 
 
     # Convinience protocol methods
-    def player_entered_los(self, session_list, session_id, position, description):
+    def player_entered_los(self, session_list, session, position, description):
         for aSession in session_list:
-            m = PlayerEnteredLOS(session_id = session_id,
-                    host = self.sessions[aSession]['host'],
-                    port = self.sessions[aSession]['port'],
-                    position = position,
-                    description = description
-                    )
+            m = PlayerEnteredLOS(session_id = session.id,
+                host = aSession.host,
+                port = aSession.port,
+                position = position,
+                description = description
+                )
             self.send(m)
+            
     def player_moved(self, session_list, mover_session, (dx,dy), (x,y)):
         for aSession in session_list:
-            m = PlayerMoved(session_id = mover_session,
-                host = self.sessions[aSession]['host'],
-                port = self.sessions[aSession]['port'],
+            m = PlayerMoved(session_id = mover_session.id,
+                host = aSession.host,
+                port = aSession.port,
                 delta = (dx,dy),
                 position = (x,y))
             self.send(m)
@@ -279,14 +280,15 @@ class ServerProtocolInterface(BaseServer):
             self.send(SomeoneSaid(
                 username = username,
                 message = message, 
-                host = self.sessions[aSession]['host'], 
-                port = self.sessions[aSession]['port']))
+                host = aSession.host,
+                port = aSession.port,))
 
-    def user_accepted(self, session_id, player_initial_state):
-        self.send(UserAccepted( host = self.sessions[session_id]['host'],
-                            port = self.sessions[session_id]['port'],
-                            accepted = True, session_id = session_id,
-                            username = self.sessions[session_id]['username'],
+    def user_accepted(self, session, player_initial_state):
+        self.send(UserAccepted( host = session.host,
+                            port = session.port,
+                            accepted = True, 
+                            session_id = session.id,
+                            username = session.user.name,
                             player_initial_state = player_initial_state
                             ))
 
@@ -302,24 +304,24 @@ class ServerProtocolInterface(BaseServer):
     def user_joined(self, session_list, username):
         for aSession in session_list:
             self.send(UserJoined( username = username,
-                    host = self.sessions[aSession]['host'],
-                    port = self.sessions[aSession]['port']))
+                host = aSession.host,
+                port = aSession.port))
 
-    def logout_response(self, session_id):
+    def logout_response(self, session):
         self.send(LogoutResponse(
-            host = self.sessions[session_id]['host'],
-            port = self.sessions[session_id]['port']
+            host = session.host,
+            port = session.port,
         ))
+        
     def user_exited(self, session_list, session, username ):
         for aSession in session_list:
 
-            m = UserExited(
-                session_id = session,
-                host = self.sessions[aSession]['host'],
-                port = self.sessions[aSession]['port'],
+            self.send( UserExited(
+                session_id = session.id,
+                host = aSession.host,
+                port = aSession.port,
                 username  = username
-            )
-            self.send(m)
+            ) )
 
 
 
