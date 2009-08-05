@@ -79,7 +79,8 @@ class ChatHandler():
 
     def on_text(self, text):
         if self.focus:
-            self.focus.caret.on_text(text)
+            if text != '\r':
+                self.focus.caret.on_text(text)
 
     def on_text_motion(self, motion):
         if self.focus:
@@ -133,7 +134,7 @@ class ChatHandler():
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
             self.window.dispatch_event('on_close')
-        elif symbol == pyglet.window.key.ENTER:
+        elif symbol in (pyglet.window.key.ENTER, pyglet.window.key.NUM_ENTER):
             if self.focus:
                 self.chatear()
                 self.focus = None
@@ -145,8 +146,7 @@ class ChatHandler():
     def on_key_release(self,symbol, modifiers):
         if symbol == pyglet.window.key.ENTER:
             if self.focus:
-                chatbox = self.widgets[0]
-                chatbox.empty()
+                pass
             else:
                 self.focus = None
 

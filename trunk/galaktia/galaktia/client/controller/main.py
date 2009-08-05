@@ -5,19 +5,19 @@ reactor = install()
 
 
 import os, sys, logging
+
+import pyglet
+pyglet.options['audio'] = ('openal', 'alsa')
+import pyglet.media
 from pyglet.window import key
 from pyglet.gl import *
-
-#enable transparency
-glEnable(GL_BLEND)
-glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 from galaktia.client.controller.chat import ChatHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.server.protocol.interface import ClientProtocolInterface
 
 
-import pyglet
+
 
 from twisted.internet import reactor
 from twisted.python import log
@@ -31,10 +31,8 @@ CLIENT_VERSION = "0.2"
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
-    IMAGES_DIR = os.path.join(os.path.dirname( \
-            os.path.abspath(__file__)), os.pardir, 'assets', 'images')
-    SOUND_DIR = os.path.join(os.path.dirname( \
-            os.path.abspath(__file__)), os.pardir, 'assets', 'audio')
+    IMAGES_DIR = os.path.join(os.pardir, 'assets', 'images')
+    SOUND_DIR = os.path.join(os.pardir, 'assets', 'audio')
 
     def __init__(self, (host, port)):
 
@@ -45,6 +43,10 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
         icon = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'logo.jpg'))
         self.set_icon(icon)
+
+        self.music = pyglet.resource.media('music.wav')
+        self.music.play()
+
 
         self.peers = {}
 
@@ -112,7 +114,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
 
     def on_someone_said(self, username, message):
-        print u''+"%s: %s" % (str(username), str(message))
+        m = u''+"%s: %s" % (str(username), str(message))
+        logger.info(m)
         self.handler.on_someone_said(username, message)
     def on_player_entered_los(self, session_id, (x,y), description):
         self.peers[session_id] = (x,y)
