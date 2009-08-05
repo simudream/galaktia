@@ -135,6 +135,10 @@ class SpriteDAO(SpatialDAO):
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character
 
+    def get_by_user_id(self, user_id):
+        return self.filter(self.klass.user_id==user_id)
+
+
 class CharacterItemDAO(SpriteDAO):
     ENTITY_CLASS=CharacterItem
 
