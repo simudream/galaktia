@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
-
-
 from galaktia.server.protocol.interface import ServerProtocolInterface
 from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO
 from galaktia.server.persistence.orm import Stationary, Character, init_db
@@ -94,7 +91,10 @@ class CamelCaseChatServer(ServerProtocolInterface):
         if session is not None:
             username = self.sessions[session]['username']
             self.logout_response(session)
+            
+            self.char_dao.delete(self.sessions[session]['character'])
             del self.sessions[session]
+            
             self.user_exited(self.sessions.keys(), session, username)
 
     def on_move_dx_dy(self, session_id, (dx,dy)):
