@@ -108,6 +108,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def on_user_rejected(self):
         m = "User was rejected by server"
         logger.info(m)
+        self.handler.on_user_rejected()
 
 
     def on_someone_said(self, username, message):

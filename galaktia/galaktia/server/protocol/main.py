@@ -41,11 +41,14 @@ class CamelCaseChatServer(ServerProtocolInterface):
     def on_request_user_join(self, host, port, username):
             # TODO: instanciar el usuario en la base de datos
             session_id = self._generate_session_id(username)
-            if session_id not in self.sessions:
+            char = self.char_dao.get_by(name=username)
+            
+            if session_id not in self.sessions and not char:
                 self.user_joined( username = username,
                             session_list = self.sessions.keys())
                 self._store_session(session_id, host, port, username)
-                self.sessions[session_id]['character']= self.char_dao.get_by(name=username)
+                self.sessions[session_id]['character'] = char
+                
                 if not self.sessions[session_id]['character']:
                     walter=Character()
                     walter.name=username
@@ -81,7 +84,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                         player_initial_state = (start_x, start_y)
                         )
             else:
-                self.user_rejected( host = host, port = port)
+                self.user_rejected( host = host, port = port )
 
     def on_start_connection(self, (host, port)):
         self.check_protocol_version(host = host, port = port,
