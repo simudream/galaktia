@@ -46,7 +46,6 @@ class SceneObjectDAO(GenericDAO):
         return self.filter(self.klass.x <= bigX, \
                 self.klass.x >= smallX, self.klass.y <= bigY, \
                 self.klass.y >= smallY, self.klass.z == layer)
-        
     def get_near(self, obj, radius=2, return_self=False):
         list = self.get_layer_subsection(obj.x, obj.y, obj.z, radius)
         if not return_self:
@@ -56,10 +55,10 @@ class SceneObjectDAO(GenericDAO):
 class SpatialDAO(SceneObjectDAO):
     ENTITY_CLASS=Spatial
 
-    def move(self, obj, x, y, z=None):
-        result = True
+    def move(self, obj, x, y, z=None, collide_objects=False):
         # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
+        result=True
         if(z == None):
             z=obj.z
         if(obj.x==x and obj.y==y and obj.z==z):
@@ -72,9 +71,16 @@ class SpatialDAO(SceneObjectDAO):
         # ENTITY_CLASS, returning *only* the heir's objects, NOT Spatials.
         # This hack prevents you from breaking the correct behaviour of the
         # method after being inherited.
-        self.sdao = SpatialDAO(self.session)
-        elements = self.sdao.get_by_coords(x,y,z)
-        if(not elements):
+        sdao = StationaryDAO(self.session)
+        stationaries = sdao.get_by_coords(x, y, z)
+        if(collide_objects and hasattr(obj, "show") and \
+                hasattr(obj, "collide")):
+            class_objects = self.filter(self.klass.x==x, self.klass.y==y, \
+                    self.klass.z==z, self.klass.show==True, \
+                    self.klass.collide==True, self.klass.id != obj.id)
+            stationaries.append(class_objects)
+            print class_objects
+        if(not stationaries):
             obj.x=x
             obj.y=y
             obj.z=z
@@ -89,9 +95,9 @@ class StationaryDAO(SpatialDAO):
     ENTITY_CLASS=Stationary
     def move(self, obj, x, y):
         """ Since moving Stationary objects is NOT allowed by usual means, you
-        should not use this function. It will always return True.
+        should not use this function. It will always return False.
         """
-        return True
+        return False
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
