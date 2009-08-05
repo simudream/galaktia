@@ -44,6 +44,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         icon = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'logo.jpg'))
         self.set_icon(icon)
 
+        pyglet.resource.path = self.SOUND_DIR
         self.music = pyglet.resource.media('music.wav')
         self.music.play()
 
