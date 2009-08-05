@@ -4,7 +4,9 @@
 = Introduction =
 
 Overview of every type of message in the game protocol, describing its parameters and use.
-This based on the source code up to revision 47, and [http://www.rolear.com.ar/foro/viewtopic.php?f=4&t=92 this] forum post.
+This based on the source code and [http://www.rolear.com.ar/foro/viewtopic.php?f=4&t=92 this] forum post.
+
+*Update*: Brought up to date to revision 121.
 
 Optional parameters are marked with italic. I've made some additional comments also in italics, but maybe this is not the place.
 
@@ -26,13 +28,6 @@ Client-side message, sent to server to inform of an user action.
 === ActionResponse ===
 Server-side response to an ActionCommand message. Informs the client that the action was authorized by the server.
 
-*Parameters*:
-  * subject - The id or username of the user perfoming the action.
-  * action - An action identifier.
-  * _object_ - Either the position of the object that the action is done upon or the id said object.
-
-This takes the same parameters as ActionRequest. This seems unnecesary, since all that's needed is the id of the ActionRequest that triggered this response, and the client can get find the necessary data.
-
 === ActionUpdate ===
 Server-side message to inform players of another player's action, in their Line of Sight. This is sent after the corresponding ActionResponse message was sent. It's an exact replica of the matching ActionRequest.
 
@@ -41,17 +36,11 @@ Server-side message to inform players of another player's action, in their Line 
   * action - An action identifier.
   * _object_ - Either the position of the object that the action is done upon or the id said object.
 
-Of course, the same comments made on ActionResponse apply here.
-
-=== ActionAccept ===
-Client-side acknowledge to an ActionUpdate message. This is sent to confirm that the ActionUpdate was recieved.
-_This message is to be replaced with the new generic Acknowledge._
 
 == Talk ==
 *Source*: http://code.google.com/p/galaktia/source/browse/trunk/galaktia/galaktia/server/protocol/operations/talk.py
 
 These are the in-game chat messages. They implement the Action types, but not completly.
-Right now, there's also custom acknowledge messages in the source, but this are deprecated, and to be replaced with generic versions.
 _ I'm not sure whether this should be a subset of Action, since it seems kinda wierd to implement it halfway through _
 
 === SayThis (ActionRequest) ===
@@ -71,24 +60,26 @@ Server-side message to inform other clients of a SayThis message.
 *Source*: http://code.google.com/p/galaktia/source/browse/trunk/galaktia/galaktia/server/protocol/operations/move.py
 
 These are the movement messages. They are of course a subset of Action.
-_Again, there's also a custom Acknowledge that is not needed anymore_
 
 === MoveDxDy (ActionRequest) ===
 Client-side message sent when a player moves to a new position. 
 
 *Parameters*:
-  * delta tuple(int, int): The relative movement of the player in the map as a tuple(x, y) both integers. Maps to ActionRequest action.
+  * delta tuple(int, int): The relative movement of the player in the map as a tuple(x, y). Maps to ActionRequest action.
 
 === PlayerMoved (ActionUpdate) ===
 Served-side response to MoveDxDy. Informs players that are able to see the player that moved it's new position.
 
 *Parameters*:
+  * session_id (int): The session id of the player that moved. Maps to ActionUpdate subject.
   * position tuple(int, int): The new player's position as tuple(x, y). Maps to ActionUpdate object.
+  * delta tuple(int, int): The player's relative movement as tuple(x, y). Maps to ActionUpdate action.
 
 === PlayerEnteredLOS (ActionUpdate) ===
 Server-side message sent to inform a player that another player entered it's Line Of Sight.
 
 *Parameters*:
+  * session_id (int): The session id of the player that moved. Maps to ActionUpdate subject.
   * position tuple(int, int): The position where the new player is. Maps to ActionUpdate object.
   * description : This is undefined as of now. It's supposed to carry info about the player that enters the LOS, but it still not defined how.
 
@@ -118,6 +109,7 @@ Server-side response to RequestUserJoin, signaling that the user was accepted or
 
 *Parameters*:
   * accepted (bool): Whether the player was accepted (true) or rejected (false).
+  * _username_ (string): The player's username, only senf if it was accepted.
   * _session`_`id_ (int): The player's corresponding session id, only sent if it was accepted.
   * _player`_`initial`_`state_ : This has to be defined, but right now its a tuple(int, int) with the player's position in the map.
 
@@ -131,25 +123,23 @@ Server-side annoucement, informing that a player logged in. This is, obviously, 
 *Source*: http://code.google.com/p/galaktia/source/browse/trunk/galaktia/galaktia/server/protocol/operations/exit.py
 
 These are the logout messages. These implement Action, to some degree.
-_There's a custom ack class, that, as all other, is going to be replaced by a generic one._
 
-=== StopPlayerSession (ActionRequest) ===
+=== LogoutRequest (ActionRequest) ===
 Client-side message informing that player is logging out.
 
 This seems to have no paremeters, but it's not the definitive version yet.
+
+=== LogoutResponse (Message) ===
+Server-side response confirming the logout to the client.
+
+_Shouldnt this implement AcionResponse?_
 
 === UserExited (ActionUpdate) ===
 Server-side annoucement, informing that player logged out.
 
 *Parameters*:
-  * username (string): The name of the user that logged out. This maps to ActionUpdate subject.
-
-= Closing remarks =
-And this is it folks.
-Maybe this should go as a comment, but, since I've typing here all this time, I dont see why not :P
-I think that the maybe the Action messages are being abused, and dont feel that their subclasses should be so incosistent about the use of different parameters. I mean, most of the implemeting classes, dont even use half the parameters, and do so sort of, freely. Perhaps these need another more specific to the task, base messages.
-
-
+  * username (string): The name of the user that logged out. This maps to ActionUpdate object.
+  * session_id (integer): The session id of the user that logged out. This maps to ActionUpdate subject.
 
 
 
