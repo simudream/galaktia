@@ -13,7 +13,7 @@ __docformat__='restructuredtext'
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.orm import sessionmaker, scoped_session, relation, backref
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime, \
      UnicodeText
@@ -27,6 +27,8 @@ class User(Entity):
     name = Column(Unicode(127), unique=True, nullable=False)
     passwd = Column(Unicode(127), nullable=False)
     email = Column(Unicode(127), unique=True, nullable=False)
+    
+    character = relation('Character', backref='User', uselist=False)
         # id is the binding between a user and his avatars
 
     # def __init__(self, name, email, passwd):
@@ -38,6 +40,7 @@ class User(Entity):
 # using lists or something?
     # Yes, maybe just keep in memory or via memcached,
     # but we need a first implementation for release 0.1
+        # Memcached is volatile, so a solution like redis would be more fitting
 
 class Session(Entity):
     """ Represents the client-server session with a user """
@@ -46,8 +49,9 @@ class Session(Entity):
     host = Column(Unicode(31))
     port = Column(Integer)
     user_id = Column(Integer, ForeignKey('users.id'))
-    character_id = Column(Integer, ForeignKey('characters.id')) # efficiency?
     last_activity = Column(DateTime) # last time session was active
+    
+    user = relation('User', backref='Session', uselist=False)
 
 class PendingMessage(Entity):
     """ Represents a message to be resent for protocol reliability """

@@ -6,7 +6,8 @@ from time import time
 
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
-     CharacterItem, Sprite, Character, Spatial, Stationary, PendingMessage
+     CharacterItem, Sprite, Character, Spatial, Stationary, PendingMessage, \
+     Session
 from galaktia.server.protocol.codec import SerializationCodec
 
 class SceneObjectDAO(GenericDAO):
@@ -186,3 +187,10 @@ class PendingMessageDAO(GenericDAO):
                 PendingMessage.last_sent < time() - interval)
         map(self.delete, messages)
 
+class SessionDAO(GenericDAO):
+    
+    ENTITY_CLASS=Session
+    
+    def __init__(self, session):
+        super(SessionDAO, self).__init__(session, self.ENTITY_CLASS)
+        
