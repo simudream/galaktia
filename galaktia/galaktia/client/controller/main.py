@@ -44,9 +44,10 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         icon = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'logo.jpg'))
         self.set_icon(icon)
 
-        pyglet.resource.path = self.SOUND_DIR
-        self.music = pyglet.resource.media('music.wav')
-        self.music.play()
+        pyglet.resource.path = [ self.SOUND_DIR ]
+        pyglet.resource.reindex()
+        self.music = pyglet.resource.media('bass.wav',streaming=False)
+        
 
 
         self.peers = {}
@@ -64,6 +65,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.handler.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
     def on_text(self, text):
+        self.music.play()
         self.handler.on_text(text)
     def on_text_motion(self, motion):
         self.handler.on_text_motion(motion)
