@@ -77,6 +77,7 @@ class Spatial(SceneObject):
     """ Represents any object with volume in the world. """
     __tablename__ = 'spatials'
     __mapper_args__ = {'polymorphic_identity': u'spatial'}
+    collide = Column(Boolean, default=True)
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
 
 class Stationary(Spatial):
