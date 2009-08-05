@@ -129,4 +129,7 @@ class LoginHandler():
     def ingresar(self):
         username = self.widgets[0].text()
         self.window.request_user_join(username)
+        
+    def on_connection_refused(self):
+        self.stateLabel.text = u'No hay server del otro lado'
 

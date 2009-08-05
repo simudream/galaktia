@@ -67,15 +67,15 @@ class CamelCaseChatServer(ServerProtocolInterface):
                     # que además tengan un personaje asociado y que estén
                     # dentro de radio 20 del usuario. Es más, el if x != no es
                     # necesario.
-                    self.player_entered_los([session_id], aSession, \
-                            self.sessions[aSession]['pos'], "Cute")
+                    pos = (self.sessions[aSession]['character'].x, \
+                        self.sessions[aSession]['character'].y)
+                    self.player_entered_los([session_id], aSession, pos, "Cute")
 
 
                 (start_x, start_y) = (self.sessions[session_id]['character'].x, \
                         self.sessions[session_id]['character'].y)
                 self.player_entered_los(self.sessions.keys(), session_id, (start_x, start_y), "Cute")
 
-                self.sessions[session_id]['pos'] = (start_x, start_y)
                 self.user_accepted( 
                         session_id = session_id,
                         player_initial_state = (start_x, start_y)

@@ -131,6 +131,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def exit(self):
         reactor.stop()
         return True
+    
+    def connectionRefused(self):
+        self.handler.on_connection_refused()
 
 
 

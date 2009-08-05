@@ -65,7 +65,8 @@ class GameHandler(object):
             #self.dispatch_event('on_redraw')
             #self.redraw()
             
-            
+    def on_connection_refused(self):
+        pass
 
     
 
