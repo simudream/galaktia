@@ -46,6 +46,8 @@ class LoginHandler():
             TextWidget('', self.window.width//4 + 50, self.window.height//4 - 10, self.window.width//2, self.viewport),
             PasswordField('', self.window.width//4 + 50, self.window.height//5 - 10, self.window.width//2, self.viewport)
         ]
+        for w in self.widgets:
+            w.caret.visible = False
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
         self.set_focus(self.widgets[0])
@@ -72,7 +74,8 @@ class LoginHandler():
 
     def on_text(self, text):
         if self.focus:
-            self.focus.caret.on_text(text)
+            if text != '\r':
+                self.focus.caret.on_text(text)
 
     def on_text_motion(self, motion):
         if self.focus:
@@ -108,8 +111,9 @@ class LoginHandler():
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
             self.window.dispatch_event('on_close')
-        elif symbol == pyglet.window.key.ENTER:
+        elif symbol in (pyglet.window.key.ENTER, pyglet.window.key.NUM_ENTER):
             self.ingresar()
+            return True
         elif symbol == pyglet.window.key.TAB:
             this = self.widgets.index(self.focus)
             self.set_focus(self.widgets[1-this])
@@ -122,14 +126,14 @@ class LoginHandler():
         glLoadIdentity()
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
-        
+
     def on_user_rejected(self):
-        self.stateLabel.text = u'Oops. ¡Te rechazaron!'
+        self.stateLabel.text = u'Oops. ¡Ya hay un jugador con ese nombre!'
 
     def ingresar(self):
         username = self.widgets[0].text()
         self.window.request_user_join(username)
-        
+
     def on_connection_refused(self):
         self.stateLabel.text = u'No hay server del otro lado'
 
