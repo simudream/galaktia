@@ -294,9 +294,11 @@ class ServerProtocolInterface(BaseServer):
         self.send(UserAccepted( host = host, port = port,
                             accepted = False)
                             )
+        
     def check_protocol_version(self, host, port, version, url):
         self.send(CheckProtocolVersion(host = host, port = port,
                     version=version, url=url))
+        
     def user_joined(self, session_list, username):
         for aSession in session_list:
             self.send(UserJoined( username = username,

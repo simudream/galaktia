@@ -36,6 +36,11 @@ class LoginHandler():
                 font_name='Arial', font_size=12, bold=True,
                 x=self.window.width//4, y=self.window.height//5,
                 anchor_x='center', anchor_y='center')
+        self.stateLabel = pyglet.text.Label(u'',
+                font_name='Arial', font_size=12, bold=True,
+                x=self.window.width//2, y=self.window.height//7,
+                anchor_x='center', anchor_y='center',
+                color=(255, 0, 0, 255) )
 
         self.widgets = [
             TextWidget('', self.window.width//4 + 50, self.window.height//4 - 10, self.window.width//2, self.viewport),
@@ -94,6 +99,7 @@ class LoginHandler():
         self.welcomeLabel.draw()
         self.usernameLabel.draw()
         self.passwordLabel.draw()
+        self.stateLabel.draw()
 
     def on_close(self):
         self.window.exit()
@@ -116,6 +122,9 @@ class LoginHandler():
         glLoadIdentity()
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
+        
+    def on_user_rejected(self):
+        self.stateLabel.text = u'Oops. ¡Te rechazaron!'
 
     def ingresar(self):
         username = self.widgets[0].text()
