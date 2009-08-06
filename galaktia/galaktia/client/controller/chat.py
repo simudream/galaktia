@@ -54,6 +54,9 @@ class ChatHandler():
         ]
         self.chat_widget = ChatWidget()
 
+        self.sound_user_connected = pyglet.resource.media('bass.wav',streaming=False)
+        self.sound_chat = pyglet.resource.media('doub.wav',streaming=False)
+
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
 
@@ -158,9 +161,14 @@ class ChatHandler():
         glMatrixMode(gl.GL_MODELVIEW)
 
     def on_someone_said(self, username, message):
+        self.sound_chat.play()
         self.chat_widget.show_message("%s: %s" % (username, message))
+    def on_user_joined(self, username):
+        self.sound_user_connected.play()
+        self.chat_widget.show_message(m)
 
     def on_user_exited(self,session_id, username):
+        self.sound_user_connected.play()
         m = "User left room: %s" % username
         self.chat_widget.show_message(m)
         del self.window.peers[session_id]
