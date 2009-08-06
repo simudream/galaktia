@@ -57,22 +57,22 @@ class CamelCaseChatServer(ServerProtocolInterface):
                     character.name = username
                     character.x, character.y = (randint(0,9),randint(0,9))
                     character.z = 0
-                    character.level = 42                    
+                    character.level = 42 # I see dead people
                     character.user_id = user.id
-                    
+
                     self.char_dao.add(character)
                     self.char_dao.session.flush()
                         # This should be done by another thread, watching the
                         # changes and commiting them.
-                        
+
                     user.character = character
                 else:
                     character = user.character
                     character.show = True
-                        
+
                 # Make sure the user is shown correctly
-                
-                
+
+
                 # for aSession in filter(lambda x: x != session_id, self.sessions):
                 for aSession in [ sth for sth in self.session_dao.all() if sth.user.character in self.char_dao.get_near(character, radius=20)]:
                     # Explicación: pide todas las sessions (no propias), pero
@@ -87,7 +87,6 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 (start_x, start_y) = (character.x, character.y)
                 self.player_entered_los(self.session_dao.all(), session, (start_x, start_y), "Cute")
 
-                
                 self.session_dao.add(session)
 
                 self.user_accepted( 
@@ -105,10 +104,9 @@ class CamelCaseChatServer(ServerProtocolInterface):
         if session_id is not None:
             session = self.session_dao.get_by(id=session_id)
             username = session.user.name
-            
-            self.logout_response(session)            
-            self.char_dao.dismiss(session.user.character)            
-            
+            self.logout_response(session)
+            self.char_dao.dismiss(session.user.character)
+
             self.user_exited(self.session_dao.all(), session, username)
             self.session_dao.delete(session)
 
@@ -116,7 +114,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         session = self.session_dao.get_by(id=session_id)
         character = session.user.character
         (newx, newy) = ( (character.x+dx)%20, (character.y+dy)%20)
-        
+
         if self.char_dao.move(character, newx, newy):
             self.player_moved(self.session_dao.all(), session, (dx, dy), (newx, newy))
 
@@ -134,6 +132,8 @@ def main(program, host='127.0.0.1', port=6414, session=None):
 if __name__ == '__main__': # This is how to run a main program
     reload(sys); sys.setdefaultencoding('utf-8')
     # log.startLogging(sys.stderr) # enables Twisted logging
+
+    #peero que nombres significativos che! Manu
     a,b,c = init_db(db_connection_string="sqlite:///../persistence/map.sqlite3")
     print c
     # main(*sys.argv)
