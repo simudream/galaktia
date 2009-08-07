@@ -52,10 +52,9 @@ class GalaktiaClientController(EventDispatcher, Controller):
             self.dispatch_event('on_someone_said', username, message)
         elif command == "UserAccepted":
             if input_message['accepted']:
-                session_id = input_message['session_id']
                 username = input_message['username']
                 x, y = input_message['player_initial_state']
-                self.dispatch_event('on_user_accepted', session_id, username, (x,y))
+                self.dispatch_event('on_user_accepted', username, (x,y))
             else:
                 self.dispatch_event('on_user_rejected')
 
@@ -63,7 +62,8 @@ class GalaktiaClientController(EventDispatcher, Controller):
         elif command == "CheckProtocolVersion":
             version = input_message['version']
             url = input_message['url']
-            self.dispatch_event('on_check_protocol_version', version, url)
+            session_id = input_message.session.id
+            self.dispatch_event('on_check_protocol_version', session_id, version, url)
 
         elif command == "UserJoined":
             username = input_message['username']
@@ -99,19 +99,13 @@ GalaktiaClientController.register_event_type('on_user_exited')
 
 class ClientProtocolInterface(BaseClient):
     """ Convenience client interface """
-    def __init__(self, (host, port)):
-        class MockSession(object):
-            def __init__(self, id):
-                self.id = id
-            def get_encryption_key(self):
-                return self.id
-        class MockSessionDAO(object):
-            def get(self, id):
-                return MockSession(id)
-        BaseClient.__init__(self, ProtocolCodec(MockSessionDAO()),
+    def __init__(self, session_dao, (host, port)):
+        BaseClient.__init__(self, ProtocolCodec(session_dao),
                              GalaktiaClientController(), host, port)
-        self.session_id = None
+        
         self.controller.push_handlers(self)
+        
+        self.session_dao = session_dao
     
     # Event Handlers
     def on_greet(self):
@@ -122,9 +116,9 @@ class ClientProtocolInterface(BaseClient):
         raise NotImplementedError
     def on_someone_said(self, username, message):
         raise NotImplementedError
-    def on_check_protocol_version(self, version, url):
+    def on_check_protocol_version(self, session_id, version, url):
         raise NotImplementedError
-    def on_user_accepted(self, session_id, username, (x, y)):
+    def on_user_accepted(self, username, (x, y)):
         raise NotImplementedError
     def on_user_rejected(self):
         raise NotImplementedError
@@ -138,20 +132,22 @@ class ClientProtocolInterface(BaseClient):
     
     # Convinience protocol methods
     def move_dx_dy(self,(dx,dy)):
-        m = MoveDxDy(session_id = self.session_id, delta = (dx,dy))
+        m = MoveDxDy(session=self.session, delta=(dx, dy))
         self.send(m)
+        
     def say_this(self,message):
-        m = SayThis(message=message, session_id = self.session_id)
+        m = SayThis(message=message, session=self.session)
         self.send(m)
+        
     def request_user_join(self,username):
-        self.send(RequestUserJoin(username = username))
+        self.send(RequestUserJoin(username = username, session=self.session))
+        
     def start_connection(self):
         logger.info('Starting connection...')
-        self.send(StartConection())
+        self.send(StartConection(session=self.session))
+        
     def logout_request(self):
-        self.send(LogoutRequest(session_id = self.session_id))
-
-
+        self.send(LogoutRequest(session=self.session))
 
 class GalaktiaServerController(EventDispatcher, Controller):
     """ Implementation of a simple chat server """
@@ -166,28 +162,20 @@ class GalaktiaServerController(EventDispatcher, Controller):
             self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
 
-
         if command == "MoveDxDy":
-            session_id = input_message['subject']
             (dx, dy) = input_message['action']
-            self.dispatch_event('on_move_dx_dy', session_id, (dx,dy))
+            self.dispatch_event('on_move_dx_dy', input_message.session, (dx,dy))
         elif command == "SayThis":
-            talking_user_id = input_message['subject']
             message = input_message['action']
-            self.dispatch_event('on_say_this', talking_user_id, message)
+            self.dispatch_event('on_say_this', input_message.session, message)
 
         elif command == "RequestUserJoin":
             username = input_message['username']
-            host = input_message.host
-            port = input_message.port
-            self.dispatch_event('on_request_user_join', host, port, username)
+            self.dispatch_event('on_request_user_join', input_message.session, username)
         elif command == "StartConection":
-            host = input_message.host
-            port = input_message.port
-            self.dispatch_event('on_start_connection', (host,port))
+            self.dispatch_event('on_start_connection', input_message.session)
         elif command == "LogoutRequest":
-            session_id = input_message.get('subject')
-            self.dispatch_event('on_logout_request', session_id)
+            self.dispatch_event('on_logout_request', input_message.session)
         else:
             raise ValueError("Invalid command: %s" % command)
 
@@ -207,27 +195,10 @@ class ServerProtocolInterface(BaseServer):
     """ Convenience server interface """
 
     #Overrides
-    def __init__(self):
-
-        self.sessions = dict()
-
-        class MockSession(object):
-            def __init__(self, id):
-                self.id = id
-            def get_encryption_key(self):
-                return self.id
-        class MockSessionDAO(object):
-            def get(self, id):
-                return MockSession(id)
-
-        BaseServer.__init__(self, ProtocolCodec(MockSessionDAO()), 
+    def __init__(self, session_dao):
+        BaseServer.__init__(self, ProtocolCodec(session_dao), 
                             GalaktiaServerController())
         self.controller.push_handlers(self)
-
-    def datagramReceived(self, input_data, (host, port)):
-        self.host = host
-        self.port = port
-        BaseServer.datagramReceived(self, input_data, (host, port))
 
     def on_acknowledge(self, ack):
         #TODO: implement
@@ -236,13 +207,13 @@ class ServerProtocolInterface(BaseServer):
     # Event Handlers
     # To be implemented by class user
 
-    def on_move_dx_dy(self, session_id, (dx,dy)):
+    def on_move_dx_dy(self, session, (dx,dy)):
         raise NotImplementedError
-    def on_say_this(self, talking_user_id, message):
+    def on_say_this(self, session, message):
         raise NotImplementedError
     def on_request_user_join(self, username):
         raise NotImplementedError
-    def on_start_connection(self, (host,port) ):
+    def on_start_connection(self, session ):
         raise NotImplementedError
     def on_logout_request(self, session):
         raise NotImplementedError
@@ -252,20 +223,18 @@ class ServerProtocolInterface(BaseServer):
     def player_entered_los(self, session_list, session, position, description):
         for aSession in session_list:
             m = PlayerEnteredLOS(session_id = session.id,
-                host = aSession.host,
-                port = aSession.port,
                 position = position,
-                description = description
+                description = description,
+                session = aSession
                 )
             self.send(m)
 
     def player_moved(self, session_list, mover_session, (dx,dy), (x,y)):
         for aSession in session_list:
-            m = PlayerMoved(session_id = mover_session.id,
-                host = aSession.host,
-                port = aSession.port,
-                delta = (dx,dy),
-                position = (x,y))
+            m = PlayerMoved(session_id = mover_session.id,delta = (dx,dy),
+                position = (x,y),
+                session = aSession
+                )
             self.send(m)
 
     def someone_said(self, session_list, username, message):
@@ -273,46 +242,39 @@ class ServerProtocolInterface(BaseServer):
             self.send(SomeoneSaid(
                 username = username,
                 message = message, 
-                host = aSession.host,
-                port = aSession.port,))
+                session = aSession
+                ))
 
-    def user_accepted(self, session, player_initial_state):
-        self.send(UserAccepted( host = session.host,
-                            port = session.port,
-                            accepted = True, 
+    def user_accepted(self, session, username, player_initial_state):
+        self.send(UserAccepted( accepted = True, 
                             session_id = session.id,
-                            username = session.user.name,
-                            player_initial_state = player_initial_state
+                            username = username,
+                            player_initial_state = player_initial_state,
+                            session = session
                             ))
 
-    def user_rejected(self, host, port):
-        self.send(UserAccepted( host = host, port = port,
-                            accepted = False)
-                            )
+    def user_rejected(self, session):
+        self.send(UserAccepted(session=session, accepted=False))
 
-    def check_protocol_version(self, host, port, version, url):
-        self.send(CheckProtocolVersion(host = host, port = port,
-                    version=version, url=url))
+    def check_protocol_version(self, session, version, url):
+        self.send(CheckProtocolVersion(session=session, version=version, url=url))
 
     def user_joined(self, session_list, username):
         for aSession in session_list:
             self.send(UserJoined( username = username,
-                host = aSession.host,
-                port = aSession.port))
+                session = aSession
+                ))
 
     def logout_response(self, session):
         self.send(LogoutResponse(
-            host = session.host,
-            port = session.port,
+            session = session
         ))
 
     def user_exited(self, session_list, session, username ):
         for aSession in session_list:
-
             self.send( UserExited(
                 session_id = session.id,
-                host = aSession.host,
-                port = aSession.port,
-                username  = username
+                username  = username,
+                session = aSession
             ) )
 

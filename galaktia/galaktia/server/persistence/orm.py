@@ -18,6 +18,8 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime, \
      UnicodeText
 
+from galaktia.protocol.codec import PublicKey
+
 Entity = declarative_base()
 
 class User(Entity):
@@ -52,6 +54,12 @@ class Session(Entity):
     last_activity = Column(DateTime) # last time session was active
     
     user = relation('User', backref='Session', uselist=False)
+    
+    def get_encryption_key(self):
+        if self.user_id:
+            return (self.user.passwd + self.user.name).ljust( 16 )[0:16]
+        else:
+            return PublicKey
 
 class PendingMessage(Entity):
     """ Represents a message to be resent for protocol reliability """

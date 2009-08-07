@@ -34,10 +34,11 @@ class ActionMessage(Message):
     """ ?->? Generic command involved in the game actions protocol """
 
     def __init__(self, **kwargs):
-        self['subject'] = kwargs['subject']
-        self['action'] = kwargs['action']
-        self['object'] = kwargs['object']
-        Message.__init__(self, data=kwargs.get('data'), host=kwargs.get('host'), port=kwargs.get('port'), session=0)
+        self['subject'] = kwargs.get('subject')
+        self['action'] = kwargs.get('action')
+        self['object'] = kwargs.get('object')
+        
+        Message.__init__(self, data=kwargs.get('data'), session=kwargs.get('session'))
 
 class ActionRequest(ActionMessage):
     """ C->S Generic command that the client uses to inform the server that
@@ -45,7 +46,6 @@ class ActionRequest(ActionMessage):
 
     def __init__(self, **kwargs):
         # Client to Server requests always carry session identifiers
-        kwargs['subject'] = kwargs['session_id']
         ActionMessage.__init__(self, **kwargs)
 
 

@@ -129,7 +129,7 @@ class ChatHandler():
 
         for walter in self.window.peers:
             x,y = self.window.peers[walter]
-            if self.window.session_id == walter:
+            if self.window.session.id == walter:
                 self.walter2.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
             else:
                 self.walter.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
@@ -163,6 +163,7 @@ class ChatHandler():
     def on_someone_said(self, username, message):
         self.sound_chat.play()
         self.chat_widget.show_message("%s: %s" % (username, message))
+        
     def on_user_joined(self, username):
         self.sound_user_connected.play()
         self.chat_widget.show_message(m)

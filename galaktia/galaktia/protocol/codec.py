@@ -5,6 +5,7 @@ import simplejson
 import struct
 
 from galaktia.protocol.model import Datagram, Message
+from Crypto.Cipher import AES
 
 class Codec(object):
     """ Encodes and decodes objects """
@@ -47,7 +48,11 @@ class EncryptionCodec(Codec):
         :returns:
             tuple(str, str) with encrypted data and encryption key
         """
-        return decoded # TODO: encrypt data str with AES (pycrypto)
+        
+        message = self.prepare_message(decoded[0])
+        encoded = AES.new(decoded[1], 2).encrypt(message)        
+        
+        return (encoded, decoded[1])
 
     def decode(self, encoded):
         """
@@ -58,7 +63,28 @@ class EncryptionCodec(Codec):
         :returns:
             tuple(str, str) with decrypted data and encryption key
         """
-        return encoded # TODO: decrypt data str with AES (pycrypto)
+        
+        message = self.prepare_message(encoded[0])
+        decoded = AES.new(encoded[1], 2).decrypt(message)  
+        
+        return (decoded, encoded[1])
+    
+    def prepare_message(self, message):
+        """
+        :parameters:
+            message : str
+                Message to be prepared for de/encryption
+                
+        :returns:
+            str with the prepared message
+        """
+        
+        message_len = len(message)
+        offset = message_len % 16
+        if offset != 0:
+            message_len += ( 16 - offset )
+        
+        return message.ljust(message_len)
 
 class IdentifierPackerCodec(Codec):
     """ Packs an identifier (int) and data (str) into a str and viceversa """
@@ -124,11 +150,12 @@ class ProtocolCodec(MultipleCodec):
         self._session_dao = session_dao
 
     def encode(self, decoded):
-        host, port, session_id = decoded.host, decoded.port, decoded.session
-        # XXX decoded stores session or session_id ??
-        session = self._session_dao.get(session_id)
+        session = decoded.session
         key = session.get_encryption_key()
-        serialized = self._serializer.encode(decoded)
+        host = session.host
+        port = session.port
+        
+        serialized = self._serializer.encode(decoded)        
         encrypted, key = self._encipherer.encode((serialized, key))
         packed = self._packer.encode((session.id, encrypted))
         compressed = self._compressor.encode(packed)
@@ -136,13 +163,18 @@ class ProtocolCodec(MultipleCodec):
         return retval
 
     def decode(self, encoded):
-        host, port = encoded.host, encoded.port
         packed = self._compressor.decode(encoded.data)
         session_id, encrypted = self._packer.decode(packed)
-        session = self._session_dao.get(session_id)
+        
+        if session_id == 0:
+            session = self._session_dao.create(encoded.host, encoded.port)
+        else:
+            session = self._session_dao.get(session_id)
+                    
         key = session.get_encryption_key()
         serialized, key = self._encipherer.decode((encrypted, key))
         data = self._serializer.decode(serialized)
-        retval = Message(data=data, host=host, port=port, session=session)
+        retval = Message(data=data, session=session)
         return retval
 
+PublicKey = 'Llavepublicatroz'
