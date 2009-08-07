@@ -3,9 +3,9 @@
 
 import sys, logging
 
-from galaktia.server.protocol.operations.action import ActionRequest, \
+from galaktia.protocol.operations.action import ActionRequest, \
                         ActionResponse, ActionUpdate
-from galaktia.server.protocol.model import Acknowledge
+from galaktia.protocol.model import Acknowledge
 
 
 """

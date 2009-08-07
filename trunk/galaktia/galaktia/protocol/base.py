@@ -5,7 +5,7 @@ import logging
 
 from twisted.internet.protocol import DatagramProtocol
 
-from galaktia.server.protocol.model import Datagram, Message
+from galaktia.protocol.model import Datagram, Message
 
 logger = logging.getLogger(__name__)
 

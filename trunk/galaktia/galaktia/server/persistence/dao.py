@@ -8,7 +8,7 @@ from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
      CharacterItem, Sprite, Character, Spatial, Stationary, PendingMessage, \
      Session
-from galaktia.server.protocol.codec import SerializationCodec
+from galaktia.protocol.codec import SerializationCodec
 
 class SceneObjectDAO(GenericDAO):
     """

@@ -4,7 +4,7 @@
 import simplejson
 import struct
 
-from galaktia.server.protocol.model import Datagram, Message
+from galaktia.protocol.model import Datagram, Message
 
 class Codec(object):
     """ Encodes and decodes objects """

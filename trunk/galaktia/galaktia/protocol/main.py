@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from galaktia.server.protocol.interface import ServerProtocolInterface
-from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO, SessionDAO, UserDAO
-from galaktia.server.persistence.orm import Stationary, Character, init_db, Session, User
-
+import sys, logging, os.path
 from random import randint
+
 from twisted.internet import reactor
 from twisted.python import log
-import sys, logging
+
+from galaktia.protocol.interface import ServerProtocolInterface
+from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO, SessionDAO, UserDAO
+from galaktia.server.persistence.orm import Stationary, Character, init_db, Session, User
 
 
 logger = logging.getLogger(__name__)
 
-
 SERVER_VERSION = "0.2"
+
 
 class CamelCaseChatServer(ServerProtocolInterface):
     """ Implementation of a simple chat server """
@@ -119,22 +120,22 @@ class CamelCaseChatServer(ServerProtocolInterface):
             self.player_moved(self.session_dao.all(), session, (dx, dy), (newx, newy))
 
 
-def main(program, host='127.0.0.1', port=6414, session=None):
+def main(program, host='127.0.0.1', port=6414):
     """ Main program: Starts a chat client or server on given host:port """
-    port = int(port)
-    log_level = logging.DEBUG
+    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+    here_dir = os.path.dirname(__file__)
+    path = os.path.join(here_dir, '..', 'server', 'data', 'map.sqlite3')
+    db_conn_str = 'sqlite:///%s' % path
+    logger.info('Using database connection string: %s', db_conn_str)
+    engine, metadata, session = init_db(db_conn_str)
     protocol = CamelCaseChatServer(session)
-    logging.basicConfig(stream=sys.stderr, level=log_level)
     logger.info("Starting %s", "server")
+    port = int(port)
     reactor.listenUDP(port, protocol)
     reactor.run()
 
 if __name__ == '__main__': # This is how to run a main program
     reload(sys); sys.setdefaultencoding('utf-8')
     # log.startLogging(sys.stderr) # enables Twisted logging
+    main(*sys.argv)
 
-    #peero que nombres significativos che! Manu
-    a,b,c = init_db(db_connection_string="sqlite:///../persistence/map.sqlite3")
-    print c
-    # main(*sys.argv)
-    main(session=c,*sys.argv)

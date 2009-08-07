@@ -3,7 +3,7 @@
 
 import sys, logging
 
-from galaktia.server.protocol.model import Message, Acknowledge
+from galaktia.protocol.model import Message, Acknowledge
 
 
 """
