@@ -27,8 +27,8 @@ CLIENT_VERSION = "0.2"
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     HERE_DIR = os.path.dirname(__file__)
-    IMAGES_DIR = os.path.join(HERE_DIR, '..', 'assets', 'images')
-    SOUND_DIR = os.path.join(HERE_DIR, '..', 'assets', 'audio')
+    IMAGES_DIR = os.path.join(HERE_DIR, 'assets', 'images')
+    SOUND_DIR = os.path.join(HERE_DIR, 'assets', 'audio')
 
     def __init__(self, (host, port)):
 
@@ -152,8 +152,7 @@ def main(program, host='127.0.0.1', port=6414):
 
 
 
-if __name__ == '__main__': # This is how to run a main program
-    reload(sys); sys.setdefaultencoding('utf-8')
-    main(*sys.argv)
+if __name__ == '__main__':
+    print 'Usage: python -m galaktia.client [server host] [server port]'
 
 
