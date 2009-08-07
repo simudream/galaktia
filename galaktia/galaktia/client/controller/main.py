@@ -1,11 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 from galaktia.client.controller.pygletreactor import install
 reactor = install()
 
-
 import os, sys, logging
 
+from twisted.internet import reactor
+from twisted.python import log
 import pyglet
 pyglet.options['audio'] = ('openal', 'alsa')
 import pyglet.media
@@ -14,25 +16,19 @@ from pyglet.gl import *
 
 from galaktia.client.controller.chat import ChatHandler
 from galaktia.client.controller.login import LoginHandler
-from galaktia.server.protocol.interface import ClientProtocolInterface
+from galaktia.protocol.interface import ClientProtocolInterface
 
-
-
-
-from twisted.internet import reactor
-from twisted.python import log
 
 logger = logging.getLogger(__name__)
 
-
-
-
 CLIENT_VERSION = "0.2"
+
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
-    IMAGES_DIR = os.path.join(os.pardir, 'assets', 'images')
-    SOUND_DIR = os.path.join(os.pardir, 'assets', 'audio')
+    HERE_DIR = os.path.dirname(__file__)
+    IMAGES_DIR = os.path.join(HERE_DIR, '..', 'assets', 'images')
+    SOUND_DIR = os.path.join(HERE_DIR, '..', 'assets', 'audio')
 
     def __init__(self, (host, port)):
 

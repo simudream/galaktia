@@ -1,24 +1,21 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from galaktia.server.protocol.base import BaseServer, BaseClient
-from galaktia.server.protocol.codec import ProtocolCodec
-from galaktia.server.protocol.controller import Controller
-from galaktia.server.protocol.model import Datagram, Command
-from pyglet.event import EventDispatcher
-from twisted.internet import reactor
-from twisted.python import log
 import sys, logging
 
-from galaktia.server.protocol.operations.join import *
-from galaktia.server.protocol.operations.talk import *
-from galaktia.server.protocol.operations.move import *
-from galaktia.server.protocol.operations.exit import *
+from pyglet.event import EventDispatcher
+
+from galaktia.protocol.base import BaseServer, BaseClient
+from galaktia.protocol.codec import ProtocolCodec
+from galaktia.protocol.controller import Controller
+from galaktia.protocol.model import Datagram, Command
+from galaktia.protocol.operations.join import *
+from galaktia.protocol.operations.talk import *
+from galaktia.protocol.operations.move import *
+from galaktia.protocol.operations.exit import *
 
 
 logger = logging.getLogger(__name__)
-
-
 
 
 class GalaktiaClientController(EventDispatcher, Controller):
@@ -59,9 +56,9 @@ class GalaktiaClientController(EventDispatcher, Controller):
                 username = input_message['username']
                 x, y = input_message['player_initial_state']
                 self.dispatch_event('on_user_accepted', session_id, username, (x,y))
-            else:                
+            else:
                 self.dispatch_event('on_user_rejected')
-        
+
         # Join commands
         elif command == "CheckProtocolVersion":
             version = input_message['version']
@@ -71,7 +68,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
         elif command == "UserJoined":
             username = input_message['username']
             self.dispatch_event('on_user_joined', username)
-        
+
         # Exit Commands
         elif command == "LogoutResponse":
             self.dispatch_event('on_logout_response')
@@ -153,13 +150,9 @@ class ClientProtocolInterface(BaseClient):
         self.send(StartConection())
     def logout_request(self):
         self.send(LogoutRequest(session_id = self.session_id))
-    
-    
-    
-    
-   
-    
-    
+
+
+
 class GalaktiaServerController(EventDispatcher, Controller):
     """ Implementation of a simple chat server """
 
@@ -172,8 +165,8 @@ class GalaktiaServerController(EventDispatcher, Controller):
         if command == "Acknowledge":
             self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
-        
-        
+
+
         if command == "MoveDxDy":
             session_id = input_message['subject']
             (dx, dy) = input_message['action']
@@ -197,7 +190,7 @@ class GalaktiaServerController(EventDispatcher, Controller):
             self.dispatch_event('on_logout_request', session_id)
         else:
             raise ValueError("Invalid command: %s" % command)
-        
+
         #should return [input_message.acknowledge()]
         return []
 
@@ -265,7 +258,7 @@ class ServerProtocolInterface(BaseServer):
                 description = description
                 )
             self.send(m)
-            
+
     def player_moved(self, session_list, mover_session, (dx,dy), (x,y)):
         for aSession in session_list:
             m = PlayerMoved(session_id = mover_session.id,
@@ -296,11 +289,11 @@ class ServerProtocolInterface(BaseServer):
         self.send(UserAccepted( host = host, port = port,
                             accepted = False)
                             )
-        
+
     def check_protocol_version(self, host, port, version, url):
         self.send(CheckProtocolVersion(host = host, port = port,
                     version=version, url=url))
-        
+
     def user_joined(self, session_list, username):
         for aSession in session_list:
             self.send(UserJoined( username = username,
@@ -312,7 +305,7 @@ class ServerProtocolInterface(BaseServer):
             host = session.host,
             port = session.port,
         ))
-        
+
     def user_exited(self, session_list, session, username ):
         for aSession in session_list:
 
@@ -322,9 +315,4 @@ class ServerProtocolInterface(BaseServer):
                 port = aSession.port,
                 username  = username
             ) )
-
-
-
-
-
 
