@@ -13,6 +13,7 @@ setup(name='galaktia',
         'Twisted>=8.2',
         'SQLAlchemy>=0.5',
         'simplejson>=2.0',
+        'pycrypto>=2.0',
       ],
       packages=find_packages(exclude=['ez_setup']),
      )

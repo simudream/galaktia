@@ -33,7 +33,7 @@ class BaseServer(DatagramProtocol):
             logger.debug('Received from %s:%d: %s', host, port, input_message)
         except Exception:
             logger.exception('Failed to decode datagram from %s:%d: %s', \
-                    host, port, input_message)
+                    host, port, datagram)
             return
         #self.dispatch_events('on_receive', input_message)
         self.on_receive(input_message)

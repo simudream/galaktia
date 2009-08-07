@@ -16,10 +16,9 @@ class Datagram(object):
 class Message(dict):
     """ Represents a message to be sent or received via a protocol """
 
-    def __init__(self, data=None, host=None, port=None, session=0):
-        self.host = host
-        self.port = port
+    def __init__(self, data=None, session=0):
         self.session = session
+        
         self['name'] = self.__class__.__name__
         self['timestamp'] = time.time()
         self.update(data or {})

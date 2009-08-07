@@ -18,6 +18,7 @@ from galaktia.client.controller.chat import ChatHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.protocol.interface import ClientProtocolInterface
 
+from galaktia.protocol.codec import PublicKey
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def __init__(self, (host, port)):
 
         pyglet.window.Window.__init__(self,  width=800, height=600,caption='Galaktia')
-        ClientProtocolInterface.__init__(self, (host, port))
+        ClientProtocolInterface.__init__(self, ClientSessionDAO(), (host, port))
         self.keystate = key.KeyStateHandler()
         self.push_handlers(self.keystate)
 
@@ -45,6 +46,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         pyglet.resource.reindex()
 
         self.peers = {}
+        
+        self.session = self.session_dao.get(0)
 
     def set_window_handler(self, handler):
         self.handler = handler
@@ -75,23 +78,24 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def on_close(self):
         self.handler.on_close()
 
-
-
-
     # PROTOCOL INTERFACE
     def on_greet(self):
         self.start_connection()
-    def on_check_protocol_version(self, version, url):
+        
+    def on_check_protocol_version(self, session_id, version, url):
         if version != CLIENT_VERSION:
             raise ValueError, "Version muy vieja del cliente, necesitas la %s. " % version + \
                 "Te la podes bajar de %s" % url
         else:
             logger.info("Client Version OK :D")
 
-    def on_user_accepted(self, session_id, username, (x, y)):
-        logger.info("User accepted! session_id = %s, starting coords = (%d, %d)." % (session_id, x, y) +\
+    def on_user_accepted(self, username, (x, y)):
+        logger.info("User accepted! starting coords = (%d, %d)." % (x, y) +\
             "Try opening other clients at the same time :D...")
-        self.session_id = session_id
+        
+        self.session = ClientSession(self.session.id, username.ljust(16))
+        self.session_dao.set(self.session)
+        
         new_handler = ChatHandler(self, username, (x, y))
         self.set_window_handler(new_handler)
 
@@ -108,11 +112,11 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         logger.info(m)
         self.handler.on_user_rejected()
 
-
     def on_someone_said(self, username, message):
         m = u''+"%s: %s" % (str(username), str(message))
         logger.info(m)
         self.handler.on_someone_said(username, message)
+        
     def on_player_entered_los(self, session_id, (x,y), description):
         self.peers[session_id] = (x,y)
         m = "new walter in game... he's "+description
@@ -134,6 +138,30 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def connectionRefused(self):
         self.handler.on_connection_refused()
 
+class ClientSession:
+    """ Session stub to be used in the protocol layer """
+    
+    def __init__(self, id, key):
+        self.id = id
+        self.key = key
+        self.host = None
+        self.port = None
+        
+    def get_encryption_key(self):
+        return self.key
+
+class ClientSessionDAO:
+    """ SessionDAO stub to be used in the protocol layer """
+    
+    def __init__(self):
+        self.session = ClientSession(0, PublicKey)
+    
+    def set(self, session):
+        self.session = session
+    
+    def get(self, id):
+        self.session.id = id
+        return self.session
 
 
 def main(program, host='127.0.0.1', port=6414):

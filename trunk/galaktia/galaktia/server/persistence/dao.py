@@ -194,3 +194,13 @@ class SessionDAO(GenericDAO):
     def __init__(self, session):
         super(SessionDAO, self).__init__(session, self.ENTITY_CLASS)
         
+    def create(self, host, port):
+        
+        session = Session(host=host, port=port)        
+        self.add( session )
+        self.session.flush()
+        
+        return session
+    
+    def get_logged(self):
+        return self.filter(Session.user_id != None)
