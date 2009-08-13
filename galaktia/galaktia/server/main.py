@@ -81,7 +81,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
             session.user = user
             
             # Let players know that a new dude is in town
-            self.player_entered_los(self.session_dao.get_logged(), session, (character.x, character.y), "Cute")
+            self.player_entered_los(self.session_dao.get_logged(), session, (character.x, character.y), "cool")
             
             # for aSession in filter(lambda x: x != session_id, self.sessions):
             for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user.character in self.char_dao.get_near(character, radius=20)]:
@@ -91,7 +91,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 # necesario.
                 pos = (aSession.user.character.x, \
                     aSession.user.character.y)
-                self.player_entered_los([session], aSession, pos, "Cute")
+                self.player_entered_los([session], aSession, pos, "cool")
 
                 
 
