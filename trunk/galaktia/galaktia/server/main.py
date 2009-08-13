@@ -18,16 +18,16 @@ SERVER_VERSION = "0.2"
 
 
 class CamelCaseChatServer(ServerProtocolInterface):
-    """ Implementation of a simple chat server """
+    """ Implementation of a simple chat server :"""
 
     def __init__(self, session):
         self.session=session
             # Database session. Please, do not touch :P
         
-        self.user_dao = UserDAO(session)
-        self.char_dao = CharacterDAO(session)
-        self.stat_dao = StationaryDAO(session) # Useless ATM.
-        self.session_dao = SessionDAO(session)
+        self.user_dao = UserDAO(session())
+        self.char_dao = CharacterDAO(session())
+        self.stat_dao = StationaryDAO(session()) # Useless ATM.
+        self.session_dao = SessionDAO(session())
             
         ServerProtocolInterface.__init__(self, self.session_dao)    
 

@@ -84,6 +84,8 @@ class SceneObject(Entity):
     __mapper_args__ = {'polymorphic_on': type} # leave as last class attr
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
+    def pos(self):
+        return (self.x, self.y, self.z)
 
 class Spatial(SceneObject):
     """ Represents any object with volume in the world. """
