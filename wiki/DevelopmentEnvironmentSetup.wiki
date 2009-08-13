@@ -12,7 +12,7 @@ This document explains how to install libraries, tools and other dependencies re
      * *ipython*
      * *virtualenv*
   * *Python libraries*
-     * ~~*pygame*~~ *pyglet*
+     * *pyglet*
      * *twisted*
      * *simplejson*
      * *setuptools*
@@ -44,7 +44,7 @@ This document explains how to install libraries, tools and other dependencies re
      * *ipython*: sudo apt-get install ipython
      * *virtualenv*: sudo apt-get install python-virtualenv
   * *Python libraries*
-     * ~~*pygame*: sudo apt-get install python-pygame~~ *pyglet*
+     * *pyglet*: sudo apt-get install python-pyglet
      * *twisted*: sudo apt-get install python-twisted
      * *simplejson*: sudo apt-get install python-simplejson
      * *setuptools*: sudo apt-get install python-setuptools
@@ -53,7 +53,6 @@ This document explains how to install libraries, tools and other dependencies re
      * *sqlite*: sudo apt-get install python-sqlite
   * *PostgreSQL*: sudo apt-get install postgresql (See: http://www.guia-ubuntu.org/index.php?title=PostgreSQL )
      * *pgAdmin III*: sudo apt-get install pgadmin3
-  * *Memcached* ... not yet
 
 ==Mac OS X (Leopard)==
 
@@ -61,7 +60,7 @@ This document explains how to install libraries, tools and other dependencies re
      * *ipython*: sudo easy_install ipython
      * *virtualenv*: sudo easy_install python-virtualenv
   * *Python libraries*
-     * ~~*pygame*: See the instructions at http://pygame.org/wiki/MacCompile ~~  *pyglet*
+     * *pyglet*: sudo easy_install pyglet
      * *twisted*: sudo easy_install twisted
      * *simplejson*: sudo easy_install simplejson
      * *setuptools*: sudo easy_install setuptools
@@ -70,7 +69,6 @@ This document explains how to install libraries, tools and other dependencies re
      * *sqlite*: sudo easy_install sqlite
   * *PostgreSQL*: See the instructions at http://developer.apple.com/internet/opensource/postgres.html
      * *pgAdmin III*: See http://www.pgadmin.org/download/macosx.php
-  * *Memcached* ... not yet
 
 
 =Source Code Management=
@@ -128,6 +126,19 @@ To enter the _virtualenv_:
 {{{
 $ source $PATH_TO_ENV/bin/activate
 }}}
+
+== Recommended usage ==
+
+{{{
+$ mkdir -p ~/python-envs
+$ virtualenv -p /usr/bin/python2.6 --no-site-packages ~/python-envs/galaktia
+$ source ~/python-envs/galaktia/bin/activate
+$ easy_install -U setuptools ipython
+}}}
+
+Run the activation command (`source`...) every time you need to enter the development environment again. You may run `deactivate` to exit the environment.
+
+Pro: There is no need to `sudo easy_install` any package in virtual environments as packages may be installed locally, i.e., in a user-writable location.
 
 =IDEs _(OPTIONAL)_=
 
