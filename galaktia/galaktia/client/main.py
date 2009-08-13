@@ -182,5 +182,6 @@ def main(program, host='127.0.0.1', port=6414):
 
 if __name__ == '__main__':
     print 'Usage: python -m galaktia.client [server host] [server port]'
+    galaktia.client
 
 

@@ -56,7 +56,7 @@ class SceneObjectDAO(GenericDAO):
 class SpatialDAO(SceneObjectDAO):
     ENTITY_CLASS=Spatial
 
-    def move(self, obj, x, y, z=None, collide_objects=False):
+    def move(self, obj, x, y, z=None, collide_objects=False, warp=False):
         # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
         result=True
@@ -66,7 +66,8 @@ class SpatialDAO(SceneObjectDAO):
             return True
             # If you want to move to the same place you're in, then return
             # true
-        if(abs(x-obj.x)>1) or (abs(y-obj.y)>1) or (abs(z-obj.z)>1):
+        if not warp and ((abs(x-obj.x)>1) or (abs(y-obj.y)>1) or \
+                (abs(z-obj.z)>1)):
             return False
         # XXX: DO NOT CHANGE. When you inherit this class you will overwrite
         # ENTITY_CLASS, returning *only* the heir's objects, NOT Spatials.
