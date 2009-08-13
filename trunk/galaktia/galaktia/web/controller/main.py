@@ -37,11 +37,10 @@ class Commit(webapp.RequestHandler):
     def get(self):
         self.post()
     def post(self):
-        path = self.request.path
-        revision = int(path.split('/')[2])
+
         payload = simplejson.loads(self.request.body)
         for revision in payload["revisions"]:
-            status = "Commit de la revisión %s de galaktia. Autor: %s" % \
+            status = u"Commit de la revisión %s de galaktia. Autor: %s" % \
                     (revision["revision"],
                     revision["author"])
 
