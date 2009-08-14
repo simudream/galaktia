@@ -46,7 +46,7 @@ class UserAccepted(Message):
     """ S->C Message for informing that a certain user was accepted or 
         rejected by server. If accepted, command also carries information
         about the session identifier and the player's initial state. """
-    def __init__(self, accepted, username=None, session_id=None, \
+    def __init__(self, accepted, surroundings=None, username=None, session_id=None, \
             player_initial_state=None, ack=None, **kwargs):
         data = {'accepted': accepted }
 
@@ -58,6 +58,10 @@ class UserAccepted(Message):
 
         if player_initial_state is not None:
             data['player_initial_state'] = player_initial_state
+
+        if surroundings is not None:
+            data['surroundings'] = surroundings
+
         super(UserAccepted, self).__init__(data, **kwargs)
 
 class UserJoined(Message):
