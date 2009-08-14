@@ -40,7 +40,7 @@ class Commit(webapp.RequestHandler):
 
         payload = simplejson.loads(self.request.body)
         for revision in payload["revisions"]:
-            status = u"Commit de la revision %s de galaktia. Autor: %s. url: %s" % \
+            status = u"Commit de la revision %s de galaktia. Autor: %s en %s" % \
                     (revision["revision"],
                     revision["author"],
                     revision["url"])
