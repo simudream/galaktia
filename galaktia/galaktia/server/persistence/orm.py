@@ -80,12 +80,17 @@ class SceneObject(Entity):
     x = Column(Integer) # x coord
     y = Column(Integer) # y coord
     z = Column(Integer) # z coord, TODO: decide on how to use layers
+    image = Column(Unicode(42), default=None)
     # NOTE: position might be null (e.g.: item owned by character)
     __mapper_args__ = {'polymorphic_on': type} # leave as last class attr
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
+    
     def pos(self):
         return (self.x, self.y, self.z)
+
+    def unpack(self):
+        return (self.x, self.y, self.z, self.image)
 
 class Spatial(SceneObject):
     """ Represents any object with volume in the world. """
@@ -98,14 +103,12 @@ class Stationary(Spatial):
     __tablename__ = 'stationaries'
     __mapper_args__ = {'polymorphic_identity': u'stationary'}
     id = Column(Integer, ForeignKey('spatials.id'), primary_key=True)
-
+    
 class Ground(SceneObject):
     """ The basic map information for the client. """
     __tablename__ = 'ground'
     __mapper_args__ = {'polymorphic_identity': u'ground'}
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
-    image = Column(Unicode(42))
-        # Image identifier, NOT the actual image.
 
 class Item(Entity):
     """ Represents the class of an item """
@@ -124,7 +127,6 @@ class Sprite(Spatial):
         # direction ranges from 0 to 7, starting North & counting clockwise.
     speed = Column(Integer) # how fast can the sprite move
     arrival_timestamp = Column(DateTime) # time when it reaches current x, y
-    skin = Column(Unicode(42)) # an identifier for its appearance
         # 42 is The Answer to the Ultimate Question of Life, the Universe,
         # and Everything, as calculated by an enormous supercomputer over a
         # period of 7.5 million years
