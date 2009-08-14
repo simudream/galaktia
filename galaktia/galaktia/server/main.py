@@ -55,7 +55,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
             if not user.character:
                 character = Character()
                 character.name = username
-                character.x, character.y = (randint(0,9),randint(0,9))
+                character.x, character.y = (randint(1,19),randint(1,19))
                 character.z = 0
                 character.level = 42 # I see dead people
                 character.user_id = user.id
