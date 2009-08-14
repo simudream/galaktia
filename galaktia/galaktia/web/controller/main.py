@@ -51,7 +51,7 @@ class Commit(webapp.RequestHandler):
             "authenticity_token": "7b398163c060a32179ddd2e6630e96d961b633ef",
             "status": status,
             "twttr": "true",
-            "return_rendered_status": "true"
+            "return_rendered_status": "false"
         }
         headers = {
             "User-Agent":  "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009033100 Ubuntu/9.04 (jaunty) Firefox/3.0.8",

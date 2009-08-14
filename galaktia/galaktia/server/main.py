@@ -137,4 +137,5 @@ def main(program, port=6414):
 
 if __name__ == '__main__':
     print 'Usage: python -m galaktia.server [port]'
+    main(*sys.argv)
 

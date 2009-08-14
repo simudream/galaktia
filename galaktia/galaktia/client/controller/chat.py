@@ -57,6 +57,12 @@ class ChatHandler():
         self.sound_user_connected = pyglet.resource.media('bass.wav',streaming=False)
         self.sound_chat = pyglet.resource.media('doub.wav',streaming=False)
 
+        #music = pyglet.resource.media('music.mp3')
+        #player = pyglet.media.Player()
+        #player.queue(music)
+        #player.eos_action = 'loop'
+        #player.play()
+
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
 
