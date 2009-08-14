@@ -10,6 +10,12 @@ from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
      Session
 from galaktia.protocol.codec import SerializationCodec
 
+def mass_unpack(list):
+    result = []
+    for i in list:
+        result.append(i.unpack())
+    return result
+
 class SceneObjectDAO(GenericDAO):
     """
     Data Access Object for SceneObject entities.
@@ -47,11 +53,13 @@ class SceneObjectDAO(GenericDAO):
         return self.filter(self.klass.x <= bigX, \
                 self.klass.x >= smallX, self.klass.y <= bigY, \
                 self.klass.y >= smallY, self.klass.z == layer)
+    
     def get_near(self, obj, radius=2, return_self=False):
         list = self.get_layer_subsection(obj.x, obj.y, obj.z, radius)
         if not return_self:
             list.remove(obj)
         return list
+    
 
 class SpatialDAO(SceneObjectDAO):
     ENTITY_CLASS=Spatial
@@ -100,6 +108,8 @@ class StationaryDAO(SpatialDAO):
         should not use this function. It will always return False.
         """
         return False
+
+
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
