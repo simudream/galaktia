@@ -20,19 +20,20 @@ class GameViewport(pyglet.graphics.Batch):
         self.foreground = pyglet.graphics.OrderedGroup(1)
 
 ARROW_KEY_TO_VERSOR = {
-    65362 : (0,1),
-    65361 : (-1,0),
-    65364 : (0,-1),
-    65363 : (1,0)
+    65362 : (-1,1),
+    65361 : (-1,-1),
+    65364 : (1,-1),
+    65363 : (1,1)
 }
 
 
 class GameHandler():
 
     MAP_DIM = 20
-    PADDING_LEFT = 18
-    PADDING_DOWN = 5
-    GRID_SIZE = 20
+    PADDING_LEFT = 5
+    PADDING_DOWN = 20
+    TILE_WIDTH = 51 / 2.0
+    TILE_HEIGHT = 33 / 2.0
 
     def __init__(self, window, username, (x, y), surroundings):
         self.viewport = GameViewport()
@@ -67,8 +68,8 @@ class GameHandler():
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
 
-        self.game_view = GameView(self.MAP_DIM, self.GRID_SIZE,
-                self.PADDING_LEFT, self.PADDING_DOWN,
+        self.game_view = GameView(self.MAP_DIM, self.TILE_WIDTH, 
+                self.TILE_HEIGHT, self.PADDING_LEFT, self.PADDING_DOWN,
                 surroundings)
 
 

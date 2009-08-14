@@ -26,7 +26,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def __init__(self, (host, port)):
 
-        pyglet.window.Window.__init__(self,  width=800, height=600,caption='Galaktia')
+        pyglet.window.Window.__init__(self,  width=1024, height=768,caption='Galaktia')
         ClientProtocolInterface.__init__(self, ClientSessionDAO(), (host, port))
         self.keystate = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.keystate)
@@ -103,7 +103,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_user_rejected()
 
     def on_someone_said(self, username, message):
-        m = u"%s: %s" % (str(username), str(message))
+        m = u"%s: %s" % (username, message)
         logger.info(m)
         self.handler.on_someone_said(username, message)
 
