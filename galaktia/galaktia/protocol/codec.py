@@ -3,6 +3,7 @@
 
 import simplejson
 import struct
+import zlib
 
 from galaktia.protocol.model import Datagram, Message
 from Crypto.Cipher import AES
@@ -31,10 +32,18 @@ class CompressionCodec(Codec):
     """ Compresses and decompresses strings via zlib """
 
     def encode(self, decoded):
-        return decoded.encode('zlib')
+        
+        try:
+            return decoded.encode('zlib')
+        except zlib.error:
+            raise ValueError(decoded)
 
     def decode(self, encoded):
-        return encoded.decode('zlib')
+        
+        try:
+            return encoded.decode('zlib')
+        except zlib.error:
+            raise ValueError(encoded)
 
 class EncryptionCodec(Codec):
     """ Encrypts and decrypts strings with AES method """
@@ -49,7 +58,7 @@ class EncryptionCodec(Codec):
             tuple(str, str) with encrypted data and encryption key
         """
         
-        message = self.prepare_message(decoded[0])
+        message = self._prepare_message(decoded[0])
         encoded = AES.new(decoded[1], 2).encrypt(message)        
         
         return (encoded, decoded[1])
@@ -64,12 +73,12 @@ class EncryptionCodec(Codec):
             tuple(str, str) with decrypted data and encryption key
         """
         
-        message = self.prepare_message(encoded[0])
+        message = self._prepare_message(encoded[0])
         decoded = AES.new(encoded[1], 2).decrypt(message)  
         
         return (decoded, encoded[1])
     
-    def prepare_message(self, message):
+    def _prepare_message(self, message):
         """
         :parameters:
             message : str
@@ -155,7 +164,7 @@ class ProtocolCodec(MultipleCodec):
         host = session.host
         port = session.port
         
-        serialized = self._serializer.encode(decoded)        
+        serialized = self._serializer.encode(decoded)
         encrypted, key = self._encipherer.encode((serialized, key))
         packed = self._packer.encode((session.id, encrypted))
         compressed = self._compressor.encode(packed)
