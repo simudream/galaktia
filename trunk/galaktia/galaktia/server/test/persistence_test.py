@@ -90,9 +90,10 @@ class daoTestCase(TestCase):
         self.assertEqual(dao.move(walter, 2, 2, 0), True)
             # It won't collide, since both objects are "ghosts"
         dao.move(walter, 1, 2, 0)
-        self.assertEqual(dao.move(walter, 2, 2, 0), True)
             # Walterina is still a ghost
         walterina.collide=True
+        walter.collide=True
+        self.assertEqual(dao.move(walter, 2, 2, 0), True)
         dao.move(walter, 1, 2, 0)
         self.assertEqual(dao.move(walter, 2, 2, 0), False)
             # Now they will collide.
@@ -113,12 +114,20 @@ class daoTestCase(TestCase):
             # Now Walter is The Invisible Man!
         self.assertEqual(dao.move(walter, 2, 2, 0), False)
             # This will fail, since being invisible doesn't mean you can step
-            # over people, they have to be invisible or collidable.
+            # over people, they have to be invisible or.collide.
         walterina.show=False
         self.assertEqual(dao.move(walter, 2, 2, 0), True)
         walterina.show=True
         dao.move(walter, 2, 2, 1)
         self.assertEqual(walter.pos(), (2, 2, 1))
+        self.assertEqual(dao.move(walter, 2, 2, 0), False)
+        dao.move(walter, 1, 1, 0, warp=True)
+        dao.move(walterina, 2, 2, 0, warp=True)
+        dao.dismiss(walterina)
+        self.assertEqual(dao.move(walter, 2, 2, 0), True)
+        walterina.show=True
+        walterina.collide=True
+        self.assertEqual(dao.move(walter, 1, 1, 0), True)
         self.assertEqual(dao.move(walter, 2, 2, 0), False)
 
     def test_area_and_layer_querying(self):

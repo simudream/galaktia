@@ -84,7 +84,10 @@ class SpatialDAO(SceneObjectDAO):
         sdao = StationaryDAO(self.session)
         stationaries = sdao.get_by_coords(x, y, z)
         if(collide_objects and (isinstance(obj,self.klass) or \
-                    (hasattr(obj, "show") and hasattr(obj, "collide")))):
+                (hasattr(obj, "show") and hasattr(obj, "collide"))) and \
+                obj.collide==True):
+            # If the flag is enabled and is a Spatial-like entity, and if you
+            # can collide (i.e.: not a "ghost")...
             class_objects = self.filter(self.klass.x==x, self.klass.y==y, \
                     self.klass.z==z, self.klass.show==True, \
                     self.klass.collide==True)
@@ -97,6 +100,19 @@ class SpatialDAO(SceneObjectDAO):
         else:
             result = False
         return result
+    
+    def dismiss(self, obj):
+        """
+            Dismiss or disconnect a Sprite. This will hide the object from
+            being fetched by the move function. Equivalent to obj.show=False,
+            obj.collide=False
+        """
+        obj.show=False
+        obj.collide=False
+
+    def materialize(self, obj, collide=False):
+    	obj.show=True
+    	obj.collide=collide
 
 class StationaryDAO(SpatialDAO):
     """ Stationary objects are used for collision purposes. They represent
@@ -134,15 +150,7 @@ class ItemDAO(SceneObjectDAO):
 
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
-
-    def dismiss(self, obj):
-        """
-            Dismiss or disconnect a Sprite. This will hide the object from
-            being fetched by the move function. Equivalent to obj.show=False,
-            obj.collide=False
-        """
-        obj.show=False
-        obj.collide=False
+    
 
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character

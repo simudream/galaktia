@@ -59,7 +59,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 character.z = 0
                 character.level = 42 # I see dead people
                 character.user_id = user.id
-                character.collide = True
+                # character.collide = True
 
                 self.char_dao.add(character)
                 self.char_dao.session.flush()
@@ -70,14 +70,15 @@ class CamelCaseChatServer(ServerProtocolInterface):
             else:
                 character = user.character
                 # Make sure the user is shown correctly
-                character.show = True
+                # character.show = True
+            self.char_dao.materialize(user.character, collide=True)
 
             layer = self.stat_dao.all()
             wall_list = mass_unpack(layer)
 
             self.user_accepted( 
                     session = session,
-                    player_initial_state = (character.x, character.y),
+                    player_initial_state = (user.character.x, character.y),
                     username = user.name,
                     surroundings = wall_list
                     )
