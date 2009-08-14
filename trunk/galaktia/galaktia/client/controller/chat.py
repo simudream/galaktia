@@ -57,9 +57,9 @@ class ChatHandler():
         ]
         self.chat_widget = ChatWidget()
 
-        # sound stuff... uncomment in the future
-        #self.sound_user_connected = pyglet.resource.media('bass.wav',streaming=False)
-        #self.sound_chat = pyglet.resource.media('doub.wav',streaming=False)
+#       self.sound_user_connected = pyglet.resource.media('bass.wav',streaming=False)
+#       self.sound_chat = pyglet.resource.media('doub.wav',streaming=False)
+
         #music = pyglet.resource.media('music.mp3')
         #player = pyglet.media.Player()
         #player.queue(music)

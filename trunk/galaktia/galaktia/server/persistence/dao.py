@@ -63,8 +63,8 @@ class SceneObjectDAO(GenericDAO):
 
 class SpatialDAO(SceneObjectDAO):
     ENTITY_CLASS=Spatial
-
-    def move(self, obj, x, y, z=None, collide_objects=False, warp=False):
+    
+    def move(self, obj, x, y, z=None, collide_objects=True, warp=False):
         # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
         result=True

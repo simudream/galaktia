@@ -7,14 +7,14 @@ import sys
 # This script generates the basic structure of the database, containing only
 # Stationary entities.
 
+# USAGE: the script reads from stdin the map matrix. 0 is a Stationary, while
+# whitespace is used to mark free spots.
+
 def parse(text):
     i, j, k = 0, 0, 0
     lines=[]
     objects=[]
-    if(isinstance(text, file)):
-        lines = text.readlines()
-    elif(isinstance(text, str)):
-        lines = text.splitlines()
+    lines = text.splitlines()
     for line in lines:
         i = 0
         for char in line:
@@ -36,26 +36,24 @@ def parse(text):
 
 if __name__=='__main__':
     print "running"
-    if(len(sys.argv)<2):
-        text = sys.stdin.read()
-        print "reading from stdin"
-    else:
-        text = open(sys.argv[2])
-        print "reading from file"
-    a,b,c = init_db(db_connection_string="sqlite:///map.sqlite3")
+    regen=False
+    text = sys.stdin.read()
+    file = "map.sqlite3"
+    print "reading from stdin"
+    if "regen" in sys.argv:
+        regen=True
+    for i in sys.argv:
+        if i != "regen" and i !=sys.argv[0] and i != sys.argv[1]:
+            file=i
+    print file
+    a,b,c = init_db(db_connection_string="sqlite:///%s" % file)
     sdao = StationaryDAO(c)
     print text
+    if regen:
+        for i in sdao.all():
+            sdao.delete(i)
     lista = parse(text)
     for each in lista:
         sdao.add(each)
         print "Adding <Stationary (",each.x, each.y, each.z,")> (that's j, i, k)"
-    cdao = CharacterDAO(c)
-    walter = Character()
-    walter.x=1
-    walter.y=1
-    walter.z=0
-    walter.level=1
-    walter.name=u"walter"
-    cdao.add(walter)
     sdao.session.commit()
-    print "Walter se llama", walter.name
