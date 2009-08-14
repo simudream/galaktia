@@ -60,7 +60,7 @@ class SpatialDAO(SceneObjectDAO):
         # Verify that moving from current xy is physically possible, i.e.,
         # it's near.
         result=True
-        if(z == None):
+        if(z is None):
             z=obj.z
         if(obj.x==x and obj.y==y and obj.z==z):
             return True
@@ -75,13 +75,13 @@ class SpatialDAO(SceneObjectDAO):
         # method after being inherited.
         sdao = StationaryDAO(self.session)
         stationaries = sdao.get_by_coords(x, y, z)
-        if(collide_objects and hasattr(obj, "show") and \
-                hasattr(obj, "collide")):
+        if(collide_objects and (isinstance(obj,self.klass) or \
+                    (hasattr(obj, "show") and hasattr(obj, "collide")))):
             class_objects = self.filter(self.klass.x==x, self.klass.y==y, \
                     self.klass.z==z, self.klass.show==True, \
-                    self.klass.collide==True, self.klass.id != obj.id)
-            stationaries.append(class_objects)
-            print class_objects
+                    self.klass.collide==True)
+            for i in class_objects:
+                stationaries.append(i)
         if(not stationaries):
             obj.x=x
             obj.y=y

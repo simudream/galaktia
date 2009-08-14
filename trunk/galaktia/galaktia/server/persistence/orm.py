@@ -131,7 +131,7 @@ class Sprite(Spatial):
     controller = Column(Unicode(127))
         # controller identifies the component that handles actions
         # on interaction events with this sprite
-    show = Column(Boolean, default=False)
+    show = Column(Boolean, default=True)
         # Show determines if the object will be shown on screen, or considered
         # disconnected.
     collide = Column(Boolean, default=False)
