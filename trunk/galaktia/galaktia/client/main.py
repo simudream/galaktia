@@ -84,13 +84,13 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         logger.info("Checking if client version is OK...")
         self.handler.on_check_protocol_version(session_id, version, url)
 
-    def on_user_accepted(self, username, (x, y)):
+    def on_user_accepted(self, username, (x, y), surroundings):
         logger.info("User accepted! starting coords = (%d, %d)." % (x, y))
 
         self.session = ClientSession(self.session.id, username.ljust(16))
         self.session_dao.set(self.session)
 
-        new_handler = ChatHandler(self, username, (x, y))
+        new_handler = ChatHandler(self, username, (x, y), surroundings)
         self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):

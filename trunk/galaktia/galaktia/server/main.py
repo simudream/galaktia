@@ -8,7 +8,8 @@ from twisted.internet import reactor
 from twisted.python import log
 
 from galaktia.protocol.interface import ServerProtocolInterface
-from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO, SessionDAO, UserDAO
+from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO, \
+                    SessionDAO, UserDAO, mass_unpack
 from galaktia.server.persistence.orm import Stationary, Character, init_db, Session, User
 
 
@@ -26,7 +27,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         
         self.user_dao = UserDAO(session())
         self.char_dao = CharacterDAO(session())
-        self.stat_dao = StationaryDAO(session()) # Useless ATM.
+        self.stat_dao = StationaryDAO(session())
         self.session_dao = SessionDAO(session())
             
         ServerProtocolInterface.__init__(self, self.session_dao)    
@@ -48,9 +49,9 @@ class CamelCaseChatServer(ServerProtocolInterface):
             elif self.session_dao.get_by(user_id=user.id):
                 self.user_rejected(session=session)
                 return
-            
-            self.user_joined(username=username, session_list=self.session_dao.get_logged())            
-            
+
+            self.user_joined(username=username, session_list=self.session_dao.get_logged())
+
             if not user.character:
                 character = Character()
                 character.name = username
@@ -58,6 +59,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 character.z = 0
                 character.level = 42 # I see dead people
                 character.user_id = user.id
+                character.collide = True
 
                 self.char_dao.add(character)
                 self.char_dao.session.flush()
@@ -67,33 +69,37 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 user.character = character
             else:
                 character = user.character
-                
                 # Make sure the user is shown correctly
                 character.show = True
-                
+
+            layer = self.stat_dao.all()
+            wall_list = mass_unpack(layer)
 
             self.user_accepted( 
                     session = session,
                     player_initial_state = (character.x, character.y),
-                    username = user.name
+                    username = user.name,
+                    surroundings = wall_list
                     )
             session.user_id = user.id
             session.user = user
-            
+
             # Let players know that a new dude is in town
-            self.player_entered_los(self.session_dao.get_logged(), session, (character.x, character.y), "cool")
-            
+            self.player_entered_los(self.session_dao.get_logged(), session,
+                    (character.x, character.y), username)
+
+
             # for aSession in filter(lambda x: x != session_id, self.sessions):
-            for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user.character in self.char_dao.get_near(character, radius=20)]:
+            for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user.character in \
+                                    self.char_dao.get_near(character, radius=20)]:
                 # Explicación: pide todas las sessions (no propias), pero
                 # que además tengan un personaje asociado y que estén
                 # dentro de radio 20 del usuario. Es más, el if x != no es
                 # necesario.
                 pos = (aSession.user.character.x, \
                     aSession.user.character.y)
-                self.player_entered_los([session], aSession, pos, "cool")
+                self.player_entered_los([session], aSession, pos, aSession.user.character.name)
 
-                
 
     def on_start_connection(self, session):
         self.check_protocol_version(session, 

@@ -54,7 +54,8 @@ class GalaktiaClientController(EventDispatcher, Controller):
             if input_message['accepted']:
                 username = input_message['username']
                 x, y = input_message['player_initial_state']
-                self.dispatch_event('on_user_accepted', username, (x,y))
+                surroundings = input_message['surroundings']
+                self.dispatch_event('on_user_accepted', username, (x,y), surroundings)
             else:
                 self.dispatch_event('on_user_rejected')
 
@@ -118,7 +119,7 @@ class ClientProtocolInterface(BaseClient):
         raise NotImplementedError
     def on_check_protocol_version(self, session_id, version, url):
         raise NotImplementedError
-    def on_user_accepted(self, username, (x, y)):
+    def on_user_accepted(self, username, (x, y), surroundings):
         raise NotImplementedError
     def on_user_rejected(self):
         raise NotImplementedError
@@ -245,12 +246,13 @@ class ServerProtocolInterface(BaseServer):
                 session = aSession
                 ))
 
-    def user_accepted(self, session, username, player_initial_state):
+    def user_accepted(self, session, username, player_initial_state, surroundings):
         self.send(UserAccepted( accepted = True, 
                             session_id = session.id,
                             username = username,
                             player_initial_state = player_initial_state,
-                            session = session
+                            session = session,
+                            surroundings = surroundings
                             ))
 
     def user_rejected(self, session):

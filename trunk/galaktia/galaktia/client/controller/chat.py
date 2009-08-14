@@ -31,7 +31,7 @@ class ChatHandler():
     PADDING_DOWN = 5
     MAP_DIM = 20
 
-    def __init__(self, window, username, (x, y)):
+    def __init__(self, window, username, (x, y), surroundings):
         self.viewport = LoginViewport()
         self.window = window
         self.welcomeLabel = pyglet.text.Label(u'¡WalterLand!',
@@ -49,14 +49,17 @@ class ChatHandler():
         self.walter = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'walter.gif'))
         self.walter2 = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'walter2.gif'))
         self.piso = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'piso.gif'))
+        self.pared = pyglet.image.load(os.path.join(self.window.IMAGES_DIR, 'pared.gif'))
+
+
         self.widgets = [
             TextWidget('', 130, 10, int(self.window.width//3), self.viewport),
         ]
         self.chat_widget = ChatWidget()
 
-        self.sound_user_connected = pyglet.resource.media('bass.wav',streaming=False)
-        self.sound_chat = pyglet.resource.media('doub.wav',streaming=False)
-
+        # sound stuff... uncomment in the future
+        #self.sound_user_connected = pyglet.resource.media('bass.wav',streaming=False)
+        #self.sound_chat = pyglet.resource.media('doub.wav',streaming=False)
         #music = pyglet.resource.media('music.mp3')
         #player = pyglet.media.Player()
         #player.queue(music)
@@ -65,6 +68,8 @@ class ChatHandler():
 
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
+
+        self.mapa = [(t[0],t[1]) for t in surroundings]
 
     def on_mouse_motion(self, x, y, dx, dy):
         for widget in self.widgets:
@@ -139,6 +144,8 @@ class ChatHandler():
                 self.walter2.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
             else:
                 self.walter.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
+        for x,y in self.mapa:
+            self.pared.blit(self.grid_size*(x+self.PADDING_LEFT),self.grid_size*(y+self.PADDING_DOWN))
 
     def on_key_press(self, symbol, modifiers):
         if symbol == pyglet.window.key.ESCAPE:
@@ -167,15 +174,16 @@ class ChatHandler():
         glMatrixMode(gl.GL_MODELVIEW)
 
     def on_someone_said(self, username, message):
-        self.sound_chat.play()
+        #self.sound_chat.play()
         self.chat_widget.show_message("%s: %s" % (username, message))
         
     def on_user_joined(self, username):
-        self.sound_user_connected.play()
+        #self.sound_user_connected.play()
+        m = "User joined: %s" % username
         self.chat_widget.show_message(m)
 
     def on_user_exited(self,session_id, username):
-        self.sound_user_connected.play()
+        #self.sound_user_connected.play()
         m = "User left room: %s" % username
         self.chat_widget.show_message(m)
         del self.window.peers[session_id]
