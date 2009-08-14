@@ -14,6 +14,7 @@ setup(name='galaktia',
         'SQLAlchemy>=0.5',
         'simplejson>=2.0',
         'pycrypto>=2.0',
+        'mock>=0.5',
       ],
       packages=find_packages(exclude=['ez_setup']),
      )
