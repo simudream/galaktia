@@ -6,16 +6,15 @@ reactor = install()
 
 import os, sys, logging
 
-from twisted.internet import reactor
-from twisted.python import log
 import pyglet
 pyglet.options['audio'] = ('openal', 'alsa')
-import pyglet.media
-from pyglet.window import key
-from pyglet.gl import *
+from pyglet.gl import glViewport, glMatrixMode, glLoadIdentity, glOrtho
+from twisted.internet import reactor
+from twisted.python import log
 
-from galaktia.client.controller.chat import ChatHandler
+from galaktia.client.controller.game import GameHandler
 from galaktia.client.controller.login import LoginHandler
+from galaktia.client.paths import IMAGES_DIR, SOUND_DIR
 from galaktia.protocol.interface import ClientProtocolInterface
 
 from galaktia.protocol.codec import PublicKey
@@ -25,25 +24,19 @@ logger = logging.getLogger(__name__)
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
-    HERE_DIR = os.path.dirname(__file__)
-    IMAGES_DIR = os.path.join(HERE_DIR, 'assets', 'images')
-    SOUND_DIR = os.path.join(HERE_DIR, 'assets', 'audio')
-
     def __init__(self, (host, port)):
 
         pyglet.window.Window.__init__(self,  width=800, height=600,caption='Galaktia')
         ClientProtocolInterface.__init__(self, ClientSessionDAO(), (host, port))
-        self.keystate = key.KeyStateHandler()
+        self.keystate = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.keystate)
 
-        icon = pyglet.image.load(os.path.join(self.IMAGES_DIR, 'logo.jpg'))
+        icon = pyglet.image.load(os.path.join(IMAGES_DIR, 'logo.jpg'))
         self.set_icon(icon)
 
         # jajaja esto es muy hacker!
-        pyglet.resource.path = [ self.SOUND_DIR ]
+        pyglet.resource.path = [ SOUND_DIR ]
         pyglet.resource.reindex()
-
-        self.peers = {}
 
         self.session = self.session_dao.get(0)
 
@@ -79,9 +72,10 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     # PROTOCOL INTERFACE
     def on_greet(self):
         self.start_connection()
-        
+
     def on_check_protocol_version(self, session_id, version, url):
-        logger.info("Checking if client version is OK...")
+        m = "Checking if client version is OK..."
+        logger.info(m)
         self.handler.on_check_protocol_version(session_id, version, url)
 
     def on_user_accepted(self, username, (x, y), surroundings):
@@ -90,7 +84,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.session = ClientSession(self.session.id, username.ljust(16))
         self.session_dao.set(self.session)
 
-        new_handler = ChatHandler(self, username, (x, y), surroundings)
+        new_handler = GameHandler(self, username, (x, y), surroundings)
         self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):
@@ -99,6 +93,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_user_joined(username)
 
     def on_user_exited(self, session_id, username):
+        m = "User exited: %s" % username
+        logger.info(m)
         self.handler.on_user_exited(session_id, username)
 
     def on_user_rejected(self):
@@ -107,19 +103,19 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_user_rejected()
 
     def on_someone_said(self, username, message):
-        m = u''+"%s: %s" % (str(username), str(message))
+        m = u"%s: %s" % (str(username), str(message))
         logger.info(m)
         self.handler.on_someone_said(username, message)
-        
+
     def on_player_entered_los(self, session_id, (x,y), description):
-        self.peers[session_id] = (x,y)
         m = "New player entered game... he's %s." % description
         logger.info(m)
+        self.handler.on_player_entered_los(session_id, (x,y), description)
 
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
-        self.peers[other_session_id] = (x,y)
         m = "Player %s moved to %s" % (str(other_session_id),str((x,y)))
         logger.info(m)
+        self.handler.on_player_moved(other_session_id, (dx,dy), (x,y))
 
     def on_logout_response(self):
         logger.info("Client application terminated")
@@ -130,29 +126,31 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         return True
     
     def connectionRefused(self):
+        m = "Connection to server was refused"
+        logger.info(m)
         self.handler.on_connection_refused()
 
 class ClientSession:
     """ Session stub to be used in the protocol layer """
-    
+
     def __init__(self, id, key):
         self.id = id
         self.key = key
         self.host = None
         self.port = None
-        
+
     def get_encryption_key(self):
         return self.key
 
 class ClientSessionDAO:
     """ SessionDAO stub to be used in the protocol layer """
-    
+
     def __init__(self):
         self.session = ClientSession(0, PublicKey)
-    
+
     def set(self, session):
         self.session = session
-    
+
     def get(self, id):
         self.session.id = id
         return self.session

@@ -1,19 +1,18 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import pyglet, os
-from galaktia.client.controller.widget import TextWidget, PasswordField
+import os
+
+import pyglet
 from pyglet.gl import glViewport, glMatrixMode, glLoadIdentity, glOrtho
 import pyglet.gl as gl
 
-from galaktia.client.controller.game import GameHandler
+from galaktia.client.controller.widget import TextWidget, PasswordField
+
 
 CLIENT_VERSION = "0.2"
 
 class LoginViewport(pyglet.graphics.Batch):
-
-    IMAGES_DIR = os.path.join(os.path.dirname( \
-            os.path.abspath(__file__)), os.pardir, 'assets', 'images')
 
     def __init__(self):
         super(LoginViewport, self).__init__()
