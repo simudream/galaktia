@@ -8,6 +8,8 @@ import pyglet.gl as gl
 
 from galaktia.client.controller.game import GameHandler
 
+CLIENT_VERSION = "0.2"
+
 class LoginViewport(pyglet.graphics.Batch):
 
     IMAGES_DIR = os.path.join(os.path.dirname( \
@@ -26,7 +28,7 @@ class LoginHandler():
         self.window = window
         self.welcomeLabel = pyglet.text.Label(u'¡Welcome to Galaktia!',
                 font_name='Arial', font_size=36, bold=True,
-                x=self.window.width//2, y=self.window.height//2,
+                x=self.window.width//2, y=self.window.height//1.5,
                 anchor_x='center', anchor_y='center')
         self.usernameLabel = pyglet.text.Label(u'Username',
                 font_name='Arial', font_size=12, bold=True,
@@ -52,6 +54,8 @@ class LoginHandler():
         self.focus = None
         self.set_focus(self.widgets[0])
 
+        self.old_version = False
+
     def on_mouse_motion(self, x, y, dx, dy):
         for widget in self.widgets:
             if widget.hit_test(x, y):
@@ -61,10 +65,11 @@ class LoginHandler():
             self.window.set_mouse_cursor(None)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        for widget in self.widgets:
-            if widget.hit_test(x, y):
-                self.set_focus(widget)
-                break
+        if self.focus:
+            for widget in self.widgets:
+                if widget.hit_test(x, y):
+                    self.set_focus(widget)
+                    break
         if self.focus:
             self.focus.caret.on_mouse_press(x, y, button, modifiers)
 
@@ -114,7 +119,7 @@ class LoginHandler():
         elif symbol in (pyglet.window.key.ENTER, pyglet.window.key.NUM_ENTER):
             self.ingresar()
             return True
-        elif symbol == pyglet.window.key.TAB:
+        elif symbol == pyglet.window.key.TAB and self.focus:
             this = self.widgets.index(self.focus)
             self.set_focus(self.widgets[1-this])
     def on_key_release(self,symbol,modifiers):
@@ -128,12 +133,18 @@ class LoginHandler():
         glMatrixMode(gl.GL_MODELVIEW)
 
     def on_user_rejected(self):
-        self.stateLabel.text = u'Oops. ¡Ya hay un jugador con ese nombre!'
+        self.stateLabel.text = u'Oops. ¡That name is already taken!'
+    def on_check_protocol_version(self, session_id, version, url):
+        if version != CLIENT_VERSION:
+            self.stateLabel.text = ("Client version is too old. You need %s." + \
+            " Download it from %s" ) % (version, url)
+            self.old_version = True
+            self.set_focus(None) 
 
     def ingresar(self):
         username = self.widgets[0].text()
         self.window.request_user_join(username)
 
     def on_connection_refused(self):
-        self.stateLabel.text = u'No hay server del otro lado'
+        self.stateLabel.text = u'No server listening!'
 

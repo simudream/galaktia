@@ -22,8 +22,6 @@ from galaktia.protocol.codec import PublicKey
 
 logger = logging.getLogger(__name__)
 
-CLIENT_VERSION = "0.2"
-
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
@@ -46,7 +44,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         pyglet.resource.reindex()
 
         self.peers = {}
-        
+
         self.session = self.session_dao.get(0)
 
     def set_window_handler(self, handler):
@@ -83,19 +81,15 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.start_connection()
         
     def on_check_protocol_version(self, session_id, version, url):
-        if version != CLIENT_VERSION:
-            raise ValueError, "Version muy vieja del cliente, necesitas la %s. " % version + \
-                "Te la podes bajar de %s" % url
-        else:
-            logger.info("Client Version OK :D")
+        logger.info("Checking if client version is OK...")
+        self.handler.on_check_protocol_version(session_id, version, url)
 
     def on_user_accepted(self, username, (x, y)):
-        logger.info("User accepted! starting coords = (%d, %d)." % (x, y) +\
-            "Try opening other clients at the same time :D...")
-        
+        logger.info("User accepted! starting coords = (%d, %d)." % (x, y))
+
         self.session = ClientSession(self.session.id, username.ljust(16))
         self.session_dao.set(self.session)
-        
+
         new_handler = ChatHandler(self, username, (x, y))
         self.set_window_handler(new_handler)
 
@@ -119,12 +113,12 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         
     def on_player_entered_los(self, session_id, (x,y), description):
         self.peers[session_id] = (x,y)
-        m = "new walter in game... he's "+description
+        m = "New player entered game... he's %s." % description
         logger.info(m)
 
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
         self.peers[other_session_id] = (x,y)
-        m = "player %s moved to %s" % (str(other_session_id),str((x,y)))
+        m = "Player %s moved to %s" % (str(other_session_id),str((x,y)))
         logger.info(m)
 
     def on_logout_response(self):
@@ -182,6 +176,5 @@ def main(program, host='127.0.0.1', port=6414):
 
 if __name__ == '__main__':
     print 'Usage: python -m galaktia.client [server host] [server port]'
-    galaktia.client
-
+    main(*sys.argv)
 
