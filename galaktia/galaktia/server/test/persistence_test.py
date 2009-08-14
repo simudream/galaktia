@@ -87,36 +87,39 @@ class daoTestCase(TestCase):
         self.assertEqual(dao.move(walter, 2, 2), True)
             # Moving to the same place should always return True
         dao.move(walter, 1, 2, 0)
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), True)
+        self.assertEqual(dao.move(walter, 2, 2, 0), True)
             # It won't collide, since both objects are "ghosts"
         dao.move(walter, 1, 2, 0)
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), True)
+        self.assertEqual(dao.move(walter, 2, 2, 0), True)
             # Walterina is still a ghost
         walterina.collide=True
         dao.move(walter, 1, 2, 0)
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), False)
+        self.assertEqual(dao.move(walter, 2, 2, 0), False)
             # Now they will collide.
+        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=False), \
+                True)
+        dao.move(walter, 1, 2, 0)
         self.assertEqual(walter.pos(), (1, 2, 0))
             # Collide Walter with Walterina and see if Walter remains in 1-2-0
         # ==== Multi Layer Test ====
         self.assertEqual(dao.move(walter, 3, 3, 1, warp=True), True)
             # Move Walter to layer 1, x=3, y=3...
-        self.assertEqual(dao.move(walter, 2, 2, 1, collide_objects=True), True)
+        self.assertEqual(dao.move(walter, 2, 2, 1), True)
             # ...and then move it to the same x-y where Walterina is. They
             # shouldn't collide.
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), False)
+        self.assertEqual(dao.move(walter, 2, 2, 0), False)
             # You can't step over Walterina! >:(
         walter.show=False
             # Now Walter is The Invisible Man!
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), False)
+        self.assertEqual(dao.move(walter, 2, 2, 0), False)
             # This will fail, since being invisible doesn't mean you can step
             # over people, they have to be invisible or collidable.
         walterina.show=False
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), True)
+        self.assertEqual(dao.move(walter, 2, 2, 0), True)
         walterina.show=True
         dao.move(walter, 2, 2, 1)
         self.assertEqual(walter.pos(), (2, 2, 1))
-        self.assertEqual(dao.move(walter, 2, 2, 0, collide_objects=True), False)
+        self.assertEqual(dao.move(walter, 2, 2, 0), False)
 
     def test_area_and_layer_querying(self):
         """ Create a minimap with some objects and test the get_layer_*
