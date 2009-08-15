@@ -20,10 +20,10 @@ class GameViewport(pyglet.graphics.Batch):
         self.foreground = pyglet.graphics.OrderedGroup(1)
 
 ARROW_KEY_TO_VERSOR = {
-    65362 : (-1,1),
-    65361 : (-1,-1),
-    65364 : (1,-1),
-    65363 : (1,1)
+    65362 : (-0.5,0.5),
+    65361 : (-0.5,-0.5),
+    65364 : (0.5,-0.5),
+    65363 : (0.5,0.5)
 }
 
 
@@ -38,18 +38,24 @@ class GameHandler():
     def __init__(self, window, username, (x, y), surroundings):
         self.viewport = GameViewport()
         self.window = window
+
+        self.keyboard = pyglet.window.key.KeyStateHandler()
+        self.keyboard[pyglet.window.key.UP] = self.keyboard[pyglet.window.key.DOWN] = \
+            self.keyboard[pyglet.window.key.LEFT] = self.keyboard[pyglet.window.key.RIGHT] = False
+        self.window.push_handlers(self.keyboard)
+
         self.welcomeLabel = pyglet.text.Label(u'¡WalterLand!',
-                font_name='Arial', font_size=36, bold=True,
-                x=self.window.width//4, y=self.window.height-40,
-                anchor_x='center', anchor_y='center')
+            font_name='Arial', font_size=36, bold=True,
+            x=self.window.width//4, y=self.window.height-40,
+            anchor_x='center', anchor_y='center')
         self.usernameLabel = pyglet.text.Label(u''+username,
-                font_name='Arial', font_size=12, bold=True,
-                x=10, y=24,
-                anchor_x='left', anchor_y='center')
+            font_name='Arial', font_size=12, bold=True,
+            x=10, y=24,
+            anchor_x='left', anchor_y='center')
         self.chatInformLabel = pyglet.text.Label(u'Press enter to chat',
-                font_name='Arial', font_size=12, bold=True,
-                x=10, y=24,
-                anchor_x='left', anchor_y='center')
+            font_name='Arial', font_size=12, bold=True,
+            x=10, y=24,
+            anchor_x='left', anchor_y='center')
 
         self.widgets = [
             TextWidget('', 130, 10, int(self.window.width//3), self.viewport),
@@ -99,14 +105,20 @@ class GameHandler():
                 self.focus.caret.on_text(text)
 
     def on_text_motion(self, motion):
+        print self.keyboard
         if self.focus:
             self.focus.caret.on_text_motion(motion)
-        else:
-            try:
-                (dx,dy) = ARROW_KEY_TO_VERSOR[motion]
-                self.window.move_dx_dy((dx,dy))
-            except:
-                pass
+        elif motion in ARROW_KEY_TO_VERSOR:
+            (dx,dy) = ARROW_KEY_TO_VERSOR[motion]
+            dx, dy = 0, 0
+            for arrow_key in ARROW_KEY_TO_VERSOR:
+                if self.keyboard[arrow_key]:
+                    versor_tuple = ARROW_KEY_TO_VERSOR[arrow_key]
+                    dx += versor_tuple[0]
+                    dy += versor_tuple[1]
+            dx, dy = int(round(dx)), int(round(dy))
+            self.window.move_dx_dy((dx,dy))
+
 
     def on_text_motion_select(self, motion):
         if self.focus:
