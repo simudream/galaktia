@@ -118,10 +118,16 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
     def on_move_dx_dy(self, session, (dx,dy)):
         character = session.user.character
-        (newx, newy) = ( (character.x+dx)%20, (character.y+dy)%20)
+        newx, newy = (character.x+dx, character.y+dy)
 
         if self.char_dao.move(character, newx, newy):
             self.player_moved(self.session_dao.get_logged(), session, (dx, dy), (newx, newy))
+        elif dx * dy != 0:
+            print "interesting case, %s, %s" % (dx,dy)
+            if self.char_dao.move(character, newx-dx, newy):
+                self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
+            elif self.char_dao.move(character, newx, newy-dy):
+                self.player_moved(self.session_dao.get_logged(), session, (dx, 0), (newx, newy-dy))
 
 
 def get_session():

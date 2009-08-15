@@ -20,10 +20,10 @@ class GameViewport(pyglet.graphics.Batch):
         self.foreground = pyglet.graphics.OrderedGroup(1)
 
 ARROW_KEY_TO_VERSOR = {
-    65362 : (-0.5,0.5),
-    65361 : (-0.5,-0.5),
-    65364 : (0.5,-0.5),
-    65363 : (0.5,0.5)
+    pyglet.window.key.UP : (-0.5,0.5),
+    pyglet.window.key.LEFT : (-0.5,-0.5),
+    pyglet.window.key.DOWN : (0.5,-0.5),
+    pyglet.window.key.RIGHT : (0.5,0.5)
 }
 
 
