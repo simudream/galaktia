@@ -8,6 +8,8 @@ import os, sys, logging
 
 import pyglet
 pyglet.options['audio'] = ('openal', 'alsa')
+pyglet.options['vsync'] = None
+pyglet.options['xsync'] = False
 from pyglet.gl import glViewport, glMatrixMode, glLoadIdentity, glOrtho
 from twisted.internet import reactor
 from twisted.python import log
@@ -19,14 +21,17 @@ from galaktia.protocol.interface import ClientProtocolInterface
 
 from galaktia.protocol.codec import PublicKey
 
+pyglet.clock.set_fps_limit(30)
+
 logger = logging.getLogger(__name__)
 
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def __init__(self, (host, port)):
-
-        pyglet.window.Window.__init__(self,  width=1024, height=768,caption='Galaktia')
+        pyglet.clock.set_fps_limit(60)
+        pyglet.window.Window.__init__(self,  width=1024, height=768, \
+                caption='Galaktia', vsync=0)
         ClientProtocolInterface.__init__(self, ClientSessionDAO(), (host, port))
         self.keystate = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.keystate)
@@ -39,6 +44,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         pyglet.resource.reindex()
 
         self.session = self.session_dao.get(0)
+        self.fps_display=pyglet.clock.ClockDisplay()
 
     def set_window_handler(self, handler):
         self.handler = handler
@@ -60,6 +66,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_text_motion_select(motion)
     def on_draw(self):
         self.handler.on_draw()
+        self.fps_display.draw()
     def on_key_press(self, symbol, modifiers):
         self.handler.on_key_press(symbol,modifiers)
     def on_key_release(self,symbol, modifiers):
