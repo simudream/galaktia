@@ -32,14 +32,14 @@ class CompressionCodec(Codec):
     """ Compresses and decompresses strings via zlib """
 
     def encode(self, decoded):
-        
+
         try:
             return decoded.encode('zlib')
         except zlib.error:
             raise ValueError(decoded)
 
     def decode(self, encoded):
-        
+
         try:
             return encoded.decode('zlib')
         except zlib.error:
@@ -57,10 +57,10 @@ class EncryptionCodec(Codec):
         :returns:
             tuple(str, str) with encrypted data and encryption key
         """
-        
+
         message = self._prepare_message(decoded[0])
-        encoded = AES.new(decoded[1], 2).encrypt(message)        
-        
+        encoded = AES.new(decoded[1], 2).encrypt(message)
+
         return (encoded, decoded[1])
 
     def decode(self, encoded):
@@ -72,27 +72,27 @@ class EncryptionCodec(Codec):
         :returns:
             tuple(str, str) with decrypted data and encryption key
         """
-        
+
         message = self._prepare_message(encoded[0])
-        decoded = AES.new(encoded[1], 2).decrypt(message)  
-        
+        decoded = AES.new(encoded[1], 2).decrypt(message)
+
         return (decoded, encoded[1])
-    
+
     def _prepare_message(self, message):
         """
         :parameters:
             message : str
                 Message to be prepared for de/encryption
-                
+
         :returns:
             str with the prepared message
         """
-        
+
         message_len = len(message)
         offset = message_len % 16
         if offset != 0:
             message_len += ( 16 - offset )
-        
+
         return message.ljust(message_len)
 
 class IdentifierPackerCodec(Codec):
@@ -156,34 +156,38 @@ class ProtocolCodec(MultipleCodec):
     _compressor = CompressionCodec()
 
     def __init__(self, session_dao):
-        self._session_dao = session_dao
+        self.session_dao = session_dao
 
     def encode(self, decoded):
         session = decoded.session
-        key = session.get_encryption_key()
-        host = session.host
-        port = session.port
-        
+        # TODO: case: session.id == 0 (no encryption, etc.)
+        key = session.secret_key
         serialized = self._serializer.encode(decoded)
         encrypted, key = self._encipherer.encode((serialized, key))
         packed = self._packer.encode((session.id, encrypted))
         compressed = self._compressor.encode(packed)
+        host, port = session.host, session.port
         retval = Datagram(compressed, host=host, port=port)
         return retval
 
     def decode(self, encoded):
         packed = self._compressor.decode(encoded.data)
         session_id, encrypted = self._packer.decode(packed)
-        
         if session_id == 0:
-            session = self._session_dao.create(encoded.host, encoded.port)
+            host, port = encoded.host, encoded.port
+            session = self.session_dao.create(host=host, port=port)
+            serialized = encrypted # no encryption when session_id == 0
+            data = self._serializer.decode(serialized)
+            session.character_id = 0
+            session.secret_key = 'g4L4kT14 rUlZ!'
+                    # TODO: bind character_id, secret_key, etc.
+                    # by copying user data such as character and password
+                    # (user_dao or character_dao needed)
         else:
-            session = self._session_dao.get(session_id)
-                    
-        key = session.get_encryption_key()
-        serialized, key = self._encipherer.decode((encrypted, key))
-        data = self._serializer.decode(serialized)
-        retval = Message(data=data, session=session)
+            session = self.session_dao.get(session_id)
+            key = session.secret_key
+            serialized, key = self._encipherer.decode((encrypted, key))
+            data = self._serializer.decode(serialized)
+        retval = Message(session=session, **data)
         return retval
 
-PublicKey = 'Llavepublicatroz'

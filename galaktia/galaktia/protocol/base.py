@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import time
 
 from twisted.internet.protocol import DatagramProtocol
 
@@ -18,7 +19,7 @@ class BaseServer(DatagramProtocol):
 
         :parameters:
             codec : Codec
-                Converts Datagram to Message and viceversa
+                Converts ``Datagram`` to ``Message`` and viceversa
             controller : Controller
                 Implements a message processing method
         """
@@ -50,8 +51,7 @@ class BaseServer(DatagramProtocol):
             logger.exception('Failed to encode message: %s', output_message)
             return
         try:
-            destination = datagram.get_destination()
-            self.transport.write(datagram.data, destination)
+            self.transport.write(datagram.data, datagram.destination)
             logger.debug('Sent to %s: %s', destination or 'server', \
                     output_message)
         except Exception:
@@ -89,30 +89,29 @@ class BaseClient(BaseServer):
 class ReliableServer(BaseServer):
     """ Implements a reliability layer on BaseServer """
 
+    self.TIMEOUT = 60 # 1 minute
+
     def __init__(self, codec, controller, message_dao):
         BaseServer.__init__(self, codec, controller)
         self.message_dao = message_dao
 
     def on_receive(self, input_message):
-        if 'ack' in input_message:
-            message = self.message_dao.get_message_for_ack(input_message)
-            if message is not None:
-                self.message_dao.delete(message)
-        else:
-            ack = self.message_dao.get_ack_for_message(input_message)
-            if ack is None:
-                ack = input_message.acknowledge()
-                if ack is not None:
-                    self.send(ack) # send adds message to DAO
+        msg_buffer = input_message.session.msg_buffer
+        msg_buffer.update_received(input_message)
 
     def on_send(self, output_message):
-        self.message_dao.put(output_message)
+        msg_buffer = output_message.session.msg_buffer
+        output_message['ack'] = msg_buffer.get_acknowledged()
+        msg_buffer.update_sent(output_message)
+        self.schedule(self.get_timeout_callback(msg_buffer))
 
-    def on_timeout(self):
-        # should be called on regular intervals (e.g.: every 60 seconds)
-        TIMEOUT = 60 # 1 minute
-        self.message_dao.clean_acks(8 * TIMEOUT)
-        unacknowledged = self.message_dao.get_unacknowleged_messages(TIMEOUT)
-        for message in unacknowledged:
-            self.send(message)
+    def schedule(self, callback):
+        pass # TODO: set timer to run callback in self.TIMEOUT seconds
+
+    def get_timeout_callback(self, msg_buffer):
+        server = self
+        def callback(self, server=server, msg_buffer=msg_buffer):
+            for message in msg_buffer.get_pending(time.time() - self.TIMEOUT):
+                server.send(message)
+        return callback
 

@@ -6,8 +6,7 @@ from time import time
 
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
-     CharacterItem, Sprite, Character, Spatial, Stationary, PendingMessage, \
-     Session
+     CharacterItem, Sprite, Character, Spatial, Stationary
 from galaktia.protocol.codec import SerializationCodec
 
 def mass_unpack(list):
@@ -150,7 +149,7 @@ class ItemDAO(SceneObjectDAO):
 
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
-    
+
 
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character
@@ -162,64 +161,3 @@ class CharacterDAO(SpriteDAO):
 class CharacterItemDAO(SpriteDAO):
     ENTITY_CLASS=CharacterItem
 
-class PendingMessageDAO(GenericDAO):
-    ENTITY_CLASS=PendingMessage
-
-    _serializer = SerializationCodec()
-
-    def put(self, message):
-        pending_message = self.get(session_id=message.session, \
-                timestamp=message['timestamp'])
-        if pending_message is not None:
-            pending_message.last_sent = time()
-        else:
-            s = self._serializer.encode(message)
-            pending_message = PendingMessage(session_id=message.session, \
-                    timestamp=message['timestamp'], ack=message.get('ack'), \
-                    last_sent=time(), serialization=s)
-            self.add(pending_message)
-
-    def _decode(self, pending):
-        if pending is None:
-            return None
-        message = self._serializer.decode(pending.serialization)
-        message.session = pending.session_id
-        return message
-
-    def get_message_for_ack(self, ack):
-        pending_message = self.get_by(session_id=ack.session, \
-                timestamp=ack['timestamp'], ack=ack.get('ack'))
-        return self._decode(pending_message)
-
-    def get_ack_for_message(self, message):
-        pending_ack = self.get_by(session_id=message.session, \
-                timestamp=message['timestamp'], ack=message.get('ack'))
-        return self._decode(pending_ack)
-
-    def get_unacknowleged_messages(self, interval=0):
-        messages = self.filter(PendingMessage.ack != None, \
-                PendingMessage.last_sent < time() - interval)
-        return [self._decode(i) for i in messages]
-
-    def clean_acks(self, interval=0):
-        messages = self.filter(PendingMessage.ack == None, \
-                PendingMessage.last_sent < time() - interval)
-        map(self.delete, messages)
-
-class SessionDAO(GenericDAO):
-    
-    ENTITY_CLASS=Session
-    
-    def __init__(self, session):
-        super(SessionDAO, self).__init__(session, self.ENTITY_CLASS)
-        
-    def create(self, host, port):
-        
-        session = Session(host=host, port=port)        
-        self.add( session )
-        self.session.flush()
-        
-        return session
-    
-    def get_logged(self):
-        return self.filter(Session.user_id != None)

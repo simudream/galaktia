@@ -6,7 +6,6 @@ import sys, logging
 from twisted.internet import reactor
 from twisted.python import log
 
-from galaktia.protocol.model import Datagram, Message
 from galaktia.protocol.base import BaseServer, BaseClient
 from galaktia.protocol.codec import ProtocolCodec
 
