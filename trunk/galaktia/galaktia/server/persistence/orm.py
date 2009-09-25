@@ -18,8 +18,6 @@ from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime, \
      UnicodeText
 
-from galaktia.protocol.codec import PublicKey
-
 Entity = declarative_base()
 
 class User(Entity):

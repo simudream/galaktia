@@ -92,8 +92,10 @@ class MessageBuffer(object):
     """ Holds acknowledgement and pending messages data for the sake of
         reliability in a message protocol. """
 
-    MAX_SIZE = 1 << 6 """ :cvar: Max buffer size (for sent messages) """
-    MAX_ACKS = 1 << 3 """ :cvar: Max number of stored acknowledgements """
+    MAX_SIZE = 1 << 6
+    """ :cvar: Max buffer size (for sent messages) """
+    MAX_ACKS = 1 << 3
+    """ :cvar: Max number of stored acknowledgements """
 
     def __init__(self):
         """ ``MessageBuffer`` constructor """
@@ -184,4 +186,19 @@ class SessionDAO(object):
         """ :return: Newly created session (with unique id) """
         id = max(self._sessions.keys() or [0]) + 1
         return Session(id=id, **kwargs)
+
+    def get_by(self, user_id):
+        # TODO: this is a hack for compatibility with old SessionDAO API
+        for session in self._sessions.values():
+            if session.character_id == user_id:
+                return session
+        return None
+
+    def get_logged(self):
+        # TODO: this is a hack for compatibility with old SessionDAO API
+        return self._sessions.values()
+
+    def delete(self, session):
+        # TODO: this is a hack for compatibility with old SessionDAO API
+        self._sessions.pop(id, None)
 

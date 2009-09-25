@@ -5,7 +5,6 @@ import sys, logging
 
 from galaktia.protocol.operations.action import ActionRequest, \
                         ActionResponse, ActionUpdate
-from galaktia.protocol.model import Acknowledge
 
 """
 ***********************************************************************

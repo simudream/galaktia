@@ -8,9 +8,11 @@ from twisted.internet import reactor
 from twisted.python import log
 
 from galaktia.protocol.interface import ServerProtocolInterface
+from galaktia.protocol.model import SessionDAO, Session
 from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO, \
-                    SessionDAO, UserDAO, mass_unpack
-from galaktia.server.persistence.orm import Stationary, Character, init_db, Session, User
+        UserDAO, mass_unpack
+from galaktia.server.persistence.orm import Stationary, Character, \
+        init_db, User
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +30,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         self.user_dao = UserDAO(session())
         self.char_dao = CharacterDAO(session())
         self.stat_dao = StationaryDAO(session())
-        self.session_dao = SessionDAO(session())
+        self.session_dao = SessionDAO()
             
         ServerProtocolInterface.__init__(self, self.session_dao)    
 

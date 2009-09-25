@@ -19,8 +19,6 @@ from galaktia.client.controller.login import LoginHandler
 from galaktia.client.paths import IMAGES_DIR, SOUND_DIR
 from galaktia.protocol.interface import ClientProtocolInterface
 
-from galaktia.protocol.codec import PublicKey
-
 pyglet.clock.set_fps_limit(30)
 
 logger = logging.getLogger(__name__)
@@ -155,6 +153,7 @@ class ClientSessionDAO:
     """ SessionDAO stub to be used in the protocol layer """
 
     def __init__(self):
+        PublicKey = '' # TODO: what is PublicKey for?
         self.session = ClientSession(0, PublicKey)
 
     def set(self, session):
