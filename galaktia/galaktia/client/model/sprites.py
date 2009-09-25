@@ -30,25 +30,25 @@ class GameView(object):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         self.center_walter = {'x':0, 'y':0}
-	self.own_walter = None
+        self.own_walter = None
 
     def draw(self):
-	self.center_walter['x'] = self.own_walter.x
-	self.center_walter['y'] = self.own_walter.y
+        self.center_walter['x'] = self.own_walter.x
+        self.center_walter['y'] = self.own_walter.y
 
         for baldosa in self.baldosas:
             baldosa.draw(self.tile_width, self.tile_height, \
-                         self.padding_left, self.padding_down, self.center_walter)
-        
+                self.padding_left, self.padding_down, self.center_walter)
+
         for pared in self.mapa:
             pared.draw(self.tile_width, self.tile_height, \
-                         self.padding_left, self.padding_down, self.center_walter)
-        
+                self.padding_left, self.padding_down, self.center_walter)
+
         for aSession in self.peers:
             walter = self.peers[aSession]
             if walter == self.own_walter:
                 walter.draw(self.tile_width, self.tile_height, \
-			    self.padding_left, self.padding_down, self.center_walter)
+                self.padding_left, self.padding_down, self.center_walter)
             else:
                 walter.draw(self.tile_width, self.tile_height, \
                             self.padding_left, self.padding_down, self.center_walter)
@@ -63,12 +63,12 @@ class GameView(object):
         if is_me:
             self.center_walter['x'] = x
             self.center_walter['y'] = y
-	    self.own_walter = player
-
+            self.own_walter = player
 class Sprite(object):
     def __init__(self, (x,y), image):
         self.x, self.y = x,y
         self.image = image
+
     def draw(self, tile_width, tile_height, padding_left, padding_down, center):
         iso_x = (self.y - center['y'] + self.x - center['x'])*0.91
         iso_y = (self.y - center['y'] - self.x + center['x'])*0.91

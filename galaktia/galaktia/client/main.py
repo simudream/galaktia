@@ -89,9 +89,10 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
         self.session = ClientSession(self.session.id, username.ljust(16))
         self.session_dao.set(self.session)
-	
+
         new_handler = GameHandler(self, username, (x, y), surroundings, \
-				  self.screen_parameters)
+                        self.screen_parameters)
+
         self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):
