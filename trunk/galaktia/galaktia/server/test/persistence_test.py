@@ -5,10 +5,9 @@
 from unittest import TestCase, TestSuite, main
 from galaktia.server.persistence.dao import SceneObjectDAO, SpatialDAO, \
          StationaryDAO, GroundDAO, UserDAO, ItemDAO, SpriteDAO, CharacterDAO, \
-         CharacterItemDAO, PendingMessageDAO, SessionDAO
+         CharacterItemDAO
 from galaktia.server.persistence.orm import init_db, SceneObject, Stationary, \
-         Spatial, Ground, User, Item, Sprite, Character, CharacterItem, \
-         PendingMessage, Session
+         Spatial, Ground, User, Item, Sprite, Character, CharacterItem
 
 
 class daoTestCase(TestCase):
@@ -22,7 +21,7 @@ class daoTestCase(TestCase):
             time a test method is run
         """
         database_uri='../data/test_database.sqlite3'
-        self.engine , self.metadata ,self.Session = \
+        self.engine, self.metadata, self.Session = \
             init_db(db_connection_string="sqlite:///%s" % database_uri)
         self.session_instance = self.Session()
 

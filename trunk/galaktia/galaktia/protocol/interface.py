@@ -8,7 +8,6 @@ from pyglet.event import EventDispatcher
 from galaktia.protocol.base import BaseServer, BaseClient
 from galaktia.protocol.codec import ProtocolCodec
 from galaktia.protocol.controller import Controller
-from galaktia.protocol.model import Datagram, Command
 from galaktia.protocol.operations.join import *
 from galaktia.protocol.operations.talk import *
 from galaktia.protocol.operations.move import *

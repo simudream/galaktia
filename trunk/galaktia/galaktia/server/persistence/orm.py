@@ -44,33 +44,6 @@ class User(Entity):
     # but we need a first implementation for release 0.1
         # Memcached is volatile, so a solution like redis would be more fitting
 
-class Session(Entity):
-    """ Represents the client-server session with a user """
-    __tablename__ = 'sessions'
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    host = Column(Unicode(31))
-    port = Column(Integer)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    last_activity = Column(DateTime) # last time session was active
-    
-    user = relation('User', backref='Session', uselist=False)
-    
-    def get_encryption_key(self):
-        if self.user_id:
-            return (self.user.passwd + self.user.name).ljust( 16 )[0:16]
-        else:
-            return PublicKey
-
-class PendingMessage(Entity):
-    """ Represents a message to be resent for protocol reliability """
-    __tablename__ = 'pending_messages'
-    session_id = Column(Integer, primary_key=True)
-    timestamp = Column(Float, primary_key=True)
-    ack = Column(Float)
-    last_sent = Column(Float)
-    serialization = Column(UnicodeText)
-    # include name ?? (message['name'])
-
 class SceneObject(Entity):
     """ Anything that exists in the world """
     __tablename__ = 'scene_objects'
