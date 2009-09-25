@@ -30,12 +30,10 @@ ARROW_KEY_TO_VERSOR = {
 class GameHandler():
 
     MAP_DIM = 20
-    PADDING_LEFT = 5
-    PADDING_DOWN = 20
     TILE_WIDTH = 51 / 2.0
     TILE_HEIGHT = 33 / 2.0
 
-    def __init__(self, window, username, (x, y), surroundings):
+    def __init__(self, window, username, (x, y), surroundings, screen_parameters):
         self.viewport = GameViewport()
         self.window = window
 
@@ -75,8 +73,8 @@ class GameHandler():
         self.focus = None
 
         self.game_view = GameView(self.MAP_DIM, self.TILE_WIDTH, 
-                self.TILE_HEIGHT, self.PADDING_LEFT, self.PADDING_DOWN,
-                surroundings)
+                self.TILE_HEIGHT, (screen_parameters[0]-self.TILE_WIDTH)/2,
+		(screen_parameters[1]-self.TILE_HEIGHT)/2, surroundings)
 
 
     def on_mouse_motion(self, x, y, dx, dy):
@@ -140,6 +138,7 @@ class GameHandler():
 
     def on_draw(self):
         self.window.clear()
+        self.game_view.draw()
         self.welcomeLabel.draw()
         if self.focus:
             self.viewport.draw()
@@ -148,7 +147,6 @@ class GameHandler():
             self.chatInformLabel.draw()
 
         self.chat_widget.draw()
-        self.game_view.draw()
 
 
     def on_key_press(self, symbol, modifiers):

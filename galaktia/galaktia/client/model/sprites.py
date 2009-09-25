@@ -20,7 +20,7 @@ class GameView(object):
         self.red_walter = pyglet.image.load(os.path.join(IMAGES_DIR, 'red_walter.png'))
         self.piso = pyglet.image.load(os.path.join(IMAGES_DIR, 'piso.png'))
         self.pared = pyglet.image.load(os.path.join(IMAGES_DIR, 'pared.png'))
-
+        
         self.mapa = [Pared((t[0],t[1]), self.pared) for t in surroundings]
         self.baldosas = []
         for x in xrange(map_dim):
@@ -29,18 +29,29 @@ class GameView(object):
         self.peers = {}
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        self.center_walter = {'x':0, 'y':0}
+	self.own_walter = None
 
     def draw(self):
+	self.center_walter['x'] = self.own_walter.x
+	self.center_walter['y'] = self.own_walter.y
 
         for baldosa in self.baldosas:
-            baldosa.draw(self.tile_width, self.tile_height, self.padding_left, self.padding_down)
-
+            baldosa.draw(self.tile_width, self.tile_height, \
+                         self.padding_left, self.padding_down, self.center_walter)
+        
         for pared in self.mapa:
-            pared.draw(self.tile_width, self.tile_height, self.padding_left, self.padding_down)
-
+            pared.draw(self.tile_width, self.tile_height, \
+                         self.padding_left, self.padding_down, self.center_walter)
+        
         for aSession in self.peers:
             walter = self.peers[aSession]
-            walter.draw(self.tile_width, self.tile_height, self.padding_left, self.padding_down)
+            if walter == self.own_walter:
+                walter.draw(self.tile_width, self.tile_height, \
+			    self.padding_left, self.padding_down, self.center_walter)
+            else:
+                walter.draw(self.tile_width, self.tile_height, \
+                            self.padding_left, self.padding_down, self.center_walter)
 
     def delete_player(self, session_id):
         del self.peers[session_id]
@@ -49,15 +60,19 @@ class GameView(object):
         image = self.red_walter if is_me else self.walter
         player = Walter((x,y), description, image)
         self.peers[session_id] = player
+        if is_me:
+            self.center_walter['x'] = x
+            self.center_walter['y'] = y
+	    self.own_walter = player
 
 class Sprite(object):
     def __init__(self, (x,y), image):
         self.x, self.y = x,y
         self.image = image
-    def draw(self, tile_width, tile_height, padding_left, padding_down):
-        iso_x = (self.y + self.x)*0.91
-        iso_y = (self.y - self.x)*0.91
-        self.image.blit(tile_width*(iso_x+padding_left), tile_height*(iso_y+padding_down))
+    def draw(self, tile_width, tile_height, padding_left, padding_down, center):
+        iso_x = (self.y - center['y'] + self.x - center['x'])*0.91
+        iso_y = (self.y - center['y'] - self.x + center['x'])*0.91
+        self.image.blit(tile_width*iso_x+padding_left, tile_height*iso_y+padding_down)
 
 
 class Walter(Sprite):

@@ -28,10 +28,11 @@ logger = logging.getLogger(__name__)
 
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
-    def __init__(self, (host, port)):
+    def __init__(self, (host, port), screen_parameters):
+        self.screen_parameters = screen_parameters
         pyglet.clock.set_fps_limit(60)
-        pyglet.window.Window.__init__(self,  width=1024, height=768, \
-                caption='Galaktia', vsync=0)
+        pyglet.window.Window.__init__(self, screen_parameters[0], \
+                screen_parameters[1], caption='Galaktia', vsync=0)
         ClientProtocolInterface.__init__(self, ClientSessionDAO(), (host, port))
         self.keystate = pyglet.window.key.KeyStateHandler()
         self.push_handlers(self.keystate)
@@ -90,8 +91,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
         self.session = ClientSession(self.session.id, username.ljust(16))
         self.session_dao.set(self.session)
-
-        new_handler = GameHandler(self, username, (x, y), surroundings)
+	
+        new_handler = GameHandler(self, username, (x, y), surroundings, \
+				  self.screen_parameters)
         self.set_window_handler(new_handler)
 
     def on_user_joined(self, username):
@@ -163,9 +165,9 @@ class ClientSessionDAO:
         return self.session
 
 
-def main(program, host='127.0.0.1', port=6414):
+def main(program, host='127.0.0.1', port=6414, width=1024, height=768):
 
-    window = GalaktiaWindow((host,port))
+    window = GalaktiaWindow((host,port), (int(width), int(height)))
     login_handler = LoginHandler(window)
     window.set_window_handler(login_handler)
 
@@ -180,6 +182,6 @@ def main(program, host='127.0.0.1', port=6414):
 
 
 if __name__ == '__main__':
-    print 'Usage: python -m galaktia.client [server host] [server port]'
+    print 'Usage: python -m galaktia.client [server host] [server port] [width] [height]'
     main(*sys.argv)
 
