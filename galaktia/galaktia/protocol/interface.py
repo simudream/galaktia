@@ -158,7 +158,7 @@ class GalaktiaServerController(EventDispatcher, Controller):
         """
         command = input_message.get('name')
 
-        if command == "Acknowledge":
+        if command == "Acknowledge": # TODO Acknowledge is no longer used
             self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
 

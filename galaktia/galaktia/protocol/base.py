@@ -89,7 +89,7 @@ class BaseClient(BaseServer):
 class ReliableServer(BaseServer):
     """ Implements a reliability layer on BaseServer """
 
-    self.TIMEOUT = 60 # 1 minute
+    TIMEOUT = 60 # 1 minute
 
     def __init__(self, codec, controller, message_dao):
         BaseServer.__init__(self, codec, controller)
