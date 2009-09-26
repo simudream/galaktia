@@ -6,7 +6,7 @@ from time import time
 
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
-     CharacterItem, Sprite, Character, Spatial, Stationary
+     CharacterItem, Sprite, Character, Spatial, Wall
 from galaktia.protocol.codec import SerializationCodec
 
 def mass_unpack(list):
@@ -80,7 +80,7 @@ class SpatialDAO(SceneObjectDAO):
         # ENTITY_CLASS, returning *only* the heir's objects, NOT Spatials.
         # This hack prevents you from breaking the correct behaviour of the
         # method after being inherited.
-        sdao = StationaryDAO(self.session)
+        sdao = WallDAO(self.session)
         stationaries = sdao.get_by_coords(x, y, z)
         if(collide_objects and (isinstance(obj,self.klass) or \
                 (hasattr(obj, "show") and hasattr(obj, "collide"))) and \
@@ -113,13 +113,13 @@ class SpatialDAO(SceneObjectDAO):
     	obj.show=True
     	obj.collide=collide
 
-class StationaryDAO(SpatialDAO):
-    """ Stationary objects are used for collision purposes. They represent
+class WallDAO(SpatialDAO):
+    """ Wall objects are used for collision purposes. They represent
         walls and any other collidable, non-movable objects.
     """
-    ENTITY_CLASS=Stationary
+    ENTITY_CLASS=Wall
     def move(self, obj, x, y):
-        """ Since moving Stationary objects is NOT allowed by usual means, you
+        """ Since moving Wall objects is NOT allowed by usual means, you
         should not use this function. It will always return False.
         """
         return False
