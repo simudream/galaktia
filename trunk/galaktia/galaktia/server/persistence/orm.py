@@ -36,11 +36,8 @@ class User(Entity):
         # unless you know what you are doing.
         # All entity attributes should be present and with same name.
 
-# Wouldn't be better if we keep this out of the database, in a special class
-# using lists or something?
-    # Yes, maybe just keep in memory or via memcached,
-    # but we need a first implementation for release 0.1
-        # Memcached is volatile, so a solution like redis would be more fitting
+    # OLD: the next comment was about Session. Still interesting, though
+    # Memcached is volatile, so a solution like redis would be more fitting
 
 class SceneObject(Entity):
     """ Anything that exists in the world """
@@ -53,10 +50,11 @@ class SceneObject(Entity):
     z = Column(Integer) # z coord, TODO: decide on how to use layers
     image = Column(Unicode(42), default=None)
     # NOTE: position might be null (e.g.: item owned by character)
+    # NOTE2: We won't support dropping items.
     __mapper_args__ = {'polymorphic_on': type} # leave as last class attr
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
-    
+
     def pos(self):
         return (self.x, self.y, self.z)
 
@@ -68,13 +66,18 @@ class Spatial(SceneObject):
     __tablename__ = 'spatials'
     __mapper_args__ = {'polymorphic_identity': u'spatial'}
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
+    show = Column(Boolean, default=True)
+        # Show determines if the object will be shown on screen, or considered
+        # disconnected.
+    collide = Column(Boolean, default=False)
 
-class Stationary(Spatial):
+class Wall(Spatial):
     """ Objects that you can't move. (i.e.: a wall) """
     __tablename__ = 'stationaries'
     __mapper_args__ = {'polymorphic_identity': u'stationary'}
     id = Column(Integer, ForeignKey('spatials.id'), primary_key=True)
-    
+
+
 class Ground(SceneObject):
     """ The basic map information for the client. """
     __tablename__ = 'ground'
@@ -85,9 +88,13 @@ class Item(Entity):
     """ Represents the class of an item """
     __tablename__ = 'items'
     id = Column(Integer, primary_key=True)
-    cost = Column(Integer) # how much money to pay for buying it
-                           # or None if not for sell
     level = Column(Integer)
+    attrs = Column(Unicode(127)) # We can use a pickled dict to hold the data
+
+class ItemType(Entity):
+    """ Represents the class of an item (i.e.: gun, armor) """
+    id = Column(Integer, primary_key=True)
+    type = Column(Unicode(42))
 
 class Sprite(Spatial):
     """ Represents a moving object with some "skin" appearance """
@@ -104,10 +111,7 @@ class Sprite(Spatial):
     controller = Column(Unicode(127))
         # controller identifies the component that handles actions
         # on interaction events with this sprite
-    show = Column(Boolean, default=True)
-        # Show determines if the object will be shown on screen, or considered
-        # disconnected.
-    collide = Column(Boolean, default=False)
+
 
 class Character(Sprite):
     """ Represents a character (controlled by a user if user_id not None) """
@@ -120,7 +124,6 @@ class Character(Sprite):
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
 
 
-
 class CharacterItem(Sprite):
     """ Represents ownership of a certain number of items by a character """
     __tablename__ = 'character_items'
@@ -128,9 +131,11 @@ class CharacterItem(Sprite):
     id = Column(Integer, ForeignKey('sprites.id'), primary_key=True)
     character_id = Column(Integer, ForeignKey('characters.id'))
     item_class = Column(Integer, ForeignKey('items.id'))
-    ammo = Column(Integer)
+    # NOTE: Use description for personalized attributes.
     bag = Column(Integer)
         # 0 for "bank" bag, 1 for "user" bag.
+    cost = Column(Integer) # how much money to pay for buying it
+                           # or None if not for sell
 
 def init_db(db_connection_string='sqlite:///:memory:', echo=False):
     """

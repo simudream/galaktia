@@ -9,9 +9,9 @@ from twisted.python import log
 
 from galaktia.protocol.interface import ServerProtocolInterface
 from galaktia.protocol.model import SessionDAO, Session
-from galaktia.server.persistence.dao import StationaryDAO, CharacterDAO, \
+from galaktia.server.persistence.dao import WallDAO, CharacterDAO, \
         UserDAO, mass_unpack
-from galaktia.server.persistence.orm import Stationary, Character, \
+from galaktia.server.persistence.orm import Wall, Character, \
         init_db, User
 
 
@@ -29,7 +29,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         
         self.user_dao = UserDAO(session())
         self.char_dao = CharacterDAO(session())
-        self.stat_dao = StationaryDAO(session())
+        self.wall_dao = WallDAO(session())
         self.session_dao = SessionDAO()
             
         ServerProtocolInterface.__init__(self, self.session_dao)    
@@ -75,12 +75,12 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 # character.show = True
             self.char_dao.materialize(user.character, collide=True)
 
-            layer = self.stat_dao.all()
+            layer = self.wall_dao.all()
             wall_list = mass_unpack(layer)
 
             self.user_accepted( 
                     session = session,
-                    player_initial_state = (user.character.x, character.y),
+                    player_initial_walle = (user.character.x, character.y),
                     username = user.name,
                     surroundings = wall_list
                     )
