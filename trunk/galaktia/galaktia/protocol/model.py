@@ -3,11 +3,6 @@
 
 import time
 
-try:
-    import cPickle as pickle
-except:
-    import pickle
-
 class Datagram(object):
     """ Stores raw datagram bytes to be sent or received to a host and port """
 
@@ -38,7 +33,7 @@ class Message(dict):
 
         :parameters:
             session : ``Session``
-                Session object (contains id, host, port, player_id, etc.)
+                Session object (contains id, host, port, character_id, etc.)
 
         :keywords:
             Any key-value pairs to store in the message
@@ -62,7 +57,7 @@ class Session(object):
     """ Represents a client-server session """
 
     def __init__(self, id=0, host=None, port=None, character_id=None, \
-            secret_key=None, msg_buffer=None, last_activity=None):
+            secret_key=None):
         """
         ``Session`` constructor.
 
@@ -77,16 +72,13 @@ class Session(object):
                 Character ID
             secret_key : str
                 Secret key shared by the 2 connection endpoints for encryption
-            msg_buffer : iterable
-                Set of pending messages (yet to be acknowledged)
         """
         self.id = id
         self.host = host
         self.port = port
-        self.player_id = player_id
+        self.character_id = character_id
         self.secret_key = secret_key
-        self.msg_buffer = msg_buffer or MessageBuffer()
-        # NOTE: msg_buffer is the only mutable attribute (rest is constant)
+        # NOTE: no session attribute should be altered after construction
 
 class MessageBuffer(object):
     """ Holds acknowledgement and pending messages data for the sake of
@@ -99,8 +91,8 @@ class MessageBuffer(object):
 
     def __init__(self):
         """ ``MessageBuffer`` constructor """
-        self.buffer = {}
-        self.acknowledged = []
+        self.sent = {}
+        self.received = []
         self.last_activity = None
         self._dirty = True
 
@@ -112,10 +104,10 @@ class MessageBuffer(object):
             sent_message : ``Message``
                 Message to be acknowledged
         """
-        if len(self.buffer) > self.MAX_SIZE:
+        if len(self.sent) > self.MAX_SIZE:
             raise ValueError('Max message buffer size exceeded')
         t = sent_message['timestamp']
-        self.buffer[t] = sent_message
+        self.sent[t] = sent_message
         self._dirty = True
 
     def update_received(self, received_message):
@@ -129,58 +121,51 @@ class MessageBuffer(object):
         """
         t = received_message['timestamp']
         self.last_activity = max(self.last_activity, t)
-        if len(self.acknowledged) > self.MAX_ACKS:
-            self.acknowledged.pop(0)
-        self.acknowledged.append(t)
-        for timestamp in received_message.get('ack', None) or []:
-            self.buffer.pop(timestamp, None) # remove item if key found
+        if len(self.received) > self.MAX_ACKS:
+            self.received.pop(0)
+        self.received.append(t)
+        for timestamp in received_message.get('ack', []):
+            self.sent.pop(timestamp, None) # remove item if key found
         self._dirty = True
 
-    def get_pending(self, max_timestamp=None):
+    def get_pending(self):
         """
         Returns buffered sent messages that were not yet acknowledged.
 
         :return:
-            an iterable of sent messages that were not yet acknowledged
-            (to be resent) whose timestamp is less than `max_timestamp`
+            an iterable of sent messages not yet acknowledged (to be resent)
         """
-        if max_timestamp is None:
-            return self.buffer.values()
-        pending = lambda m: m['timestamp'] < max_timestamp # TODO: optimize
-        return filter(pending, self.buffer.values())
+        for m in self.sent.itervalues():
+            yield m
 
     def get_acknowledged(self, max_size=MAX_ACKS):
         """
         Returns acknowledgements of the last received messages.
 
         :return:
-            iterable of floats representing acknowledgements of the last
+            list of floats representing acknowledgements of the last
             received messages
         """
-        return self.acknowledged[:max_size]
+        return self.received[:max_size]
 
 class SessionDAO(object):
     """ Data Access Object for ``Session`` objects """
+    # TODO: replace by memcached storage implementation
+    # TODO: mutex locking (race condition between session DAOs in parallel)
+    #       http://en.wikipedia.org/wiki/Producer-consumer_problem
+    # NOTE: sessions should not be modified after creation
 
     def __init__(self):
         """ ``SessionDAO`` constructor """
         self._sessions = {} # TODO: replace storage by memcached client
-        # NOTE: pickling is unnecessary in this implementation but not
-        # in the case of storing sessions via memcached
 
     def get(self, id):
         """ :return: ``Session`` object identified by `id` """
-        serialized = self._sessions[id]
-        return pickle.loads(serialized)
+        return self._sessions.get(id)
 
     def set(self, session):
         """ Stores `session` """
-        if not session.msg_buffer._dirty:
-            return
-        # TODO: mutex (race condition between session DAOs in parallel)
-        serialized = pickle.dumps(session)
-        self._sessions[session.id] = pickle.dumps(serialized)
-        self.session.msg_buffer._dirty = False
+        self._sessions[session.id] = session
 
     def create(self, **kwargs):
         """ :return: Newly created session (with unique id) """
@@ -201,4 +186,24 @@ class SessionDAO(object):
     def delete(self, session):
         # TODO: this is a hack for compatibility with old SessionDAO API
         self._sessions.pop(id, None)
+
+class MessageBufferDAO(object):
+    """ Data Access Object for ``MessageBuffer`` objects """
+    # TODO: replace by memcached storage implementation
+    # TODO: mutex locking (race condition between session DAOs in parallel)
+    #       http://en.wikipedia.org/wiki/Producer-consumer_problem
+
+    def __init__(self):
+        """ ``MessageBufferDAO`` constructor """
+        self._buffers = {}
+
+    def get(self, session_id):
+        """ :return: ``MessageBuffer`` object for given session ID """
+        return self._buffers.get(session_id)
+
+    def set(self, session_id, msg_buffer):
+        """ Sets the ``MessageBuffer`` object for given session ID """
+        if msg_buffer._dirty:
+            msg_buffer._dirty = False
+            self._buffers[session_id] = msg_buffer
 
