@@ -151,6 +151,6 @@ def main(program, port=6414):
     reactor.run()
 
 if __name__ == '__main__':
-    print 'Usage: python -m galaktia.server [port]'
+    print 'Usage: python -m galaktia.server.main [port]'
     main(*sys.argv)
 

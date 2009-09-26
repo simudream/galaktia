@@ -150,6 +150,8 @@ class ProtocolCodec(MultipleCodec):
         Designed for a multi-layer protocol that includes message
         serialization, encryption, session id packing and compression. """
 
+    PUBLIC_KEY = 'g4L4kT14 rUlZ!'
+
     _serializer = SerializationCodec()
     _encipherer = EncryptionCodec()
     _packer = IdentifierPackerCodec()
@@ -161,7 +163,8 @@ class ProtocolCodec(MultipleCodec):
     def encode(self, decoded):
         session = decoded.session
         # TODO: case: session.id == 0 (no encryption, etc.)
-        key = session.secret_key
+        key = session.secret_key if session.id else self.PUBLIC_KEY
+                # or maybe: key = session.secret_key or self.PUBLIC_KEY
         serialized = self._serializer.encode(decoded)
         encrypted, key = self._encipherer.encode((serialized, key))
         packed = self._packer.encode((session.id, encrypted))
@@ -179,7 +182,7 @@ class ProtocolCodec(MultipleCodec):
             serialized = encrypted # no encryption when session_id == 0
             data = self._serializer.decode(serialized)
             session.character_id = 0
-            session.secret_key = 'g4L4kT14 rUlZ!'
+            session.secret_key = self.PUBLIC_KEY
                     # TODO: bind character_id, secret_key, etc.
                     # by copying user data such as character and password
                     # (user_dao or character_dao needed)

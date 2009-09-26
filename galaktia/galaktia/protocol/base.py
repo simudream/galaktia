@@ -89,29 +89,35 @@ class BaseClient(BaseServer):
 class ReliableServer(BaseServer):
     """ Implements a reliability layer on BaseServer """
 
-    TIMEOUT = 60 # 1 minute
+    TIMEOUT = 15 # seconds before attempting to resend pending messages
 
-    def __init__(self, codec, controller, message_dao):
+    def __init__(self, codec, controller, msg_buffer_dao, scheduler):
         BaseServer.__init__(self, codec, controller)
-        self.message_dao = message_dao
+        self.msg_buffer_dao = msg_buffer_dao
+        self.scheduler = scheduler
+        # scheduler = lambda t, f, *args: task.deferLater(reactor, t, f, *args)
 
     def on_receive(self, input_message):
+        session_id = self.input_message.session.id
+        msg_buffer = self.msg_buffer_dao.get(session_id)
         msg_buffer = input_message.session.msg_buffer
         msg_buffer.update_received(input_message)
 
     def on_send(self, output_message):
+        session_id = self.input_message.session.id
+        msg_buffer = self.msg_buffer_dao.get(session_id)
         msg_buffer = output_message.session.msg_buffer
         output_message['ack'] = msg_buffer.get_acknowledged()
         msg_buffer.update_sent(output_message)
-        self.schedule(self.get_timeout_callback(msg_buffer))
+        self.scheduler(self.TIMEOUT, self.resend, session_id)
+        # I wonder if all these queries and memory needed
+        # for reliability stuff is too inefficient :(
 
-    def schedule(self, callback):
-        pass # TODO: set timer to run callback in self.TIMEOUT seconds
-
-    def get_timeout_callback(self, msg_buffer):
-        server = self
-        def callback(self, server=server, msg_buffer=msg_buffer):
-            for message in msg_buffer.get_pending(time.time() - self.TIMEOUT):
-                server.send(message)
-        return callback
+    def resend(self, session_id):
+        msg_buffer = self.msg_buffer_dao.get(session_id)
+        t = time.time()
+        for message in msg_buffer.get_pending():
+            if t - message.get('resent', message['timestamp']) > self.TIMEOUT:
+                message['resent'] = t
+                self.send(message)
 
