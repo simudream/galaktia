@@ -4,9 +4,9 @@
 
 from unittest import TestCase, TestSuite, main
 from galaktia.server.persistence.dao import SceneObjectDAO, SpatialDAO, \
-         StationaryDAO, GroundDAO, UserDAO, ItemDAO, SpriteDAO, CharacterDAO, \
+         WallDAO, GroundDAO, UserDAO, ItemDAO, SpriteDAO, CharacterDAO, \
          CharacterItemDAO
-from galaktia.server.persistence.orm import init_db, SceneObject, Stationary, \
+from galaktia.server.persistence.orm import init_db, SceneObject, Wall, \
          Spatial, Ground, User, Item, Sprite, Character, CharacterItem
 
 
@@ -32,23 +32,23 @@ class daoTestCase(TestCase):
         self.session_instance.close()
 
     def test_map_creation(self):
-        """ Tests the insertion of Stationary objects """
-        dao = StationaryDAO(self.session_instance)
+        """ Tests the insertion of Wall objects """
+        dao = WallDAO(self.session_instance)
         # Create a simple 10x10, layer 0 map:
         expected_result=[]
         for i,j in ((x,y) for x in range(10) for y in [0,9]):
-            stationary = Stationary()
-            stationary.z = 0
-            stationary.x = i
-            stationary.y = j
-            dao.add(stationary)
-            expected_result.append(stationary)
+            wall = Wall()
+            wall.z = 0
+            wall.x = i
+            wall.y = j
+            dao.add(wall)
+            expected_result.append(wall)
         for i,j in ((x,y) for x in [0,9] for y in range(1,10)):
-            stationary.z = 0
-            stationary.x = i
-            stationary.y = j
-            dao.add(stationary)
-            expected_result.append(stationary)
+            wall.z = 0
+            wall.x = i
+            wall.y = j
+            dao.add(wall)
+            expected_result.append(wall)
         dao.session.flush()
         dao.session.commit()
         all_stationaries = dao.all()
@@ -92,7 +92,6 @@ class daoTestCase(TestCase):
             # Walterina is still a ghost
         walterina.collide=True
         walter.collide=True
-        self.assertEqual(dao.move(walter, 2, 2, 0), True)
         dao.move(walter, 1, 2, 0)
         self.assertEqual(dao.move(walter, 2, 2, 0), False)
             # Now they will collide.

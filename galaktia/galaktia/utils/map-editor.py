@@ -5,7 +5,7 @@ Curses-based map editor for Galaktia
 """
 
 # stdlib imports
-from galaktia.server.persistence.orm import Stationary, init_db
+from galaktia.server.persistence.orm import Wall, init_db
 import optparse
 import curses
 import sys
@@ -19,7 +19,7 @@ class LangParser(object):
         self.verbosity = verbosity
         if repres is None:
             self.repres = {
-                "0" : Stationary
+                "0" : Wall
             }
         self.repres[" "]=None
         self.repres["+"]=1
@@ -29,6 +29,9 @@ class LangParser(object):
         self._inverse_repres = {}
         for key in self.repres:
             self._inverse_repres[self.repres[key]]=key
+
+    def add_character(self, character, klass):
+        pass
 
     def decode_and_store(self, text):
         x, y, z = 0, 0, 0
@@ -46,7 +49,7 @@ class LangParser(object):
                 except KeyError:
                     obj = None
                 if obj is None:
-                    pass 
+                    pass
                 elif obj == 1:
                     x, y = 0, 0
                     z += 1
@@ -82,14 +85,30 @@ class MapEditor(object):
     pass
 
 class CursesMapEditor(MapEditor):
-    def __init__(self, stdsrc):
-        pass
+    def __init__(self):
+        """
+            Start the wrapper and the screen. Cast as singleton inside this
+            app.
+        """
+        curses.wrapper(self._main)
+        self.stdscr = None
+
+    def _main(self, stdscr):
+        """
+            Run the app screen. Init'ing the class will only load the \
+            wrapper.
+        """
+        self.stdscr = stdscr
+        stdscr.addstr(0, 0, "TEST", curses.A_BOLD)
+        stdscr.refresh()
+        a=stdscr.getch()
+        stdscr.addch(1,1,a)
 
 def _init(connection_string, clear=False):
     eng, mdata, S = init_db(db_connection_string = connection_string)
     if clear:
         session = S()
-        for i in session.query(Stationary).all():
+        for i in session.query(Wall).all():
             session.delete(i)
         session.flush()
         session.commit()
@@ -127,7 +146,8 @@ if __name__ == "__main__":
     parser.add_option_group(dangerous)
     (options, args) = parser.parse_args()
     if os.getuid() == 0 and options.root==False:
-        print >> sys.stderr, "You must be out of your mind to run this as root!"
+        print >> sys.stderr, "You must be out of your mind to run this as \
+            root!"
         print >> sys.stderr, "Read the help!"
         if options.auto == True:
             sys.exit(1)
@@ -143,5 +163,8 @@ if __name__ == "__main__":
         sys.exit(0)
     if options.auto:
         auto(options)
-    else:
+    elif os.getenv('DISPLAY') is None or options.ui:
+        cursesMapEditor = CursesMapEditor()
         print >> sys.stderr, ">> Insert a nice Curses interface here <<"
+    else:
+        print >> sys.stderr, ">> Insert GUI here <<"
