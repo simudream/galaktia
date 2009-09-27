@@ -26,7 +26,10 @@ class SerializationCodec(Codec):
         return simplejson.dumps(decoded, separators=(',', ':'))
 
     def decode(self, encoded):
-        return simplejson.loads(encoded)
+        # SimpleJSON devuelve unicodes. Hay que hacer algo para modificar esto!
+        unicodeado = simplejson.loads(encoded)
+        retval = dict([(str(s), unicodeado[s]) for s in unicodeado])
+        return retval
 
 class CompressionCodec(Codec):
     """ Compresses and decompresses strings via zlib """
@@ -150,7 +153,8 @@ class ProtocolCodec(MultipleCodec):
         Designed for a multi-layer protocol that includes message
         serialization, encryption, session id packing and compression. """
 
-    PUBLIC_KEY = 'g4L4kT14 rUlZ!'
+	# AES keys have to have 16 characters (or 32 or 64...)
+    PUBLIC_KEY = 'g4L4kT14 rUlZ!__'
 
     _serializer = SerializationCodec()
     _encipherer = EncryptionCodec()
@@ -163,34 +167,33 @@ class ProtocolCodec(MultipleCodec):
     def encode(self, decoded):
         session = decoded.session
         # TODO: case: session.id == 0 (no encryption, etc.)
-        key = session.secret_key if session.id else self.PUBLIC_KEY
-                # or maybe: key = session.secret_key or self.PUBLIC_KEY
-        serialized = self._serializer.encode(decoded)
+        key            = session.secret_key if session.id else self.PUBLIC_KEY
+        #or maybe: key = session.secret_key or self.PUBLIC_KEY
+        serialized     = self._serializer.encode(decoded)
         encrypted, key = self._encipherer.encode((serialized, key))
-        packed = self._packer.encode((session.id, encrypted))
-        compressed = self._compressor.encode(packed)
-        host, port = session.host, session.port
-        retval = Datagram(compressed, host=host, port=port)
+        packed         = self._packer.encode((session.id, encrypted))
+        compressed     = self._compressor.encode(packed)
+        host, port     = session.host, session.port
+        retval         = Datagram(compressed, host=host, port=port)
         return retval
 
     def decode(self, encoded):
-        packed = self._compressor.decode(encoded.data)
+        packed                = self._compressor.decode(encoded.data)
         session_id, encrypted = self._packer.decode(packed)
-        if session_id == 0:
-            host, port = encoded.host, encoded.port
-            session = self.session_dao.create(host=host, port=port)
-            serialized = encrypted # no encryption when session_id == 0
-            data = self._serializer.decode(serialized)
-            session.character_id = 0
-            session.secret_key = self.PUBLIC_KEY
-                    # TODO: bind character_id, secret_key, etc.
-                    # by copying user data such as character and password
-                    # (user_dao or character_dao needed)
+        host, port            = encoded.host, encoded.port
+        this_session = None
+        if session_id:
+            this_session = self.session_dao.get(session_id)
         else:
-            session = self.session_dao.get(session_id)
-            key = session.secret_key
-            serialized, key = self._encipherer.decode((encrypted, key))
-            data = self._serializer.decode(serialized)
-        retval = Message(session=session, **data)
+            this_session  = self.session_dao.create(host=host, port=port)
+            this_session.character_id = 0
+            this_session.secret_key   = self.PUBLIC_KEY
+            # TODO: bind character_id, secret_key, etc.
+            # by copying user data such as character and password
+            # (user_dao or character_dao needed)
+        key             = this_session.secret_key
+        serialized, key = self._encipherer.decode((encrypted, key))
+        data            = self._serializer.decode(serialized)
+        retval          = Message(session=this_session, **data)
         return retval
 
