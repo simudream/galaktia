@@ -18,6 +18,9 @@ class Datagram(object):
         """
         self.data, self.host, self.port = data, host, port
 
+    def __str__(self):
+        return '\n{Objeto Datagrama: \n \tData=%s \n \tHost=%s \n \tPort=%s}\n'%(self.data, self.host, self.port)
+
     @property
     def destination(self):
         """ :return: 2-tuple with host and port or None if any is None """

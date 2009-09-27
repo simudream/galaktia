@@ -93,6 +93,7 @@ class Item(Entity):
 
 class ItemType(Entity):
     """ Represents the class of an item (i.e.: gun, armor) """
+    __tablename__ = 'item_types'
     id = Column(Integer, primary_key=True)
     type = Column(Unicode(42))
 

@@ -52,7 +52,7 @@ class BaseServer(DatagramProtocol):
             return
         try:
             self.transport.write(datagram.data, datagram.destination)
-            logger.debug('Sent to %s: %s', destination or 'server', \
+            logger.debug('Sent to %s: %s', datagram.destination or 'server', \
                     output_message)
         except Exception:
             logger.exception('Failed to send message: %s', output_message)
