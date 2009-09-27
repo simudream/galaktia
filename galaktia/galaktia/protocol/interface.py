@@ -86,14 +86,14 @@ class GalaktiaClientController(EventDispatcher, Controller):
         #Talk commands
         
         command_handler = {
-        "PlayerEnteredLOS": __PlayerEnteredLOS,
-        "PlayerMoved": __PlayerMoved,
-        "SomeoneSaid": __SomeoneSaid,
-        "UserAccepted": __UserAccepted,
-        "CheckProtocolVersion": __CheckProtocolVersion,
-        "UserJoined": __UserJoined,
-        "SayThis": __SayThis,
-        "LogoutResponse": __LogoutResponse}
+        u'PlayerEnteredLOS': __PlayerEnteredLOS,
+        u'PlayerMoved': __PlayerMoved,
+        u'SomeoneSaid': __SomeoneSaid,
+        u'UserAccepted': __UserAccepted,
+        u'CheckProtocolVersion': __CheckProtocolVersion,
+        u'UserJoined': __UserJoined,
+        u'SayThis': __SayThis,
+        u'LogoutResponse': __LogoutResponse}
         try:
             command_handler[command](input_message)
         except KeyError:
@@ -162,7 +162,7 @@ class ClientProtocolInterface(BaseClient):
         
     def start_connection(self):
         logger.info('Starting connection...')
-        self.send(StartConection(session=self.session))
+        self.send(StartConnection(session=self.session))
         
     def logout_request(self):
         self.send(LogoutRequest(session=self.session))
@@ -190,16 +190,16 @@ class GalaktiaServerController(EventDispatcher, Controller):
         def __RequestUserJoin(input_message):
             username = input_message['username']
             self.dispatch_event('on_request_user_join', input_message.session, username)
-        def __StartConection(input_message):
+        def __StartConnection(input_message):
             self.dispatch_event('on_start_connection', input_message.session)
         def __LogoutRequest(input_message):
             self.dispatch_event('on_logout_request', input_message.session)
         function_handlers = {
-            "MoveDxDy": __MoveDxDy,
-            "SayThis": __SayThis,
-            "RequestUserJoin": __RequestUserJoin,
-            "StartConnection": __StartConnection,
-            "LogoutRequest": __LogoutRequest}
+            u'MoveDxDy': __MoveDxDy,
+            u'SayThis': __SayThis,
+            u'RequestUserJoin': __RequestUserJoin,
+            u'StartConnection': __StartConnection,
+            u'LogoutRequest': __LogoutRequest}
         try:
             function_handlers[command](input_message)
         except KeyError:

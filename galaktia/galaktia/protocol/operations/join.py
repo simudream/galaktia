@@ -25,22 +25,23 @@ Client:                                                     Server:
 
 """
 
-class StartConection(Message):
+class StartConnection(Message):
     """ C->S Message for informing the server that a client wants to start a
     connection with him and so proceed with handshaking."""
-    pass
+    def __init__(self, **kargs):
+        super(StartConnection, self).__init__(**kargs)
 
 class CheckProtocolVersion(Message):
     """ S->C Message for informing client current server protocol"""
     def __init__(self, version, url, **kwargs):
-        super(CheckProtocolVersion, self).__init__({'version': version, \
-                'url': url}, **kwargs)
+        super(CheckProtocolVersion, self).__init__(version=version, \
+                url= url, **kwargs)
 
 class RequestUserJoin(Message):
     """ C->S Message for informing that a character with a certain username
     wants to enter Galaktia world. I'm Going in Boy!"""
     def __init__(self, username, **kwargs):
-        super(RequestUserJoin, self).__init__({'username': username}, **kwargs)
+        super(RequestUserJoin, self).__init__(username= username, **kwargs)
 
 class UserAccepted(Message):
     """ S->C Message for informing that a certain user was accepted or 

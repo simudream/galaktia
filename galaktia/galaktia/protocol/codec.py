@@ -184,7 +184,7 @@ class ProtocolCodec(MultipleCodec):
         this_session = None
         if session_id:
             this_session = self.session_dao.get(session_id)
-        else:
+        if this_session == None:
             this_session  = self.session_dao.create(host=host, port=port)
             this_session.character_id = 0
             this_session.secret_key   = self.PUBLIC_KEY

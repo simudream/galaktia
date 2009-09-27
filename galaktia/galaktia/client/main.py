@@ -141,21 +141,21 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 class ClientSession:
     """ Session stub to be used in the protocol layer """
 
-    def __init__(self, id, key):
+    def __init__(self, id, secret_key):
         self.id = id
-        self.key = key
+        self.secret_key = secret_key
         self.host = None
         self.port = None
 
     def get_encryption_key(self):
-        return self.key
+        return self.secret_key
 
 class ClientSessionDAO:
     """ SessionDAO stub to be used in the protocol layer """
 
     def __init__(self):
-        PublicKey = '' # TODO: what is PublicKey for?
-        self.session = ClientSession(0, PublicKey)
+        PUBLIC_KEY = 'g4L4kT14 rUlZ!__' # TODO: what is PublicKey for?
+        self.session = ClientSession(0, PUBLIC_KEY)
 
     def set(self, session):
         self.session = session
