@@ -22,6 +22,57 @@ class GalaktiaClientController(EventDispatcher, Controller):
         self.dispatch_event('on_greet')
         return []
 
+    def __PlayerEnteredLOS(input_message):
+        session_id = input_message['subject']
+        (x,y) = input_message['object']
+        description = input_message['description']
+        self.dispatch_event('on_player_entered_los',
+                 session_id, (x,y), description )
+                 
+    def __PlayerMoved(input_message):
+        other_session_id = input_message["subject"]
+        (dx, dy) = input_message["action"]
+        (x,y) = input_message["object"]
+        self.dispatch_event('on_player_moved',
+                 other_session_id, (dx,dy), (x,y))
+                 
+    def __SomeoneSaid(input_message):
+        message = input_message['action']
+        username = input_message['subject']
+        self.dispatch_event('on_someone_said', username, message)
+        
+    def __UserAccepted(input_message):
+        if input_message['accepted']:
+            username = input_message['username']
+            x, y = input_message['player_initial_state']
+            surroundings = input_message['surroundings']
+            self.dispatch_event('on_user_accepted', username, (x,y), surroundings)
+        else:
+            self.dispatch_event('on_user_rejected')
+     # Join commands
+     
+    def __CheckProtocolVersion(input_message):
+        version = input_message['version']
+        url = input_message['url']
+        session_id = input_message.session.id
+        self.dispatch_event('on_check_protocol_version', session_id, version, url)
+        
+    def __UserJoined(input_message):
+        username = input_message['username']
+        self.dispatch_event('on_user_joined', username)
+        
+    # Exit Commands
+    def __LogoutResponse(input_message):
+        self.dispatch_event('on_logout_response')
+        
+    def __UserExited(input_message):
+        session_id = input_message['subject']
+        username = input_message['object']
+        self.dispatch_event('on_user_exited', session_id, username)
+    
+    #TODO: acknowledge
+    #return [input_message.acknowledge()]
+    
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
         command = input_message.get('name')
@@ -33,55 +84,22 @@ class GalaktiaClientController(EventDispatcher, Controller):
         # TODO: if-elses and switch-cases are for loser languages,
         # mapping is better
         #Talk commands
-        if command == "PlayerEnteredLOS":
-            session_id = input_message['subject']
-            (x,y) = input_message['object']
-            description = input_message['description']
-            self.dispatch_event('on_player_entered_los',
-                     session_id, (x,y), description )
-        elif command == "PlayerMoved":
-            other_session_id = input_message["subject"]
-            (dx, dy) = input_message["action"]
-            (x,y) = input_message["object"]
-            self.dispatch_event('on_player_moved',
-                     other_session_id, (dx,dy), (x,y))
-        elif command == "SomeoneSaid":
-            message = input_message['action']
-            username = input_message['subject']
-            self.dispatch_event('on_someone_said', username, message)
-        elif command == "UserAccepted":
-            if input_message['accepted']:
-                username = input_message['username']
-                x, y = input_message['player_initial_state']
-                surroundings = input_message['surroundings']
-                self.dispatch_event('on_user_accepted', username, (x,y), surroundings)
-            else:
-                self.dispatch_event('on_user_rejected')
-
-        # Join commands
-        elif command == "CheckProtocolVersion":
-            version = input_message['version']
-            url = input_message['url']
-            session_id = input_message.session.id
-            self.dispatch_event('on_check_protocol_version', session_id, version, url)
-
-        elif command == "UserJoined":
-            username = input_message['username']
-            self.dispatch_event('on_user_joined', username)
-
-        # Exit Commands
-        elif command == "LogoutResponse":
-            self.dispatch_event('on_logout_response')
-        elif command == "UserExited":
-            session_id = input_message['subject']
-            username = input_message['object']
-            self.dispatch_event('on_user_exited', session_id, username)
-        else:
-            raise ValueError, "Invalid command: %s" % command
         
+        command_handler = {
+        "PlayerEnteredLOS": __PlayerEnteredLOS,
+        "PlayerMoved": __PlayerMoved,
+        "SomeoneSaid": __SomeoneSaid,
+        "UserAccepted": __UserAccepted,
+        "CheckProtocolVersion": __CheckProtocolVersion,
+        "UserJoined": __UserJoined,
+        "SayThis": __SayThis,
+        "LogoutResponse": __LogoutResponse}
+        try:
+            command_handler[command](input_message)
+        except KeyError:
+            raise ValueError, "Invalid command: %s" % command
         return []
-        #TODO: acknowledge
-        #return [input_message.acknowledge()]
+
 
 GalaktiaClientController.register_event_type('on_acknowledge')
 
@@ -162,21 +180,29 @@ class GalaktiaServerController(EventDispatcher, Controller):
             self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
 
-        if command == "MoveDxDy":
+        def __MoveDxDy(input_message):
             (dx, dy) = input_message['action']
             self.dispatch_event('on_move_dx_dy', input_message.session, (dx,dy))
-        elif command == "SayThis":
+        def __SayThis(input_message):
             message = input_message['action']
             self.dispatch_event('on_say_this', input_message.session, message)
 
-        elif command == "RequestUserJoin":
+        def __RequestUserJoin(input_message):
             username = input_message['username']
             self.dispatch_event('on_request_user_join', input_message.session, username)
-        elif command == "StartConection":
+        def __StartConection(input_message):
             self.dispatch_event('on_start_connection', input_message.session)
-        elif command == "LogoutRequest":
+        def __LogoutRequest(input_message):
             self.dispatch_event('on_logout_request', input_message.session)
-        else:
+        function_handlers = {
+            "MoveDxDy": __MoveDxDy,
+            "SayThis": __SayThis,
+            "RequestUserJoin": __RequestUserJoin,
+            "StartConnection": __StartConnection,
+            "LogoutRequest": __LogoutRequest}
+        try:
+            function_handlers[command](input_message)
+        except KeyError:
             raise ValueError("Invalid command: %s" % command)
 
         #should return [input_message.acknowledge()]
