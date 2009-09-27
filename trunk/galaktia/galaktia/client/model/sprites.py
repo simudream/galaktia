@@ -79,6 +79,8 @@ class Walter(Sprite):
     def set_position(self,x,y):
         self.x, self.y = x, y
 
+    def set_facing(self, direction):
+        pass
 
 class Baldosa(Sprite):
     pass
