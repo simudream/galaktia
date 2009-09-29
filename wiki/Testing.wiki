@@ -1,0 +1,27 @@
+#summary Notes about unit testing
+#labels Phase-Implementation
+
+= Introduction =
+
+We use [http://somethingaboutorange.com/mrl/projects/nose/0.11.1/ nose] as testing framework.
+
+= Testing =
+
+== Command cheatsheet ==
+
+  * To install nose:
+  {{{ easy_install nose }}}
+
+  * To run tests:
+  {{{ nosetests -vs path_to_tests }}}
+
+  * Command usage help:
+  {{{ nosetests -h }}}
+
+== Further reading ==
+
+  * [http://somethingaboutorange.com/mrl/projects/nose/0.11.1/ Nose installation and quick start]
+  * [http://docs.python.org/library/unittest.html Python documentaton: unittest (standard library module)]
+  * [http://code.google.com/p/python-nose/wiki/WritingTests Writing nose tests]
+  * [http://code.google.com/p/python-nose/wiki/TestingTools Nose testing tools]
+  * [http://code.google.com/p/python-nose/wiki/NoseFeatures Nose features]
