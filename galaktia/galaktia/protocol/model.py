@@ -20,6 +20,7 @@ class Datagram(object):
 
     def __str__(self):
         return '\n{Objeto Datagrama: \n \tData=%s \n \tHost=%s \n \tPort=%s}\n'%(self.data, self.host, self.port)
+        # WTF is this for?? Maybe self.__repr__...
 
     @property
     def destination(self):
@@ -30,7 +31,7 @@ class Datagram(object):
 class Message(dict):
     """ Represents a message to be sent or received via a protocol """
 
-    def __init__(self, **kwargs):
+    def __init__(self, session=None, **kwargs):
         """
         ``Message`` constructor.
 
@@ -41,17 +42,11 @@ class Message(dict):
         :keywords:
             Any key-value pairs to store in the message
         """
+        self.session = session # session won't be in kwargs
         self['name'] = self.__class__.__name__
         self['timestamp'] = time.time()
         self['ack'] = []
         self.update(kwargs)
-#Elimina ambiguedad, se pasa session por afuera
-        if self.has_key('session') == False:
-            self.session = None
-        else:
-            self.session = self['session']
-            self.pop('session')
-
 
     def __hash__(self):
         return hash(self['timestamp'])
