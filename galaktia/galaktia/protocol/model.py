@@ -84,6 +84,11 @@ class Session(object):
         self.secret_key = secret_key
         # NOTE: no session attribute should be altered after construction
 
+    def __str__(self):
+        retstr = ' { Objeto Session: \n \t ID = '+str(id)
+        retstr += '\n\tHost, Port = '+str(host)+','+str(port)
+        retstr += '\n\tcharacter_id = '+str(character_id)+' } '
+
 class MessageBuffer(object):
     """ Holds acknowledgement and pending messages data for the sake of
         reliability in a message protocol. """
