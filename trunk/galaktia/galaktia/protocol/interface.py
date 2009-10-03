@@ -36,6 +36,11 @@ class GalaktiaClientController(EventDispatcher, Controller):
         self.dispatch_event('on_player_moved',
                  other_session_id, (dx,dy), (x,y))
                  
+
+    def __SayThis(input_message):
+        message = input_message['action']
+        self.dispatch_event('on_say_this', message)
+
     def __SomeoneSaid(input_message):
         message = input_message['action']
         username = input_message['subject']
@@ -86,14 +91,14 @@ class GalaktiaClientController(EventDispatcher, Controller):
         #Talk commands
         
         command_handler = {
-        u'PlayerEnteredLOS': __PlayerEnteredLOS,
-        u'PlayerMoved': __PlayerMoved,
-        u'SomeoneSaid': __SomeoneSaid,
-        u'UserAccepted': __UserAccepted,
-        u'CheckProtocolVersion': __CheckProtocolVersion,
-        u'UserJoined': __UserJoined,
-        u'SayThis': __SayThis,
-        u'LogoutResponse': __LogoutResponse}
+        u'PlayerEnteredLOS': self.__PlayerEnteredLOS,
+        u'PlayerMoved': self.__PlayerMoved,
+        u'SomeoneSaid': self.__SomeoneSaid,
+        u'UserAccepted': self.__UserAccepted,
+        u'CheckProtocolVersion': self.__CheckProtocolVersion,
+        u'UserJoined': self.__UserJoined,
+        u'SayThis': self.__SayThis,
+        u'LogoutResponse': self.__LogoutResponse}
         try:
             command_handler[command](input_message)
         except KeyError:
