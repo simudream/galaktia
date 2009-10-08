@@ -75,19 +75,13 @@ class GalaktiaClientController(EventDispatcher, Controller):
         username = input_message['object']
         self.dispatch_event('on_user_exited', session_id, username)
     
-    #TODO: acknowledge
-    #return [input_message.acknowledge()]
-    
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
         command = input_message.get('name')
 
         if command == None:
-            self.dispatch_event('on_acknowledge', input_message['ack'])
             return []
 
-        # TODO: if-elses and switch-cases are for loser languages,
-        # mapping is better
         #Talk commands
         
         command_handler = {
@@ -106,7 +100,6 @@ class GalaktiaClientController(EventDispatcher, Controller):
         return []
 
 
-GalaktiaClientController.register_event_type('on_acknowledge')
 
 GalaktiaClientController.register_event_type('on_greet')
 GalaktiaClientController.register_event_type('on_player_entered_los')
@@ -181,13 +174,10 @@ class GalaktiaServerController(EventDispatcher, Controller):
         """
         command = input_message.get('name')
 
-        if command == "Acknowledge": # TODO Acknowledge is no longer used
-            self.dispatch_event('on_acknowledge', input_message['ack'])
-            return []
-
         def __MoveDxDy(input_message):
             (dx, dy) = input_message['action']
             self.dispatch_event('on_move_dx_dy', input_message.session, (dx,dy))
+
         def __SayThis(input_message):
             message = input_message['action']
             self.dispatch_event('on_say_this', input_message.session, message)
@@ -213,8 +203,6 @@ class GalaktiaServerController(EventDispatcher, Controller):
         #should return [input_message.acknowledge()]
         return []
 
-GalaktiaServerController.register_event_type('on_acknowledge')
-
 GalaktiaServerController.register_event_type('on_move_dx_dy')
 GalaktiaServerController.register_event_type('on_say_this')
 GalaktiaServerController.register_event_type('on_request_user_join')
@@ -230,10 +218,6 @@ class ServerProtocolInterface(BaseServer):
         BaseServer.__init__(self, ProtocolCodec(session_dao), 
                             GalaktiaServerController())
         self.controller.push_handlers(self)
-
-    def on_acknowledge(self, ack):
-        #TODO: implement
-        pass
 
     # Event Handlers
     # To be implemented by class user

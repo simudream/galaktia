@@ -65,7 +65,23 @@ class TestMessage(TestCase):
 
 class TestDatagram(TestCase):
     """ Unit test for `Datagram` model """
-    # TODO
+
+    # This is the most trivial model class test I've ever implemented
+
+    def test_constructor_without_destination(self):
+        """ Is the Datagram instantiable without destination? """
+        data = 'Hi! My name is Guybrush Threepwood and I want to be a pirate!'
+        d = Datagram(data)
+        self.assertEqual(d.data, data)
+        self.assertEqual(d.destination, None)
+
+    def test_constructor_with_destination(self):
+        """ Is the Datagram instantiable with destination? """
+        data = 'Hi! My name is Guybrush Threepwood and I want to be a pirate!'
+        host, port = ('127.0.0.1', 1234)
+        d = Datagram(data, host, port)
+        self.assertEqual(d.data, data)
+        self.assertEqual(d.destination, (host, port))
 
 class TestSession(TestCase):
     """ Unit test for `Session` model """
