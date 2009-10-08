@@ -4,9 +4,14 @@
 import simplejson
 import struct
 import zlib
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
+
+from Crypto.Cipher import AES
 
 from galaktia.protocol.model import Datagram, Message
-from Crypto.Cipher import AES
 
 class Codec(object):
     """ Encodes and decodes objects """
@@ -27,22 +32,31 @@ class SerializationCodec(Codec):
 
     def decode(self, encoded):
         # SimpleJSON devuelve unicodes. Hay que hacer algo para modificar esto!
+            # Al contrario: habria que evitar los str y usar todo unicode!!
         unicodeado = simplejson.loads(encoded)
         retval = dict([(str(s), unicodeado[s]) for s in unicodeado])
+            # This patch breaks when encoded does not decode to a dict of str
         return retval
+
+class PickleSerializationCodec(Codec):
+    """ Serializes an object via pickle """
+
+    def encode(self, decoded):
+        return pickle.dumps(decoded)
+
+    def decode(self, encoded):
+        return pickle.loads(encoded)
 
 class CompressionCodec(Codec):
     """ Compresses and decompresses strings via zlib """
 
     def encode(self, decoded):
-
         try:
             return decoded.encode('zlib')
         except zlib.error:
             raise ValueError(decoded)
 
     def decode(self, encoded):
-
         try:
             return encoded.decode('zlib')
         except zlib.error:
@@ -156,7 +170,7 @@ class ProtocolCodec(MultipleCodec):
 	# AES keys have to have 16 characters (or 32 or 64...)
     PUBLIC_KEY = 'g4L4kT14 rUlZ!__'
 
-    _serializer = SerializationCodec()
+    _serializer = PickleSerializationCodec()
     _encipherer = EncryptionCodec()
     _packer = IdentifierPackerCodec()
     _compressor = CompressionCodec()
@@ -169,7 +183,8 @@ class ProtocolCodec(MultipleCodec):
         # TODO: case: session.id == 0 (no encryption, etc.)
         key            = session.secret_key if session.id else self.PUBLIC_KEY
         #or maybe: key = session.secret_key or self.PUBLIC_KEY
-        serialized     = self._serializer.encode(decoded)
+        serialized     = self._serializer.encode(dict(decoded))
+                    # dict forces Message session data not to be serialized
         encrypted, key = self._encipherer.encode((serialized, key))
         packed         = self._packer.encode((session.id, encrypted))
         compressed     = self._compressor.encode(packed)
