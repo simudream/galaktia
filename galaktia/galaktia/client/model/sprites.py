@@ -31,7 +31,10 @@ class GameView(object):
         self.own_walter = None
 
     def draw(self):
-        self.center_walter = {'x': self.own_walter.x, 'y': self.own_walter.y}
+        if self.own_walter is not None:
+            self.center_walter = {'x': self.own_walter.x, 'y': self.own_walter.y}
+        else:
+            self.center_walter = {'x': 0, 'y': 0}
         for baldosa in self.baldosas:
             baldosa.draw(self.center_walter)
         for pared in self.mapa:

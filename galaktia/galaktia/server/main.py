@@ -44,7 +44,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
     def on_request_user_join(self, session, username):
             user = self.user_dao.get_by(name=username)
             if not user:
-                user = User(name=username, passwd='', email=username)
+                user = User(name=username, passwd= u'', email=username)
                 # Set mail to username so as to avoid the unique constraint
                 self.user_dao.add(user)
                 self.user_dao.session.flush()
@@ -80,7 +80,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
             self.user_accepted( 
                     session = session,
-                    player_initial_walle = (user.character.x, character.y),
+                    player_initial_state = (user.character.x, character.y),
                     username = user.name,
                     surroundings = wall_list
                     )
@@ -110,6 +110,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                                     url="http://www.galaktia.com.ar")
 
     def on_logout_request(self, session):
+        print "on logout request!"
         if session is not None:
             username = session.user.name
             self.logout_response(session)
@@ -125,7 +126,6 @@ class CamelCaseChatServer(ServerProtocolInterface):
         if self.char_dao.move(character, newx, newy):
             self.player_moved(self.session_dao.get_logged(), session, (dx, dy), (newx, newy))
         elif dx * dy != 0:
-            print "interesting case, %s, %s" % (dx,dy)
             if self.char_dao.move(character, newx-dx, newy):
                 self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
             elif self.char_dao.move(character, newx, newy-dy):

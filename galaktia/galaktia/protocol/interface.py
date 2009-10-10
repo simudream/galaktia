@@ -22,14 +22,14 @@ class GalaktiaClientController(EventDispatcher, Controller):
         self.dispatch_event('on_greet')
         return []
 
-    def __PlayerEnteredLOS(input_message):
+    def __PlayerEnteredLOS(self, input_message):
         session_id = input_message['subject']
         (x,y) = input_message['object']
         description = input_message['description']
         self.dispatch_event('on_player_entered_los',
                  session_id, (x,y), description )
                  
-    def __PlayerMoved(input_message):
+    def __PlayerMoved(self, input_message):
         other_session_id = input_message["subject"]
         (dx, dy) = input_message["action"]
         (x,y) = input_message["object"]
@@ -37,16 +37,16 @@ class GalaktiaClientController(EventDispatcher, Controller):
                  other_session_id, (dx,dy), (x,y))
                  
 
-    def __SayThis(input_message):
+    def __SayThis(self, input_message):
         message = input_message['action']
         self.dispatch_event('on_say_this', message)
 
-    def __SomeoneSaid(input_message):
+    def __SomeoneSaid(self, input_message):
         message = input_message['action']
         username = input_message['subject']
         self.dispatch_event('on_someone_said', username, message)
         
-    def __UserAccepted(input_message):
+    def __UserAccepted(self, input_message):
         if input_message['accepted']:
             username = input_message['username']
             x, y = input_message['player_initial_state']
@@ -56,21 +56,21 @@ class GalaktiaClientController(EventDispatcher, Controller):
             self.dispatch_event('on_user_rejected')
      # Join commands
      
-    def __CheckProtocolVersion(input_message):
+    def __CheckProtocolVersion(self, input_message):
         version = input_message['version']
         url = input_message['url']
         session_id = input_message.session.id
         self.dispatch_event('on_check_protocol_version', session_id, version, url)
         
-    def __UserJoined(input_message):
+    def __UserJoined(self, input_message):
         username = input_message['username']
         self.dispatch_event('on_user_joined', username)
         
     # Exit Commands
-    def __LogoutResponse(input_message):
+    def __LogoutResponse(self, input_message):
         self.dispatch_event('on_logout_response')
         
-    def __UserExited(input_message):
+    def __UserExited(self, input_message):
         session_id = input_message['subject']
         username = input_message['object']
         self.dispatch_event('on_user_exited', session_id, username)
@@ -172,6 +172,7 @@ class GalaktiaServerController(EventDispatcher, Controller):
         """ Implements processing by returning CamelCased input 
             Please see protocol specification for more on messages
         """
+        print "received command in server!"
         command = input_message.get('name')
 
         def __MoveDxDy(input_message):
@@ -262,11 +263,11 @@ class ServerProtocolInterface(BaseServer):
 
     def user_accepted(self, session, username, player_initial_state, surroundings):
         self.send(UserAccepted( accepted = True, 
-                            session_id = session.id,
+                            surroundings = surroundings,
                             username = username,
+                            session_id = session.id,
                             player_initial_state = player_initial_state,
-                            session = session,
-                            surroundings = surroundings
+                            session = session
                             ))
 
     def user_rejected(self, session):
