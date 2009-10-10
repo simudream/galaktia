@@ -33,9 +33,8 @@ class StartConnection(Message):
 
 class CheckProtocolVersion(Message):
     """ S->C Message for informing client current server protocol"""
-    def __init__(self, version, url, **kwargs):
-        super(CheckProtocolVersion, self).__init__(version=version, \
-                url= url, **kwargs)
+    def __init__(self, **kwargs):
+        super(CheckProtocolVersion, self).__init__(**kwargs)
 
 class RequestUserJoin(Message):
     """ C->S Message for informing that a character with a certain username
@@ -49,21 +48,22 @@ class UserAccepted(Message):
         about the session identifier and the player's initial state. """
     def __init__(self, accepted, surroundings=None, username=None, session_id=None, \
             player_initial_state=None, ack=None, **kwargs):
-        data = {'accepted': accepted }
+        kwargs.update({'accepted': accepted })
+
 
         if username is not None:
-            data['username'] = username
+            kwargs['username'] = username
 
         if session_id is not None:
-            data['session_id'] = session_id
+            kwargs['session_id'] = session_id
 
         if player_initial_state is not None:
-            data['player_initial_state'] = player_initial_state
+            kwargs['player_initial_state'] = player_initial_state
 
         if surroundings is not None:
-            data['surroundings'] = surroundings
+            kwargs['surroundings'] = surroundings
 
-        super(UserAccepted, self).__init__(data, **kwargs)
+        super(UserAccepted, self).__init__(**kwargs)
 
 class UserJoined(Message):
     """ S->C Message for informing all clients that a new client logged in"""

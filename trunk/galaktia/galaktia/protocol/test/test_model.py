@@ -2,7 +2,6 @@
 from __future__ import with_statement
 __docformat__='restructuredtext'
 
-import logging
 import time
 
 from unittest import TestCase
