@@ -18,12 +18,12 @@ class GameView(object):
         self.piso = pyglet.image.load(os.path.join(IMAGES_DIR, 'piso.png'))
         self.pared = pyglet.image.load(os.path.join(IMAGES_DIR, 'pared.png'))
         
-        self.mapa = [Pared((t[0],t[1]), self.pared, self.tile_size, self.padding) \
+        self.mapa = [Pared((t[0],t[1]), 'Pared', self.pared, self.tile_size, self.padding) \
                      for t in surroundings]
         self.baldosas = []
         for x in xrange(map_dim):
             for y in xrange(map_dim):
-                self.baldosas.append(Baldosa((x,y), self.piso, self.tile_size, self.padding))
+                self.baldosas.append(Baldosa((x,y), 'Baldosa', self.piso, self.tile_size, self.padding))
         self.peers = {}
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -76,9 +76,9 @@ class Sprite(object):
 
 class Walter(Sprite):
 
-    def __init__(self, (x,y), description, image):
+    def __init__(self, (x,y), description, image, tile_size, padding):
         self.name = description
-        super(Walter, self).__init__((x,y), image)
+        super(Walter, self).__init__((x,y), description, image, tile_size, padding)
 
     def set_position(self,x,y):
         self.x, self.y = x, y

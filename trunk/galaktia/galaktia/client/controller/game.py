@@ -72,9 +72,11 @@ class GameHandler():
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
 
-        self.game_view = GameView(self.MAP_DIM, self.TILE_WIDTH, 
-        self.TILE_HEIGHT, (screen_parameters[0]-self.TILE_WIDTH)/2,
-            (screen_parameters[1]-self.TILE_HEIGHT)/2, surroundings)
+        self.game_view = GameView(self.MAP_DIM,
+            self.TILE_WIDTH, self.TILE_HEIGHT,
+            (screen_parameters[0]-self.TILE_WIDTH)/2,
+            (screen_parameters[1]-self.TILE_HEIGHT)/2,
+            surroundings)
 
 
     def on_mouse_motion(self, x, y, dx, dy):
