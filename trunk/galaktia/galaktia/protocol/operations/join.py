@@ -40,7 +40,7 @@ class RequestUserJoin(Message):
     """ C->S Message for informing that a character with a certain username
     wants to enter Galaktia world. I'm Going in Boy!"""
     def __init__(self, username, **kwargs):
-        super(RequestUserJoin, self).__init__(username= username, **kwargs)
+        super(RequestUserJoin, self).__init__(username=username, **kwargs)
 
 class UserAccepted(Message):
     """ S->C Message for informing that a certain user was accepted or 
@@ -68,6 +68,6 @@ class UserAccepted(Message):
 class UserJoined(Message):
     """ S->C Message for informing all clients that a new client logged in"""
     def __init__(self, username, **kwargs):
-        super(UserJoined, self).__init__({'username': username}, **kwargs)
+        super(UserJoined, self).__init__(username=username, **kwargs)
 
 

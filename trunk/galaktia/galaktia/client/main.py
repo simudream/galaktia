@@ -18,6 +18,7 @@ from galaktia.client.controller.game import GameHandler
 from galaktia.client.controller.login import LoginHandler
 from galaktia.client.paths import IMAGES_DIR, SOUND_DIR
 from galaktia.protocol.interface import ClientProtocolInterface
+from galaktia.protocol.key import KeyGenerator
 
 pyglet.clock.set_fps_limit(30)
 
@@ -87,7 +88,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def on_user_accepted(self, username, (x, y), surroundings):
         logger.info("User accepted! starting coords = (%d, %d)." % (x, y))
 
-        self.session = ClientSession(self.session.id, username.ljust(16))
+        self.session = ClientSession(self.session.id, KeyGenerator.generate_key(self.session.id, (username)))
         self.session_dao.set(self.session)
 
         new_handler = GameHandler(self, username, (x, y), surroundings, \
@@ -147,15 +148,11 @@ class ClientSession:
         self.host = None
         self.port = None
 
-    def get_encryption_key(self):
-        return self.secret_key
-
 class ClientSessionDAO:
     """ SessionDAO stub to be used in the protocol layer """
 
     def __init__(self):
-        PUBLIC_KEY = 'g4L4kT14 rUlZ!__' # TODO: what is PublicKey for?
-        self.session = ClientSession(0, PUBLIC_KEY)
+        self.session = ClientSession(0, KeyGenerator.generate_key())
 
     def set(self, session):
         self.session = session

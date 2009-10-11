@@ -18,8 +18,8 @@ class Datagram(object):
         """
         self.data, self.host, self.port = data, host, port
 
-    def __str__(self):
-        return u'\n{Objeto Datagrama: \n \tData=%s \n \tHost=%s \n \tPort=%s}\n'%(self.data, self.host, self.port)
+#    def __str__(self):
+ #       return u'\n{Objeto Datagrama: \n \tData=%s \n \tHost=%s \n \tPort=%s}\n'%(self.data, self.host, self.port)
         # WTF is this for?? Maybe self.__repr__...
 
     @property

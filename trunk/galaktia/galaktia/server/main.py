@@ -13,6 +13,7 @@ from galaktia.server.persistence.dao import WallDAO, CharacterDAO, \
         UserDAO, mass_unpack
 from galaktia.server.persistence.orm import Wall, Character, \
         init_db, User
+from galaktia.protocol.key import KeyGenerator
 
 
 #logger = logging.getLogger(__name__)
@@ -86,6 +87,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                     )
             session.user_id = user.id
             session.user = user
+            session.secret_key = KeyGenerator.generate_key(session.id, (username))
 
             # Let players know that a new dude is in town
             self.player_entered_los(self.session_dao.get_logged(), session,
