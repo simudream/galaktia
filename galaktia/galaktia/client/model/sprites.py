@@ -56,8 +56,9 @@ class GameView(object):
 
 
 class Sprite(object):
-    def __init__(self, (x,y), image, tile_size, padding):
+    def __init__(self, (x,y), description, image, tile_size, padding):
         self.x, self.y = x,y
+        self.description = description
         self.image = image
         self.tile_size = tile_size
         self.padding = padding
@@ -68,7 +69,7 @@ class Sprite(object):
         self.image.blit(self.tile_size['x']*iso_x+self.padding['x'], 
             self.tile_size['y']*iso_y+self.padding['y'])
 
-    def cambiar_setup(self, tile_size, padding):
+    def set_screen_options(self, tile_size, padding):
         self.tile_size = tile_size
         self.padding = padding
 
