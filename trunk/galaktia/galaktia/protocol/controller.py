@@ -9,7 +9,7 @@ from twisted.python import log
 from galaktia.protocol.base import BaseServer, BaseClient
 from galaktia.protocol.codec import ProtocolCodec
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 
 class Controller(object):
 
