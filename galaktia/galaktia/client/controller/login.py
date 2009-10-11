@@ -131,6 +131,9 @@ class LoginHandler():
         glOrtho(0, width, 0, height, -1, 1)
         glMatrixMode(gl.GL_MODELVIEW)
 
+    def on_user_joined(self, username):
+        pass
+
     def on_user_rejected(self):
         self.stateLabel.text = u'Oops. ¡That name is already taken!'
     def on_check_protocol_version(self, session_id, version, url):
