@@ -12,6 +12,7 @@ except ImportError:
 from Crypto.Cipher import AES
 
 from galaktia.protocol.model import Datagram, Message
+from galaktia.protocol.key import KeyGenerator
 
 class Codec(object):
     """ Encodes and decodes objects """
@@ -181,7 +182,7 @@ class ProtocolCodec(MultipleCodec):
     def encode(self, decoded):
         session = decoded.session
         # TODO: case: session.id == 0 (no encryption, etc.)
-        key            = session.secret_key if session.id else self.PUBLIC_KEY
+        key            = session.secret_key
         #or maybe: key = session.secret_key or self.PUBLIC_KEY
         serialized     = self._serializer.encode(dict(decoded))
                     # dict forces Message session data not to be serialized
@@ -202,7 +203,8 @@ class ProtocolCodec(MultipleCodec):
         if this_session == None:
             this_session  = self.session_dao.create(host=host, port=port)
             this_session.character_id = 0
-            this_session.secret_key   = self.PUBLIC_KEY
+            this_session.secret_key   = KeyGenerator.generate_key()
+            self.session_dao.set(this_session)
             # TODO: bind character_id, secret_key, etc.
             # by copying user data such as character and password
             # (user_dao or character_dao needed)
