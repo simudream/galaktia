@@ -33,6 +33,7 @@ class BaseServer(DatagramProtocol):
             input_message = self.codec.decode(datagram)
             logger.debug('Received from %s:%d: %s', host, port, input_message)
         except Exception:
+            print host, port, datagram
             logger.exception('Failed to decode datagram from %s:%d: %s', \
                     host, port, datagram)
             return
@@ -45,6 +46,7 @@ class BaseServer(DatagramProtocol):
         """ Sends an output message (according to its host, port) """
         #self.dispatch_events('on_send', output_message)
         self.on_send(output_message)
+        print "raw message =", output_message
         try:
             datagram = self.codec.encode(output_message)
         except Exception:

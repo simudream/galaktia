@@ -172,7 +172,6 @@ class GalaktiaServerController(EventDispatcher, Controller):
         """ Implements processing by returning CamelCased input 
             Please see protocol specification for more on messages
         """
-        print "received command in server!"
         command = input_message.get('name')
 
         def __MoveDxDy(input_message):
@@ -237,7 +236,10 @@ class ServerProtocolInterface(BaseServer):
 
     # Convinience protocol methods
     def player_entered_los(self, session_list, session, position, description):
+        print "i'm in player entered LOS"
+        print "session list = ",session_list
         for aSession in session_list:
+            print "for each session I'll be printed"
             m = PlayerEnteredLOS(session_id = session.id,
                 position = position,
                 description = description,

@@ -15,7 +15,7 @@ from galaktia.server.persistence.orm import Wall, Character, \
         init_db, User
 
 
-logger = logging.getLogger(__name__)
+#logger = logging.getLogger(__name__)
 
 SERVER_VERSION = "0.2"
 
@@ -59,7 +59,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 character.name = username
                 character.x, character.y = (randint(1,19),randint(1,19))
                 character.z = 0
-                character.level = 42 # I see dead people
+                character.level = 42 # I see dead people (?)
                 character.user_id = user.id
                 # character.collide = True
 
@@ -136,7 +136,7 @@ def get_session():
     here_dir = os.path.dirname(__file__)
     path = os.path.join(here_dir, '..', 'server', 'data', 'map.sqlite3')
     db_conn_str = 'sqlite:///%s' % path
-    logger.info('Using database connection string: %s', db_conn_str)
+    #logger.info('Using database connection string: %s', db_conn_str)
     engine, metadata, session = init_db(db_conn_str)
     return session
 
@@ -145,7 +145,7 @@ def main(program, port=6414):
     # log.startLogging(sys.stderr) # enables Twisted logging
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     protocol = CamelCaseChatServer(get_session())
-    logger.info("Starting %s", "server")
+    #logger.info("Starting %s", "server")
     port = int(port)
     reactor.listenUDP(port, protocol)
     reactor.run()

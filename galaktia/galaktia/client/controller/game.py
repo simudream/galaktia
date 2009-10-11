@@ -103,7 +103,6 @@ class GameHandler():
                 self.focus.caret.on_text(text)
 
     def on_text_motion(self, motion):
-        print self.keyboard
         if self.focus:
             self.focus.caret.on_text_motion(motion)
         elif motion in ARROW_KEY_TO_VERSOR:
