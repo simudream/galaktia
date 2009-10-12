@@ -39,6 +39,22 @@ class SceneObjectDAO(GenericDAO):
         return self.filter(self.klass.x==x, self.klass.y==y, \
                 self.klass.z==layer)
 
+    def get_cube_zone(self, x1, y1, z1, x2, y2, z2=None):
+        """
+            Returns the objects in the cube zone.
+        """
+        if z2 == None:
+            z2 = z1
+        max_x = max(x1, x2)
+        min_x = min(x1, x2)
+        max_y = max(y1, y2)
+        min_y = min(y1, y2)
+        max_z = max(z1, z2)
+        min_z = min(z1, z2)
+        return self.filter(self.klass.x <= max_x, self.klass.x >= min_x, \
+                self.klass.y <= max_y, self.klass.y >= min_y, \
+                self.klass.z <= max_z, self.klass.z >= min_z)
+
     def get_layer_subsection(self, x, y, layer, radius=2):
         """
             Returns a square layer subsection. The diameter is twice the
