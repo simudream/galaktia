@@ -93,7 +93,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
         u'UserJoined': self.__UserJoined,
         u'SayThis': self.__SayThis,
         u'LogoutResponse': self.__LogoutResponse,
-        u'UserExited': self.__User_exited}
+        u'UserExited': self.__UserExited}
         try:
             command_handler[command](input_message)
         except KeyError:
