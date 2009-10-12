@@ -52,7 +52,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
             elif self.session_dao.get_by(user_id=user.id):
                 self.user_rejected(session=session)
                 return
-
+            self.session_dao.set(session)
             self.user_joined(username=username, session_list=self.session_dao.get_logged())
 
             if not user.character:
@@ -92,7 +92,8 @@ class CamelCaseChatServer(ServerProtocolInterface):
             # Let players know that a new dude is in town
             self.player_entered_los(self.session_dao.get_logged(), session,
                     (character.x, character.y), username)
-
+                # Use self.char_dao.get_near(character, radius=10) instead of
+                # get_logged()
 
             # for aSession in filter(lambda x: x != session_id, self.sessions):
             for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user.character in \
@@ -132,6 +133,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
             elif self.char_dao.move(character, newx, newy-dy):
                 self.player_moved(self.session_dao.get_logged(), session, (dx, 0), (newx, newy-dy))
+        # TODO: This should be handled entirely by the new Positional engine.
 
 
 def get_session():
