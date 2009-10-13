@@ -97,7 +97,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
         try:
             command_handler[command](input_message)
         except KeyError:
-            raise ValueError, "Invalid command: %s" % command
+            raise ValueError, "Invalid command @GalaktiaClientController: %s" % command
         return []
 
 
@@ -199,7 +199,7 @@ class GalaktiaServerController(EventDispatcher, Controller):
         try:
             function_handlers[command](input_message)
         except KeyError:
-            raise ValueError("Invalid command: %s" % command)
+            raise ValueError("Invalid command @GalaktiaServerController: %s" % command)
 
         #should return [input_message.acknowledge()]
         return []
