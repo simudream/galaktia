@@ -52,6 +52,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
             elif self.session_dao.get_by(user_id=user.id):
                 self.user_rejected(session=session)
                 return
+            session.user = user
             self.session_dao.set(session)
             self.user_joined(username=username, session_list=self.session_dao.get_logged())
 
@@ -97,7 +98,8 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
             # for aSession in filter(lambda x: x != session_id, self.sessions):
             for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user.character in \
-                                    self.char_dao.get_near(character, radius=20)]:
+                                    self.char_dao.get_near(character,
+                                    radius=20) and sth.user.character.show]:
                 # Explicación: pide todas las sessions (no propias), pero
                 # que además tengan un personaje asociado y que estén
                 # dentro de radio 20 del usuario. Es más, el if x != no es
@@ -118,7 +120,6 @@ class CamelCaseChatServer(ServerProtocolInterface):
             username = session.user.name
             self.logout_response(session)
             self.char_dao.dismiss(session.user.character)
-
             self.user_exited(self.session_dao.get_logged(), session, username)
             self.session_dao.delete(session)
 
