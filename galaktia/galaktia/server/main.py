@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, logging, os.path
+import logging
+import os.path
+import sys
 from random import randint
 
 from twisted.internet import reactor
@@ -16,24 +18,24 @@ from galaktia.server.persistence.orm import Wall, Character, \
 from galaktia.protocol.key import KeyGenerator
 
 
-#logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
-SERVER_VERSION = "0.2"
+SERVER_VERSION = "0.2" # TODO: should be same as galaktia version, e.g.: 0.1.1
 
-
+# TODO: this class has evolved and its name is now tricky...
 class CamelCaseChatServer(ServerProtocolInterface):
     """ Implementation of a simple chat server :"""
 
     def __init__(self, session):
         self.session=session
             # Database session. Please, do not touch :P
-        
+
         self.user_dao = UserDAO(session())
         self.char_dao = CharacterDAO(session())
         self.wall_dao = WallDAO(session())
         self.session_dao = SessionDAO()
-            
-        ServerProtocolInterface.__init__(self, self.session_dao)    
+
+        ServerProtocolInterface.__init__(self, self.session_dao)
 
     def on_say_this(self, session, message):
         self.someone_said(
@@ -115,7 +117,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                                     url="http://www.galaktia.com.ar")
 
     def on_logout_request(self, session):
-        print "on logout request!"
+        print "on logout request!" # TODO: never print, always log
         if session is not None:
             username = session.user.name
             self.logout_response(session)
@@ -141,7 +143,7 @@ def get_session():
     here_dir = os.path.dirname(__file__)
     path = os.path.join(here_dir, '..', 'server', 'data', 'map.sqlite3')
     db_conn_str = 'sqlite:///%s' % path
-    #logger.info('Using database connection string: %s', db_conn_str)
+    logger.info('Using database connection string: %s', db_conn_str)
     engine, metadata, session = init_db(db_conn_str)
     return session
 
@@ -150,12 +152,13 @@ def main(program, port=6414):
     # log.startLogging(sys.stderr) # enables Twisted logging
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     protocol = CamelCaseChatServer(get_session())
-    #logger.info("Starting %s", "server")
     port = int(port)
+    logger.info('Starting server at port: %d', port)
     reactor.listenUDP(port, protocol)
     reactor.run()
+    logger.info('Stopped server')
 
 if __name__ == '__main__':
-    print 'Usage: python -m galaktia.server.main [port]'
+    # print 'Usage: python -m galaktia.server.main [port]'
     main(*sys.argv)
 

@@ -14,6 +14,7 @@ __docformat__='restructuredtext'
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session, relation, backref
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.schema import Column, ForeignKey
 from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime, \
      UnicodeText
@@ -55,11 +56,23 @@ class SceneObject(Entity):
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
 
-    def pos(self):
+    def pos(self): # suggestion: @property
         return (self.x, self.y, self.z)
 
     def unpack(self):
         return (self.x, self.y, self.z, self.image)
+
+    def to_dict(self): # useful for serializing
+        return dict((k, getattr(self, k)) for k, v in \
+                self.__class__.__dict__.iteritems() if \
+                isinstance(v, InstrumentedAttribute))
+
+    @classmethod
+    def from_dict(cls, d): # useful for deserializing
+        entity = cls() # instantiate by calling "this" class
+        for k, v in d.iteritems():
+            setattr(entity, k, v)
+        return entity
 
 class Spatial(SceneObject):
     """ Represents any object with volume in the world. """

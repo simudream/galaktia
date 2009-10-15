@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import sys, logging
+import logging
+import re
+import sys
 
 from pyglet.event import EventDispatcher
 
@@ -16,6 +18,66 @@ from galaktia.protocol.operations.exit import *
 
 logger = logging.getLogger(__name__)
 
+class MessageController(Controller):
+    """ ``Controller`` adapter for processing messages """
+
+    MESSAGE_KEYS = []
+
+    def process(self, input_message):
+        return self._process(*self.get_args())
+
+    def _process(self, *args):
+        raise NotImplementedError('Abstract method')
+
+    def get_args(self, input_message):
+        return [input_message[key] for key in self.MESSAGE_KEYS]
+
+class PlayerEnteredLOSController(MessageController):
+    """ ``MessageController`` subclass example """
+
+    MESSAGE_KEYS = ['subject', 'object', 'description']
+
+    def _process(self, subject, object, description):
+        raise NotImplementedError('TODO ;)') # TODO
+
+class DispatcherController(Controller):
+    """
+    Main controller for server-client protocol that dispatches messages
+    to controllers according to message name.
+    """
+
+    def __init__(self, session_dao):
+        """
+        ``DispatcherController`` constructor.
+
+        :parameters:
+            # TODO: all necessary DAOs, helpers, etc. to create controllers
+        """
+        self.routes = {
+            'PlayerEnteredLOS': PlayerEnteredLOSController(),
+            # TODO: map all message names/controllers
+        }
+
+    def process(self, input_message):
+        """ Returns responses for given input message """
+        try:
+            command = input_message['name']
+                    # raises KeyError if no name
+        except Exception:
+            logger.exception('Bad message: %s', input_message)
+            return [] # TODO: maybe send back error message
+        try:
+            controller = self.routes[command]
+                    # raises KeyError if command is unknown
+        except Exception:
+            logger.exception('Unknown message type: %s', input_message)
+            return [] # TODO: maybe send back error message
+        try:
+            return controller.process(input_message)
+                    # raises any Exception if controller fails
+        except Exception:
+            logger.exception('Failed to handle message: %s', input_message)
+            return [] # TODO: send "internal server error" message
 
 class GalaktiaClientController(EventDispatcher, Controller):
     def greet(self):
@@ -94,6 +156,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
         u'SayThis': self.__SayThis,
         u'LogoutResponse': self.__LogoutResponse,
         u'UserExited': self.__UserExited}
+            # FIXME this instantiates this dict on every call
         try:
             command_handler[command](input_message)
         except KeyError:
