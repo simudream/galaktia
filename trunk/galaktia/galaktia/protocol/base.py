@@ -45,16 +45,16 @@ class BaseServer(DatagramProtocol):
         """ Sends an output message (according to its host, port) """
         #self.dispatch_events('on_send', output_message)
         self.on_send(output_message)
-        print "raw message =", output_message
         try:
             datagram = self.codec.encode(output_message)
         except Exception:
             logger.exception('Failed to encode message: %s', output_message)
             return
         try:
-            self.transport.write(datagram.data, datagram.destination)
-            logger.debug('Sent to %s: %s', datagram.destination or 'server', \
-                    output_message)
+            dst = datagram.destination
+            dst_name = '%s:%d' % dst if dst else 'server'
+            self.transport.write(datagram.data, dst)
+            logger.debug('Sent to %s: %s', dst_name, output_message)
         except Exception:
             logger.exception('Failed to send message: %s', output_message)
 
@@ -90,7 +90,7 @@ class BaseClient(BaseServer):
 class ReliableServer(BaseServer):
     """ Implements a reliability layer on BaseServer """
 
-    TIMEOUT = 15 # seconds before attempting to resend pending messages
+    TIMEOUT = 7 # seconds before attempting to resend pending messages
 
     def __init__(self, codec, controller, msg_buffer_dao, scheduler):
         BaseServer.__init__(self, codec, controller)
