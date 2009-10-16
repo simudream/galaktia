@@ -240,7 +240,8 @@ class GalaktiaServerController(EventDispatcher, Controller):
 
         def __MoveDxDy(input_message):
             (dx, dy) = input_message['action']
-            self.dispatch_event('on_move_dx_dy', input_message.session, (dx,dy))
+            timestamp = input_message['timestamp']
+            self.dispatch_event('on_move_dx_dy', input_message.session, (dx,dy), timestamp)
 
         def __SayThis(input_message):
             message = input_message['action']
@@ -286,7 +287,7 @@ class ServerProtocolInterface(BaseServer):
     # Event Handlers
     # To be implemented by class user
 
-    def on_move_dx_dy(self, session, (dx,dy)):
+    def on_move_dx_dy(self, session, (dx,dy), timestamp):
         raise NotImplementedError
     def on_say_this(self, session, message):
         raise NotImplementedError
@@ -300,10 +301,7 @@ class ServerProtocolInterface(BaseServer):
 
     # Convinience protocol methods
     def player_entered_los(self, session_list, session, position, description):
-        print "i'm in player entered LOS"
-        print "session list = ",session_list
         for aSession in session_list:
-            print "for each session I'll be printed"
             m = PlayerEnteredLOS(session_id = session.id,
                 position = position,
                 description = description,

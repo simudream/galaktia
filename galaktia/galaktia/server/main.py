@@ -65,6 +65,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 character.z = 0
                 character.level = 42 # I see dead people (?)
                 character.user_id = user.id
+                character.last_move_timestamp = 0
                 # character.collide = True
 
                 self.char_dao.add(character)
@@ -117,7 +118,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                                     url="http://www.galaktia.com.ar")
 
     def on_logout_request(self, session):
-        print "on logout request!" # TODO: never print, always log
+
         if session is not None:
             username = session.user.name
             self.logout_response(session)
@@ -125,8 +126,11 @@ class CamelCaseChatServer(ServerProtocolInterface):
             self.user_exited(self.session_dao.get_logged(), session, username)
             self.session_dao.delete(session)
 
-    def on_move_dx_dy(self, session, (dx,dy)):
+    def on_move_dx_dy(self, session, (dx,dy), timestamp):
         character = session.user.character
+        if timestamp * 1000 - character.last_move_timestamp < 200:
+            return
+        character.last_move_timestamp = timestamp * 1000
         newx, newy = (character.x+dx, character.y+dy)
 
         if self.char_dao.move(character, newx, newy):
@@ -149,9 +153,12 @@ def get_session():
 
 def main(program, port=6414):
     """ Main program: Starts a server on given port """
-    # log.startLogging(sys.stderr) # enables Twisted logging
+    #log.startLogging(sys.stderr) # enables Twisted logging
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     protocol = CamelCaseChatServer(get_session())
+
+    logger.info("Starting %s", "server")
+
     port = int(port)
     logger.info('Starting server at port: %d', port)
     reactor.listenUDP(port, protocol)

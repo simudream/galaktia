@@ -135,6 +135,7 @@ class Character(Sprite):
     level = Column(Integer, nullable=False, default=1) # player "level" (?)
     life = Column(Integer) # life points
     money = Column(Integer) # money points
+    last_move_timestamp = Column(Integer) # timestamp from last movement
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
 
 

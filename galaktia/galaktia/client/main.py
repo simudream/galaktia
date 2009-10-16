@@ -58,6 +58,8 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_mouse_press(x, y, button, modifiers)
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         self.handler.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        self.handler.on_mouse_release(x, y, buttons, modifiers)
     def on_text(self, text):
         self.handler.on_text(text)
     def on_text_motion(self, motion):
