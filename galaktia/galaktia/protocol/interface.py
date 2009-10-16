@@ -113,7 +113,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
         if input_message['accepted']:
             username = input_message['username']
             x, y = input_message['player_initial_state']['starting_pos']
-            hit_points = input_message['player_initial_stat']['hps']
+            hit_points = input_message['player_initial_state']['hps']
             surroundings = input_message['surroundings']
             self.dispatch_event('on_user_accepted', username, (x,y), \
                             hit_points, surroundings)
@@ -147,8 +147,6 @@ class GalaktiaClientController(EventDispatcher, Controller):
         if command == None:
             return []
 
-
-        print command, type(command), command.__class__
         command_handler = {
         u'PlayerEnteredLOS': self.__PlayerEnteredLOS,
         u'PlayerMoved': self.__PlayerMoved,
@@ -161,9 +159,10 @@ class GalaktiaClientController(EventDispatcher, Controller):
         u'UserExited': self.__UserExited}
             # FIXME this instantiates this dict on every call
         try:
-            command_handler[command](input_message)
+            command_handler_function = command_handler[command]
         except KeyError:
             raise ValueError, "Invalid command @GalaktiaClientController: %s" % command
+        command_handler_function(input_message)
         return []
 
 
