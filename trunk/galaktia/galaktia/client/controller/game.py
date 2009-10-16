@@ -10,6 +10,7 @@ import pyglet.gl as gl
 from galaktia.client.controller.widget import TextWidget, ChatWidget
 from galaktia.client.model.sprites import GameView
 from galaktia.client.paths import IMAGES_DIR
+from galaktia.client.get_angle import get_angle
 
 
 class GameViewport(pyglet.graphics.Batch):
@@ -26,6 +27,22 @@ ARROW_KEY_TO_VERSOR = {
     pyglet.window.key.RIGHT : (0.5,0.5)
 }
 
+
+"""     0
+     7     1
+  6     X     2
+     5     3
+        4   """
+MOUSE_DIRECTION_TO_VERSOR = {
+    0: (-1,1),
+    1: (0,1),
+    2: (1,1),
+    3: (1,0),
+    4: (1,-1),
+    5: (0,-1),
+    6: (-1,-1),
+    7: (-1,0)
+}
 
 class GameHandler():
 
@@ -72,14 +89,17 @@ class GameHandler():
         self.text_cursor = self.window.get_system_mouse_cursor('text') 
         self.focus = None
 
-        self.game_view = GameView(self.MAP_DIM,
-            self.TILE_WIDTH, self.TILE_HEIGHT,
+        self.game_view = GameView((self.window.width, self.window.height),
+            self.MAP_DIM,
+            (self.TILE_WIDTH, self.TILE_HEIGHT),
             (screen_parameters[0]-self.TILE_WIDTH)/2,
             (screen_parameters[1]-self.TILE_HEIGHT)/2,
             surroundings)
 
 
     def on_mouse_motion(self, x, y, dx, dy):
+        new_orientation = get_angle(x-self.window.width/2, y-self.window.height/2)
+        self.game_view.miWalter.set_orientation(new_orientation)
         for widget in self.widgets:
             if widget.hit_test(x, y):
                 self.window.set_mouse_cursor(self.text_cursor)
@@ -88,6 +108,12 @@ class GameHandler():
             self.window.set_mouse_cursor(None)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        self.game_view.miWalter.start_moving()
+
+        new_orientation = get_angle(x-self.window.width/2, y-self.window.height/2)
+        self.game_view.miWalter.set_orientation(new_orientation)
+        (dx,dy) = MOUSE_DIRECTION_TO_VERSOR[new_orientation]
+        self.window.move_dx_dy((dx,dy))
         for widget in self.widgets:
             if widget.hit_test(x, y):
                 self.set_focus(widget)
@@ -96,8 +122,17 @@ class GameHandler():
             self.focus.caret.on_mouse_press(x, y, button, modifiers)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        new_orientation = get_angle(x-self.window.width/2, y-self.window.height/2)
+
+        self.game_view.miWalter.set_orientation(new_orientation)
+        (dx,dy) = MOUSE_DIRECTION_TO_VERSOR[new_orientation]
+        self.window.move_dx_dy((dx,dy))
+
         if self.focus:
             self.focus.caret.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        self.game_view.miWalter.stop_moving()
 
     def on_text(self, text):
         if self.focus:
@@ -193,3 +228,4 @@ class GameHandler():
         chatbox = self.widgets[0]
         message = chatbox.text()
         self.window.say_this(message)
+

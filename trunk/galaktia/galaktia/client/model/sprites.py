@@ -9,7 +9,9 @@ from pyglet.gl import glEnable,GL_BLEND,glBlendFunc,GL_SRC_ALPHA,GL_ONE_MINUS_SR
 from galaktia.client.paths import IMAGES_DIR
 
 class GameView(object):
-    def __init__(self, map_dim, tile_width, tile_height, padding_left, padding_down, surroundings):
+    def __init__(self, (screen_width, screen_height), map_dim, (tile_width, tile_height), padding_left, padding_down, surroundings):
+        self.miWalter = Walter3D(pyglet.image.load(os.path.join(IMAGES_DIR, 'humano.png')), screen_width, screen_height)
+        
         self.tile_size = {'x':tile_width, 'y':tile_height}
         self.padding = {'x':padding_left, 'y':padding_down}
 
@@ -41,6 +43,7 @@ class GameView(object):
             pared.draw(self.center_walter)
         for aSession in self.peers:
             self.peers[aSession].draw(self.center_walter)
+        self.miWalter.draw()
 
     def delete_player(self, session_id):
         del self.peers[session_id]
@@ -53,6 +56,14 @@ class GameView(object):
             self.center_walter['x'] = x
             self.center_walter['y'] = y
             self.own_walter = player
+        #if is_me:
+            ##TODO: make each walter a 3DWalter
+            #self.miWalter.x = x
+            #self.miWalter.y = y
+            #self.own_walter = self.miWalter
+            #return
+        #player = Walter((x,y), description, self.walter, self.tile_size, self.padding)
+        #self.peers[session_id] = player
 
 
 class Sprite(object):
@@ -85,6 +96,72 @@ class Walter(Sprite):
 
     def set_facing(self, direction):
         pass
+
+class Walter3D(dict):
+    """Class Walter.
+    
+    Controls, Shows and Represents a character in the game.
+    """
+    def __init__(self, image, screen_width, screen_height):
+        """Initializer.
+        
+        Takes an image, which has to be an array of images with:
+        size of the array: 8 rows (one for each orientation), 15 columns.
+        size of each frame: 50 pixels width, 100 pixels height
+        
+        In each row, the first image is the still position, and the other 14
+        images are the animation for walking.
+        
+        TODO: Open several images, one for each action that the player can do
+        (examples: combat position, attacking position, bow, using a device)
+        """
+        # redefine some big names
+        panimation = pyglet.image.Animation
+        paframe = pyglet.image.AnimationFrame
+        psprite = pyglet.sprite.Sprite
+        assert (image.width, image.height) == (750,800), \
+            'Image size must be 750x800'
+        
+        # Now we create two dicts, one for the moving character and one for the
+        # character when he's standing still. The former is an animation
+        # sprite. These dicts map numbers from 0 to 7 to a sprite.
+        middle_x, middle_y = screen_width/2-12, screen_height/2
+
+        self['moving'] = dict([(a, psprite(img=panimation( # 0.03 seconds/frame
+            [paframe(image.get_region(b*50, 700-a*100, 50, 100), 0.06)
+            for b in range(1, 15)]), x=middle_x, y=middle_y))
+            for a in range(8)])
+        self['still'] = dict([
+             (a, psprite(img=image.get_region(0, 700-a*100, 50, 100),
+             x=middle_x, y=middle_y)) for a in range(8)])
+        
+        self.state = 'still'
+        self.orientation = 4
+    
+    def set_orientation(self, direction):
+        """Method set_orientation
+        
+        Sets Walter's orientation based on a clock-wise direction.
+        North is set to 0:
+        
+                0
+             7     1
+          6     X     2
+             5     3
+                4
+        """
+        self.orientation = direction
+    
+    def draw(self):
+        """Draws the current state in the screen"""
+        sprite = self[self.state][self.orientation]
+        sprite.draw()
+    
+    def start_moving(self):
+        self.state = 'moving'
+    
+    def stop_moving(self):
+        self.state = 'still'
 
 class Baldosa(Sprite):
     pass

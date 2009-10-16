@@ -75,6 +75,8 @@ class LoginHandler():
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self.focus:
             self.focus.caret.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        pass
 
     def on_text(self, text):
         if self.focus:
