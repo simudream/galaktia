@@ -68,17 +68,19 @@ class GameView(object):
 
 class Sprite(object):
     def __init__(self, (x,y), description, image, tile_size, padding):
+        self.sprite = pyglet.sprite.Sprite(img=image, x=0, y=0)
         self.x, self.y = x,y
         self.description = description
-        self.image = image
         self.tile_size = tile_size
         self.padding = padding
 
     def draw(self, center):
         iso_x = (self.y - center['y'] + self.x - center['x'])*0.91
         iso_y = (self.y - center['y'] - self.x + center['x'])*0.91
-        self.image.blit(self.tile_size['x']*iso_x+self.padding['x'], 
-            self.tile_size['y']*iso_y+self.padding['y'])
+
+        self.sprite.x = self.tile_size['x']*iso_x+self.padding['x']
+        self.sprite.y = self.tile_size['y']*iso_y+self.padding['y']
+        self.sprite.draw()
 
     def set_screen_options(self, tile_size, padding):
         self.tile_size = tile_size
