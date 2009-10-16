@@ -88,7 +88,9 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
         self.handler.on_check_protocol_version(session_id, version, url)
 
     def on_user_accepted(self, username, (x, y), hit_points, surroundings):
-        logger.info("User accepted! starting coords = (%d, %d)." % (x, y))
+        logger.info("User accepted! starting coords = (%d, %d)., HPs: %d" % \
+                        (x, y, hit_points))
+        #TODO: use the hitpoints variable to draw a lifebar
 
         self.session = ClientSession(self.session.id, KeyGenerator.generate_key(self.session.id, (username)))
         self.session_dao.set(self.session)
