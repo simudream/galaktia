@@ -66,6 +66,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 character.level = 42 # I see dead people (?)
                 character.user_id = user.id
                 character.last_move_timestamp = 0
+                character.life = 100 # for simplicity's sake
                 # character.collide = True
 
                 self.char_dao.add(character)
@@ -85,7 +86,10 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
             self.user_accepted( 
                     session = session,
-                    player_initial_state = (user.character.x, character.y),
+                    player_initial_state = {
+                        'starting_pos':(user.character.x, character.y),
+                        'hps' : user.character.life
+                    },
                     username = user.name,
                     surroundings = wall_list
                     )
