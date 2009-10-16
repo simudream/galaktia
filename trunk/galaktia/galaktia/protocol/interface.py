@@ -83,7 +83,8 @@ class GalaktiaClientController(EventDispatcher, Controller):
     def greet(self):
         self.dispatch_event('on_greet')
         return []
-
+    
+    # Move commands
     def __PlayerEnteredLOS(self, input_message):
         session_id = input_message['subject']
         (x,y) = input_message['object']
@@ -97,8 +98,8 @@ class GalaktiaClientController(EventDispatcher, Controller):
         (x,y) = input_message["object"]
         self.dispatch_event('on_player_moved',
                  other_session_id, (dx,dy), (x,y))
-                 
 
+    #Talk commands
     def __SayThis(self, input_message):
         message = input_message['action']
         self.dispatch_event('on_say_this', message)
@@ -107,17 +108,19 @@ class GalaktiaClientController(EventDispatcher, Controller):
         message = input_message['action']
         username = input_message['subject']
         self.dispatch_event('on_someone_said', username, message)
-        
+
     def __UserAccepted(self, input_message):
         if input_message['accepted']:
             username = input_message['username']
-            x, y = input_message['player_initial_state']
+            x, y = input_message['player_initial_state']['starting_pos']
+            hit_points = input_message['player_initial_stat']['hps']
             surroundings = input_message['surroundings']
-            self.dispatch_event('on_user_accepted', username, (x,y), surroundings)
+            self.dispatch_event('on_user_accepted', username, (x,y), \
+                            hit_points, surroundings)
         else:
             self.dispatch_event('on_user_rejected')
-     # Join commands
-     
+
+    # Join commands
     def __CheckProtocolVersion(self, input_message):
         version = input_message['version']
         url = input_message['url']
@@ -144,8 +147,8 @@ class GalaktiaClientController(EventDispatcher, Controller):
         if command == None:
             return []
 
-        #Talk commands
-        
+
+        print command, type(command), command.__class__
         command_handler = {
         u'PlayerEnteredLOS': self.__PlayerEnteredLOS,
         u'PlayerMoved': self.__PlayerMoved,
@@ -198,7 +201,7 @@ class ClientProtocolInterface(BaseClient):
         raise NotImplementedError
     def on_check_protocol_version(self, session_id, version, url):
         raise NotImplementedError
-    def on_user_accepted(self, username, (x, y), surroundings):
+    def on_user_accepted(self, username, (x, y), hit_points, surroundings):
         raise NotImplementedError
     def on_user_rejected(self):
         raise NotImplementedError
