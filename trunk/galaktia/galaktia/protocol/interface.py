@@ -8,76 +8,15 @@ import sys
 from pyglet.event import EventDispatcher
 
 from galaktia.protocol.base import BaseServer, BaseClient
-from galaktia.protocol.codec import ProtocolCodec
 from galaktia.protocol.controller import Controller
 from galaktia.protocol.operations.join import *
 from galaktia.protocol.operations.talk import *
 from galaktia.protocol.operations.move import *
 from galaktia.protocol.operations.exit import *
-
+from galaktia.protocol.codec import ProtocolCodec
 
 logger = logging.getLogger(__name__)
 
-class MessageController(Controller):
-    """ ``Controller`` adapter for processing messages """
-
-    MESSAGE_KEYS = []
-
-    def process(self, input_message):
-        return self._process(*self.get_args())
-
-    def _process(self, *args):
-        raise NotImplementedError('Abstract method')
-
-    def get_args(self, input_message):
-        return [input_message[key] for key in self.MESSAGE_KEYS]
-
-class PlayerEnteredLOSController(MessageController):
-    """ ``MessageController`` subclass example """
-
-    MESSAGE_KEYS = ['subject', 'object', 'description']
-
-    def _process(self, subject, object, description):
-        raise NotImplementedError('TODO ;)') # TODO
-
-class DispatcherController(Controller):
-    """
-    Main controller for server-client protocol that dispatches messages
-    to controllers according to message name.
-    """
-
-    def __init__(self, session_dao):
-        """
-        ``DispatcherController`` constructor.
-
-        :parameters:
-            # TODO: all necessary DAOs, helpers, etc. to create controllers
-        """
-        self.routes = {
-            'PlayerEnteredLOS': PlayerEnteredLOSController(),
-            # TODO: map all message names/controllers
-        }
-
-    def process(self, input_message):
-        """ Returns responses for given input message """
-        try:
-            command = input_message['name']
-                    # raises KeyError if no name
-        except Exception:
-            logger.exception('Bad message: %s', input_message)
-            return [] # TODO: maybe send back error message
-        try:
-            controller = self.routes[command]
-                    # raises KeyError if command is unknown
-        except Exception:
-            logger.exception('Unknown message type: %s', input_message)
-            return [] # TODO: maybe send back error message
-        try:
-            return controller.process(input_message)
-                    # raises any Exception if controller fails
-        except Exception:
-            logger.exception('Failed to handle message: %s', input_message)
-            return [] # TODO: send "internal server error" message
 
 class GalaktiaClientController(EventDispatcher, Controller):
     def greet(self):
@@ -165,8 +104,6 @@ class GalaktiaClientController(EventDispatcher, Controller):
         command_handler_function(input_message)
         return []
 
-
-
 GalaktiaClientController.register_event_type('on_greet')
 GalaktiaClientController.register_event_type('on_player_entered_los')
 GalaktiaClientController.register_event_type('on_player_moved')
@@ -231,133 +168,5 @@ class ClientProtocolInterface(BaseClient):
     def logout_request(self):
         self.send(LogoutRequest(session=self.session))
 
-class GalaktiaServerController(EventDispatcher, Controller):
-    """ Implementation of a simple chat server """
 
-    def process(self, input_message):
-        """ Implements processing by returning CamelCased input 
-            Please see protocol specification for more on messages
-        """
-        command = input_message.get('name')
-
-        def __MoveDxDy(input_message):
-            (dx, dy) = input_message['action']
-            timestamp = input_message['timestamp']
-            self.dispatch_event('on_move_dx_dy', input_message.session, (dx,dy), timestamp)
-
-        def __SayThis(input_message):
-            message = input_message['action']
-            self.dispatch_event('on_say_this', input_message.session, message)
-
-        def __RequestUserJoin(input_message):
-            username = input_message['username']
-            self.dispatch_event('on_request_user_join', input_message.session, username)
-        def __StartConnection(input_message):
-            self.dispatch_event('on_start_connection', input_message.session)
-        def __LogoutRequest(input_message):
-            self.dispatch_event('on_logout_request', input_message.session)
-        function_handlers = {
-            u'MoveDxDy': __MoveDxDy,
-            u'SayThis': __SayThis,
-            u'RequestUserJoin': __RequestUserJoin,
-            u'StartConnection': __StartConnection,
-            u'LogoutRequest': __LogoutRequest}
-        try:
-            function_handlers[command](input_message)
-        except KeyError:
-            raise ValueError("Invalid command @GalaktiaServerController: %s" % command)
-
-        #should return [input_message.acknowledge()]
-        return []
-
-GalaktiaServerController.register_event_type('on_move_dx_dy')
-GalaktiaServerController.register_event_type('on_say_this')
-GalaktiaServerController.register_event_type('on_request_user_join')
-GalaktiaServerController.register_event_type('on_start_connection')
-GalaktiaServerController.register_event_type('on_logout_request')
-
-
-class ServerProtocolInterface(BaseServer):
-    """ Convenience server interface """
-
-    #Overrides
-    def __init__(self, session_dao):
-        BaseServer.__init__(self, ProtocolCodec(session_dao), 
-                            GalaktiaServerController())
-        self.controller.push_handlers(self)
-
-    # Event Handlers
-    # To be implemented by class user
-
-    def on_move_dx_dy(self, session, (dx,dy), timestamp):
-        raise NotImplementedError
-    def on_say_this(self, session, message):
-        raise NotImplementedError
-    def on_request_user_join(self, username):
-        raise NotImplementedError
-    def on_start_connection(self, session ):
-        raise NotImplementedError
-    def on_logout_request(self, session):
-        raise NotImplementedError
-
-
-    # Convinience protocol methods
-    def player_entered_los(self, session_list, session, position, description):
-        for aSession in session_list:
-            m = PlayerEnteredLOS(session_id = session.id,
-                position = position,
-                description = description,
-                session = aSession
-                )
-            self.send(m)
-
-    def player_moved(self, session_list, mover_session, (dx,dy), (x,y)):
-        for aSession in session_list:
-            m = PlayerMoved(session_id = mover_session.id,delta = (dx,dy),
-                position = (x,y),
-                session = aSession
-                )
-            self.send(m)
-
-    def someone_said(self, session_list, username, message):
-        for aSession in session_list:
-            self.send(SomeoneSaid(
-                username = username,
-                message = message, 
-                session = aSession
-                ))
-
-    def user_accepted(self, session, username, player_initial_state, surroundings):
-        self.send(UserAccepted( accepted = True, 
-                            surroundings = surroundings,
-                            username = username,
-                            session_id = session.id,
-                            player_initial_state = player_initial_state,
-                            session = session
-                            ))
-
-    def user_rejected(self, session):
-        self.send(UserAccepted(session=session, accepted=False))
-
-    def check_protocol_version(self, session, version, url):
-        self.send(CheckProtocolVersion(session=session, version=version, url=url))
-
-    def user_joined(self, session_list, username):
-        for aSession in session_list:
-            self.send(UserJoined( username = username,
-                session = aSession
-                ))
-
-    def logout_response(self, session):
-        self.send(LogoutResponse(
-            session = session
-        ))
-
-    def user_exited(self, session_list, session, username ):
-        for aSession in session_list:
-            self.send( UserExited(
-                session_id = session.id,
-                username  = username,
-                session = aSession
-            ) )
 
