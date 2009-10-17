@@ -118,7 +118,7 @@ class Sprite(Spatial):
     direction = Column(Integer)
         # direction ranges from 0 to 7, starting North & counting clockwise.
     speed = Column(Integer) # how fast can the sprite move
-    arrival_timestamp = Column(DateTime) # time when it reached current x, y
+    arrival_timestamp = Column(Integer, default=0) # time when it reached current x, y
         # 42 is The Answer to the Ultimate Question of Life, the Universe,
         # and Everything, as calculated by an enormous supercomputer over a
         # period of 7.5 million years
