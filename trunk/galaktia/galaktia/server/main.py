@@ -4,6 +4,7 @@
 import logging
 import os.path
 import sys
+from time import time
 from random import randint
 
 from twisted.internet import reactor
@@ -16,7 +17,7 @@ from galaktia.server.persistence.dao import WallDAO, CharacterDAO, \
 from galaktia.server.persistence.orm import Wall, Character, \
         init_db, User
 from galaktia.protocol.key import KeyGenerator
-
+from galaktia.server.engines.positional import PositionalEngine
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
         self.char_dao = CharacterDAO(session())
         self.wall_dao = WallDAO(session())
         self.session_dao = SessionDAO()
+        self.pos_engine = PositionalEngine(session) #P.Engine requires a Class
 
         ServerProtocolInterface.__init__(self, self.session_dao)
 
@@ -71,6 +73,8 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 character.name = username
                 character.x, character.y = (randint(1,19),randint(1,19))
                 character.z = 0
+                character.arrival_timestamp = time()
+                character.speed = 7
                 character.level = 42 # I see dead people (?)
                 character.user_id = user.id
                 character.last_move_timestamp = 0
@@ -85,6 +89,7 @@ class CamelCaseChatServer(ServerProtocolInterface):
                 user.character = character
             else:
                 character = user.character
+                character.speed = 7
                 # Make sure the user is shown correctly
                 # character.show = True
             self.char_dao.materialize(user.character, collide=True)
@@ -140,19 +145,23 @@ class CamelCaseChatServer(ServerProtocolInterface):
 
     def on_move_dx_dy(self, session, (dx,dy), timestamp):
         character = session.user.character
-        if timestamp * 1000 - character.last_move_timestamp < 200:
-            return
-        character.last_move_timestamp = timestamp * 1000
-        newx, newy = (character.x+dx, character.y+dy)
-
-        if self.char_dao.move(character, newx, newy):
-            self.player_moved(self.session_dao.get_logged(), session, (dx, dy), (newx, newy))
-        elif dx * dy != 0:
-            if self.char_dao.move(character, newx-dx, newy):
-                self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
-            elif self.char_dao.move(character, newx, newy-dy):
-                self.player_moved(self.session_dao.get_logged(), session, (dx, 0), (newx, newy-dy))
-        # TODO: This should be handled entirely by the new Positional engine.
+        pos = self.pos_engine.d_move(character, (dx, dy))
+        if pos:
+            self.player_moved(self.session_dao.get_logged(), session, \
+                    pos, (character.x, character.y))
+#       if timestamp * 1000 - character.last_move_timestamp < 200:
+#           return
+#       character.last_move_timestamp = timestamp * 1000
+#       newx, newy = (character.x+dx, character.y+dy)
+#
+#       if self.char_dao.move(character, newx, newy):
+#           self.player_moved(self.session_dao.get_logged(), session, (dx, dy), (newx, newy))
+#       elif dx * dy != 0:
+#           if self.char_dao.move(character, newx-dx, newy):
+#               self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
+#           elif self.char_dao.move(character, newx, newy-dy):
+#               self.player_moved(self.session_dao.get_logged(), session, (dx, 0), (newx, newy-dy))
+#       # TODO: This should be handled entirely by the new Positional engine.
 
 
 def get_session():

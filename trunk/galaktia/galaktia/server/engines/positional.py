@@ -8,6 +8,17 @@ class PositionalEngine(object):
         World.
     """
 
+    __map = {
+        (0,1): 0,
+        (1,1): 1,
+        (1,0): 2,
+        (1,-1): 3,
+        (0,-1): 4,
+        (-1,-1): 5,
+        (-1,0): 6,
+        (-1,1): 7
+    }
+
     def __init__(self, Session, collide=True):
         """
             @params:
@@ -20,24 +31,28 @@ class PositionalEngine(object):
         self.collide = collide
         self.distance = 1
 
+    def __sign(self, n):
+        return (0 if n == 0 else n/abs(n))
+
     def _raw_distance(self, *args):
         """ Returns the norm of the vector """
         return float((sum([x**2 for x in args]))**0.5)
 
     def _walktime(self, object):
-        return object.arrival_timestamp - time()
+        return abs(object.arrival_timestamp - time())
 
-    def is_valid_speed(self, obj):
+    def is_valid_speed(self, obj, x, y):
         """ Returns False if the object has exceeded its speed, otherwise
             True. This function makes use of _walktime, which compares the
             object's arrival_timestamp against time.time()
         """
-        if self._raw_distance(obj.x, obj.y)/self._walktime(obj) > obj.speed:
+        if self._raw_distance(obj.x-x, obj.y-y)/self._walktime(obj) > \
+                obj.speed:
             return False
         else:
             return True
 
-    def is_valid_distance(self, obj):
+    def is_valid_distance(self, obj, x, y):
         if abs(obj.x-x) > self.distance or abs(obj.y-y) > self.distance:
             return False
         else:
@@ -46,7 +61,7 @@ class PositionalEngine(object):
     def _obstacles(self, obj, x, y, z):
         spatials = self.spatialDao.get_by_coords(x, y, z)
         if (not self.collide and not obj.collide):
-            characters = [char for char in self.charDao.get_by_coodrs(x, y, z)
+            characters = [char for char in self.charDao.get_by_coords(x, y, z)
             if char.collide and char != obj]
             spatials = [a for a in spatials if a not in characters]
         if spatials:
@@ -54,7 +69,8 @@ class PositionalEngine(object):
         return False
 
     def move_3D(self, obj, x, y, z):
-        if not self.is_valid_distance(obj) or not self.is_valid_speed(obj):
+        if not self.is_valid_distance(obj, x, y) or \
+            not self.is_valid_speed(obj, x, y):
             return False
         # Get the objects in the path where the user wants to move:
         if not self._obstacles(obj, x, y, z):
@@ -62,6 +78,7 @@ class PositionalEngine(object):
             obj.x = x
             obj.y = y
             obj.z = z
+            obj.arrival_timestamp = time()
             return True
         else:
             return False
@@ -79,6 +96,7 @@ class PositionalEngine(object):
             obj.x = x
             obj.y = y
             obj.z = z
+            obj.arrival_timestamp = time()
             return True
         return False
 
@@ -86,27 +104,17 @@ class PositionalEngine(object):
         self.warp_3D(obj, x, y, obj.z)
 
     def dx_dy_look(self, obj, dx, dy):
-        map = {
-            (0,0): obj.direction,
-            (0,1): 0,
-            (1,1): 1,
-            (1,0): 2,
-            (1,-1): 3,
-            (0,-1): 4,
-            (-1,-1): 5,
-            (-1,0): 6,
-            (-1,1): 7
-        }
         try:
-            obj.direction = map[(dx, dy)]
+            obj.direction = self.__map[(dx, dy)]
         except:
-            pass
+            if dx != 0 or dy != 0:
+                self.dx_dy_look(self, self.__sign(dx), self.__sign(dy))
 
     def d_move(self, obj, (dx, dy)):
         """
             Moves the char using dx dy positioning. Returns False if the
-            character cannot move to any position, or the new Character
-            position otherwise.
+            character cannot move to any position, or the effective \
+            (dx,dy) otherwise.
 
             The next ASCII illustration shows how orientation, diferential
             and projection views are related.
@@ -126,13 +134,16 @@ class PositionalEngine(object):
             This function has been designed to emulate the legacy movement
             system.
         """
-        if dx == 0 and dy == 0: return True
-        if not self.is_valid_speed(obj) or not self.is_valid_distance(obj):
+        if dx == 0 and dy == 0:
+            return (0, 0)
+        # Check speed:
+        if 1.0/abs(obj.arrival_timestamp - time()) > obj.speed:
             return False
         for x, y in [(dx, dy), (dx, 0), (0, dy)]:
-            if not self._obstacles(obj, obj.x+dx, obj.y+dy, obj.z):
-                obj.x += dx
-                obj.y += dy
-                self.dx_dy_look(obj, dx, dy)
-                return True
+            if not self._obstacles(obj, obj.x+x, obj.y+y, obj.z):
+                obj.x += x
+                obj.y += y
+                obj.arrival_timestamp = time()
+                self.dx_dy_look(obj, x, y)
+                return (x, y)
         return False
