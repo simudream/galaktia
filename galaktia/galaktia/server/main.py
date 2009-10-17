@@ -4,165 +4,50 @@
 import logging
 import os.path
 import sys
-from time import time
-from random import randint
 
 from twisted.internet import reactor
 from twisted.python import log
 
-from galaktia.protocol.interface import ServerProtocolInterface
-from galaktia.protocol.model import SessionDAO, Session
-from galaktia.server.persistence.dao import WallDAO, CharacterDAO, \
-        UserDAO, mass_unpack
-from galaktia.server.persistence.orm import Wall, Character, \
-        init_db, User
-from galaktia.protocol.key import KeyGenerator
+from galaktia.protocol.base import BaseServer
+from galaktia.protocol.controller import DispatcherController
+from galaktia.protocol.model import SessionDAO
+from galaktia.protocol.codec import ProtocolCodec
+
 from galaktia.server.engines.positional import PositionalEngine
+from galaktia.server.persistence.resolver import DAOResolver
+from galaktia.server.persistence.orm import init_db
+
+from galaktia.server.controllers.join import *
+from galaktia.server.controllers.move import *
+from galaktia.server.controllers.exit import *
+from galaktia.server.controllers.talk import *
 
 logger = logging.getLogger(__name__)
 
 SERVER_VERSION = "0.2" # TODO: should be same as galaktia version, e.g.: 0.1.1
 
-class ChatServer():
-    pass
-
-class GameServer():
-    pass
-
-class RealServer():
-    pass
-
-class CamelCaseChatServer(ServerProtocolInterface):
-    """ Implementation of a simple chat server :"""
+class GalaktiaServer(BaseServer):
+    """ Implementation of the game server"""
 
     def __init__(self, session):
         self.session=session
             # Database session. Please, do not touch :P
 
-        self.user_dao = UserDAO(session())
-        self.char_dao = CharacterDAO(session())
-        self.wall_dao = WallDAO(session())
         self.session_dao = SessionDAO()
         self.pos_engine = PositionalEngine(session) #P.Engine requires a Class
+        
+        self.dao_resolver = DAOResolver(session)
 
-        ServerProtocolInterface.__init__(self, self.session_dao)
-
-    def on_say_this(self, session, message):
-        self.someone_said(
-                session_list = self.session_dao.get_logged(),
-                username = session.user.name,
-                message = message
-                )
-
-    def on_request_user_join(self, session, username):
-            user = self.user_dao.get_by(name=username)
-            if not user:
-                user = User(name=username, passwd= u'', email=username)
-                # Set mail to username so as to avoid the unique constraint
-                self.user_dao.add(user)
-                self.user_dao.session.flush()
-            elif self.session_dao.get_by(user_id=user.id):
-                self.user_rejected(session=session)
-                return
-            session.user = user
-            self.session_dao.set(session)
-            self.user_joined(username=username, session_list=self.session_dao.get_logged())
-
-            if not user.character:
-                character = Character()
-                character.name = username
-                character.x, character.y = (randint(1,19),randint(1,19))
-                character.z = 0
-                character.arrival_timestamp = time()
-                character.speed = 7
-                character.level = 42 # I see dead people (?)
-                character.user_id = user.id
-                character.last_move_timestamp = 0
-                character.life = 100 # for simplicity's sake
-                # character.collide = True
-
-                self.char_dao.add(character)
-                self.char_dao.session.flush()
-                    # This should be done by another thread, watching the
-                    # changes and commiting them.
-
-                user.character = character
-            else:
-                character = user.character
-                character.speed = 7
-                # Make sure the user is shown correctly
-                # character.show = True
-            self.char_dao.materialize(user.character, collide=True)
-
-            layer = self.wall_dao.all()
-            wall_list = mass_unpack(layer)
-
-            self.user_accepted( 
-                    session = session,
-                    player_initial_state = {
-                        'starting_pos':(user.character.x, character.y),
-                        'hps' : user.character.life
-                    },
-                    username = user.name,
-                    surroundings = wall_list
-                    )
-            session.user_id = user.id
-            session.user = user
-            session.secret_key = KeyGenerator.generate_key(session.id, (username))
-
-            # Let players know that a new dude is in town
-            self.player_entered_los(self.session_dao.get_logged(), session,
-                    (character.x, character.y), username)
-                # Use self.char_dao.get_near(character, radius=10) instead of
-                # get_logged()
-
-            # for aSession in filter(lambda x: x != session_id, self.sessions):
-            for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user.character in \
-                                    self.char_dao.get_near(character,
-                                    radius=20) and sth.user.character.show]:
-                # Explicación: pide todas las sessions (no propias), pero
-                # que además tengan un personaje asociado y que estén
-                # dentro de radio 20 del usuario. Es más, el if x != no es
-                # necesario.
-                pos = (aSession.user.character.x, \
-                    aSession.user.character.y)
-                self.player_entered_los([session], aSession, pos, aSession.user.character.name)
-
-
-    def on_start_connection(self, session):
-        self.check_protocol_version(session, 
-                                    version = SERVER_VERSION, 
-                                    url="http://www.galaktia.com.ar")
-
-    def on_logout_request(self, session):
-
-        if session is not None:
-            username = session.user.name
-            self.logout_response(session)
-            self.char_dao.dismiss(session.user.character)
-            self.user_exited(self.session_dao.get_logged(), session, username)
-            self.session_dao.delete(session)
-
-    def on_move_dx_dy(self, session, (dx,dy), timestamp):
-        character = session.user.character
-        pos = self.pos_engine.d_move(character, (dx, dy))
-        if pos:
-            self.player_moved(self.session_dao.get_logged(), session, \
-                    pos, (character.x, character.y))
-#       if timestamp * 1000 - character.last_move_timestamp < 200:
-#           return
-#       character.last_move_timestamp = timestamp * 1000
-#       newx, newy = (character.x+dx, character.y+dy)
-#
-#       if self.char_dao.move(character, newx, newy):
-#           self.player_moved(self.session_dao.get_logged(), session, (dx, dy), (newx, newy))
-#       elif dx * dy != 0:
-#           if self.char_dao.move(character, newx-dx, newy):
-#               self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
-#           elif self.char_dao.move(character, newx, newy-dy):
-#               self.player_moved(self.session_dao.get_logged(), session, (dx, 0), (newx, newy-dy))
-#       # TODO: This should be handled entirely by the new Positional engine.
-
+        controllers = {
+                  'MoveDxDy': MoveDxDyController(self.session_dao, self.dao_resolver, self.pos_engine),
+                  'SayThis': SayThisController(self.session_dao, self.dao_resolver),
+                  'RequestUserJoin': RequestUserJoinController(self.session_dao, self.dao_resolver),
+                  'StartConnection': StartConnectionController(self.session_dao, self.dao_resolver),
+                  'LogoutRequest': LogoutRequestController(self.session_dao, self.dao_resolver)
+        }
+        
+        BaseServer.__init__(self, ProtocolCodec(self.session_dao), 
+                            DispatcherController(controllers))
 
 def get_session():
     here_dir = os.path.dirname(__file__)
@@ -176,7 +61,7 @@ def main(program, port=6414):
     """ Main program: Starts a server on given port """
     #log.startLogging(sys.stderr) # enables Twisted logging
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-    protocol = CamelCaseChatServer(get_session())
+    protocol = GalaktiaServer(get_session())
 
     logger.info("Starting %s", "server")
 

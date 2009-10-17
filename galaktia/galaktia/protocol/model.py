@@ -194,7 +194,7 @@ class SessionDAO(object):
 
     def delete(self, session):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        self._sessions.pop(id, None)
+        self._sessions.pop(session.id, None)
 
 class MessageBufferDAO(object):
     """ Data Access Object for ``MessageBuffer`` objects """
