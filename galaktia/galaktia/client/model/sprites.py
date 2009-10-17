@@ -84,7 +84,6 @@ class Sprite(object):
 
         self.sprite.x = self.tile_size['x']*iso_x+self.padding['x']
         self.sprite.y = self.tile_size['y']*iso_y+self.padding['y']
-        self.sprite.draw()
 
     def set_screen_options(self, tile_size, padding):
         self.tile_size = tile_size
