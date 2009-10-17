@@ -22,7 +22,15 @@ logger = logging.getLogger(__name__)
 
 SERVER_VERSION = "0.2" # TODO: should be same as galaktia version, e.g.: 0.1.1
 
-# TODO: this class has evolved and its name is now tricky...
+class ChatServer():
+    pass
+
+class GameServer():
+    pass
+
+class RealServer():
+    pass
+
 class CamelCaseChatServer(ServerProtocolInterface):
     """ Implementation of a simple chat server :"""
 

@@ -10,52 +10,56 @@ from galaktia.client.paths import IMAGES_DIR
 
 class GameView(object):
     def __init__(self, (screen_width, screen_height), map_dim, (tile_width, tile_height), padding_left, padding_down, surroundings):
+        self.center_walter = {'x':0, 'y':0}
+        self.back_sprites = pyglet.graphics.Batch()
+        self.front_sprites = pyglet.graphics.Batch()
+
         self.miWalter = Walter3D(pyglet.image.load(os.path.join(IMAGES_DIR, 'humano.png')), screen_width, screen_height)
-        
+
         self.tile_size = {'x':tile_width, 'y':tile_height}
         self.padding = {'x':padding_left, 'y':padding_down}
 
-        self.walter = pyglet.image.load(os.path.join(IMAGES_DIR, 'walter.png'))
         self.red_walter = pyglet.image.load(os.path.join(IMAGES_DIR, 'red_walter.png'))
+        self.walter = pyglet.image.load(os.path.join(IMAGES_DIR, 'walter.png'))
         self.piso = pyglet.image.load(os.path.join(IMAGES_DIR, 'piso.png'))
         self.pared = pyglet.image.load(os.path.join(IMAGES_DIR, 'pared.png'))
-        
-        self.mapa = [Pared((t[0],t[1]), 'Pared', self.pared, self.tile_size, self.padding) \
+
+        self.mapa = [Pared((t[0],t[1]), 'Pared', self.pared, self.tile_size, self.padding, self.back_sprites) \
                      for t in surroundings]
         self.baldosas = []
         for x in xrange(map_dim):
             for y in xrange(map_dim):
-                self.baldosas.append(Baldosa((x,y), 'Baldosa', self.piso, self.tile_size, self.padding))
+                self.baldosas.append(Baldosa((x,y), 'Baldosa', self.piso, self.tile_size, self.padding, self.back_sprites))
         self.peers = {}
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        self.center_walter = {'x':0, 'y':0}
         self.own_walter = None
 
     def draw(self):
-        if self.own_walter is not None:
-            self.center_walter = {'x': self.own_walter.x, 'y': self.own_walter.y}
-        else:
-            self.center_walter = {'x': 0, 'y': 0}
+        self.center_walter = self.miWalter.position
         for baldosa in self.baldosas:
             baldosa.draw(self.center_walter)
         for pared in self.mapa:
             pared.draw(self.center_walter)
         for aSession in self.peers:
-            self.peers[aSession].draw(self.center_walter)
+            if aSession != self.own_walter:
+                self.peers[aSession].draw(self.center_walter)
+        self.back_sprites.draw()
+        self.front_sprites.draw()
         self.miWalter.draw()
 
     def delete_player(self, session_id):
         del self.peers[session_id]
 
     def add_player(self, session_id, (x,y), description, is_me):
-        image = self.red_walter if is_me else self.walter
-        player = Walter((x,y), description, image, self.tile_size, self.padding)
-        self.peers[session_id] = player
-        if is_me:
-            self.center_walter['x'] = x
-            self.center_walter['y'] = y
-            self.own_walter = player
+        if not is_me:
+            image = self.red_walter
+            player = Walter((x,y), description, image, self.tile_size, self.padding, self.front_sprites)
+            self.peers[session_id] = player
+        else:
+            self.center_walter = {'x': x, 'y': y}
+            self.peers[session_id] = self.miWalter
+            self.own_walter = session_id
         #if is_me:
             ##TODO: make each walter a 3DWalter
             #self.miWalter.x = x
@@ -67,8 +71,8 @@ class GameView(object):
 
 
 class Sprite(object):
-    def __init__(self, (x,y), description, image, tile_size, padding):
-        self.sprite = pyglet.sprite.Sprite(img=image, x=0, y=0)
+    def __init__(self, (x,y), description, image, tile_size, padding, sprites_group):
+        self.sprite = pyglet.sprite.Sprite(img=image, x=0, y=0, batch=sprites_group)
         self.x, self.y = x,y
         self.description = description
         self.tile_size = tile_size
@@ -89,9 +93,9 @@ class Sprite(object):
 
 class Walter(Sprite):
 
-    def __init__(self, (x,y), description, image, tile_size, padding):
+    def __init__(self, (x,y), description, image, tile_size, padding, sprites_group):
         self.name = description
-        super(Walter, self).__init__((x,y), description, image, tile_size, padding)
+        super(Walter, self).__init__((x,y), description, image, tile_size, padding, sprites_group)
 
     def set_position(self,x,y):
         self.x, self.y = x, y
@@ -139,7 +143,11 @@ class Walter3D(dict):
         
         self.state = 'still'
         self.orientation = 4
+        self.position = {'x':0, 'y':0}
     
+    def set_position(self,x,y):
+        self.position = {'x':x, 'y':y}
+
     def set_orientation(self, direction):
         """Method set_orientation
         
