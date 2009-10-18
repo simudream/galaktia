@@ -13,8 +13,8 @@ from galaktia.protocol.controller import DispatcherController
 from galaktia.protocol.model import SessionDAO
 from galaktia.protocol.codec import ProtocolCodec
 
-from galaktia.server.engines.positional import PositionalEngine
-from galaktia.server.persistence.resolver import DAOResolver
+from galaktia.server.engines.engine import EngineResolver
+from galaktia.server.persistence.dao import DAOResolver
 from galaktia.server.persistence.orm import init_db
 
 from galaktia.server.controllers.join import *
@@ -34,12 +34,11 @@ class GalaktiaServer(BaseServer):
             # Database session. Please, do not touch :P
 
         self.session_dao = SessionDAO()
-        self.pos_engine = PositionalEngine(session) #P.Engine requires a Class
-        
         self.dao_resolver = DAOResolver(session)
+        self.engine_resolver = EngineResolver(self.dao_resolver)
 
         controllers = {
-                  'MoveDxDy': MoveDxDyController(self.session_dao, self.dao_resolver, self.pos_engine),
+                  'MoveDxDy': MoveDxDyController(self.session_dao, self.dao_resolver, self.engine_resolver),
                   'SayThis': SayThisController(self.session_dao, self.dao_resolver),
                   'RequestUserJoin': RequestUserJoinController(self.session_dao, self.dao_resolver),
                   'StartConnection': StartConnectionController(self.session_dao, self.dao_resolver),

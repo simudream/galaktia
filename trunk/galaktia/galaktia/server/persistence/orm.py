@@ -32,14 +32,6 @@ class User(Entity):
     character = relation('Character', backref='User', uselist=False)
         # id is the binding between a user and his avatars
 
-    # def __init__(self, name, email, passwd):
-        # Overriding __init__ in SQLAlchemy entities will cause problems
-        # unless you know what you are doing.
-        # All entity attributes should be present and with same name.
-
-    # OLD: the next comment was about Session. Still interesting, though
-    # Memcached is volatile, so a solution like redis would be more fitting
-
 class SceneObject(Entity):
     """ Anything that exists in the world """
     __tablename__ = 'scene_objects'
@@ -56,6 +48,7 @@ class SceneObject(Entity):
         # TODO: make a double index on x, y:
         # Index('scene_objects_coord_index', SceneObject.x, SceneObject.y)
 
+    @property
     def pos(self): # suggestion: @property
         return (self.x, self.y, self.z)
 
@@ -135,7 +128,6 @@ class Character(Sprite):
     level = Column(Integer, nullable=False, default=1) # player "level" (?)
     life = Column(Integer) # life points
     money = Column(Integer) # money points
-    last_move_timestamp = Column(Integer) # timestamp from last movement
     user_id = Column(Integer, ForeignKey('users.id')) # binds to User
 
 

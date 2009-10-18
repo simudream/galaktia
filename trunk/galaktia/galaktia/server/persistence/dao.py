@@ -3,7 +3,6 @@
 __docformat__='restructuredtext'
 
 from time import time
-
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
      CharacterItem, Sprite, Character, Spatial, Wall
@@ -14,6 +13,28 @@ def mass_unpack(list):
     for i in list:
         result.append(i.unpack())
     return result
+
+class DAOResolver(object):
+    '''
+    Resolves and keeps instances of DAO classes
+    '''
+
+
+    def __init__(self, db_session):
+        '''
+        Instance DAOResolver
+        
+        : parameters :
+            db_session : object
+                The database session
+        '''
+        
+        self.db = db_session
+        
+        self.user = UserDAO(self.db())
+        self.char = CharacterDAO(self.db())
+        self.wall = WallDAO(self.db())
+        self.spatial = SpatialDAO(self.db())        
 
 class SceneObjectDAO(GenericDAO):
     """
@@ -78,44 +99,6 @@ class SceneObjectDAO(GenericDAO):
 
 class SpatialDAO(SceneObjectDAO):
     ENTITY_CLASS=Spatial
-    
-    def move(self, obj, x, y, z=None, collide_objects=True, warp=False):
-        # Verify that moving from current xy is physically possible, i.e.,
-        # it's near.
-        result=True
-        if(z is None):
-            z=obj.z
-        if(obj.x==x and obj.y==y and obj.z==z):
-            return True
-            # If you want to move to the same place you're in, then return
-            # true
-        if not warp and ((abs(x-obj.x)>1) or (abs(y-obj.y)>1) or \
-                (abs(z-obj.z)>1)):
-            return False
-        # XXX: DO NOT CHANGE. When you inherit this class you will overwrite
-        # ENTITY_CLASS, returning *only* the heir's objects, NOT Spatials.
-        # This hack prevents you from breaking the correct behaviour of the
-        # method after being inherited.
-        sdao = WallDAO(self.session)
-        stationaries = sdao.get_by_coords(x, y, z)
-        if(collide_objects and (isinstance(obj,self.klass) or \
-                (hasattr(obj, "show") and hasattr(obj, "collide"))) and \
-                obj.collide==True):
-            # If the flag is enabled and is a Spatial-like entity, and if you
-            # can collide (i.e.: not a "ghost")...
-            class_objects = self.filter(self.klass.x==x, self.klass.y==y, \
-                    self.klass.z==z, self.klass.show==True, \
-                    self.klass.collide==True)
-            for i in class_objects:
-                stationaries.append(i)
-        if(not stationaries):
-            obj.x=x
-            obj.y=y
-            obj.z=z
-        else:
-            result = False
-        return result
-    
     def dismiss(self, obj):
         """
             Dismiss or disconnect a Sprite. This will hide the object from
@@ -134,13 +117,6 @@ class WallDAO(SpatialDAO):
         walls and any other collidable, non-movable objects.
     """
     ENTITY_CLASS=Wall
-    def move(self, obj, x, y):
-        """ Since moving Wall objects is NOT allowed by usual means, you
-        should not use this function. It will always return False.
-        """
-        return False
-
-
 
 class GroundDAO(SceneObjectDAO):
     """ This class represents the basic world environment, often called as
@@ -166,6 +142,13 @@ class ItemDAO(SceneObjectDAO):
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
 
+    def get_los(self, obj, radius=2):
+        assert radius > 0
+        max_x, min_x = obj.x + radius, obj.x - radius
+        max_y, min_y = obj.y + radius, obj.y - radius
+        return self.filter(self.klass.show == True, self.klass.x <= max_x, \
+                self.klass.x >= min_x, self.klass.y <= max_y, self.klass.y >= \
+                min_y, self.klass.id != obj.id)
 
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character
