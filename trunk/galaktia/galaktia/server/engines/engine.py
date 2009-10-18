@@ -170,4 +170,13 @@ class PositionalEngine(BaseEngine):
 
 class CombatEngine(BaseEngine):
     def __init__(self, dao_resolver):
-        print "Nothing Yet"
+        self.charDao = dao_resolver.char
+
+    def attack(self, who, to, attack=None, level=None):
+        """ Attack dispatcher """
+        if (attack is None and level is None):
+            to.life -= 1
+
+    def revive(self, to):
+        to.life = 10
+

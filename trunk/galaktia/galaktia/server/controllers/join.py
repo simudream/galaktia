@@ -55,7 +55,7 @@ class RequestUserJoinController(MessageController):
             character.level = 42 # I see dead people (?)
             character.user_id = user.id
             character.last_move_timestamp = 0
-            character.life = 100 # for simplicity's sake
+            character.life = 10 # for simplicity's sake
             # character.collide = True
 
             self.char_dao.add(character)
@@ -91,20 +91,20 @@ class RequestUserJoinController(MessageController):
             # Use self.char_dao.get_near(character, radius=10) instead of
             # get_logged()
             
-        for aSession in self.session_dao.get_logged():
+#        for aSession in self.session_dao.get_logged():
+        for aSession in self.char_dao.get_los(obj, 10):
             yield PlayerEnteredLOS(session_id = session.id,
                 position = (character.x, character.y),
                 description = username,
                 session = aSession
                 )
         
-        for aSession in [ sth for sth in self.session_dao.get_logged() if sth.user and sth.user.character in \
-                                self.char_dao.get_near(character,
-                                radius=20) and sth.user.character.show]:
+        for aSession in [ sth for sth in self.session_dao.get_logged() if \
+            sth.user and sth.user.character in \
+            self.char_dao.get_los(character, radius=10)]:
             # Explicación: pide todas las sessions (no propias), pero
             # que además tengan un personaje asociado y que estén
-            # dentro de radio 20 del usuario. Es más, el if x != no es
-            # necesario.
+            # dentro de radio 10 del usuario.
             pos = (aSession.user.character.x, \
                 aSession.user.character.y)
             yield PlayerEnteredLOS(session=session, 
