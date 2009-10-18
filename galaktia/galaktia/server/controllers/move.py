@@ -10,10 +10,10 @@ class MoveDxDyController(MessageController):
     
     MESSAGE_KEYS = ['action', 'timestamp']
     
-    def __init__(self, session_dao, dao_resolver, pos_engine):
+    def __init__(self, session_dao, dao_resolver, engine_resolver):
         MessageController.__init__(self, session_dao, dao_resolver)
         
-        self.pos_engine = pos_engine
+        self.pos_engine = engine_resolver.positional
         
     def _process(self, session, (dx, dy), timestamp):
         character = session.user.character
@@ -21,21 +21,9 @@ class MoveDxDyController(MessageController):
         if pos:
             for aSession in self.session_dao.get_logged():
                 m = PlayerMoved(session_id = session.id,
-                    delta = (dx, dy),
+                    delta = pos,
                     position = (character.x, character.y),
                     session = aSession
                     )
+                    # pos may be != (dx, dy). PS: pos = (newdx, newdy)
                 yield m
-#       if timestamp * 1000 - character.last_move_timestamp < 200:
-#           return
-#       character.last_move_timestamp = timestamp * 1000
-#       newx, newy = (character.x+dx, character.y+dy)
-#
-#       if self.char_dao.move(character, newx, newy):
-#           self.player_moved(self.session_dao.get_logged(), session, (dx, dy), (newx, newy))
-#       elif dx * dy != 0:
-#           if self.char_dao.move(character, newx-dx, newy):
-#               self.player_moved(self.session_dao.get_logged(), session, (0, dy), (newx-dx, newy))
-#           elif self.char_dao.move(character, newx, newy-dy):
-#               self.player_moved(self.session_dao.get_logged(), session, (dx, 0), (newx, newy-dy))
-#       # TODO: This should be handled entirely by the new Positional engine.

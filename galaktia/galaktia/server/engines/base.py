@@ -1,0 +1,3 @@
+class BaseEngine(object):
+    pass
+
