@@ -92,7 +92,7 @@ class RequestUserJoinController(MessageController):
             # get_logged()
             
 #        for aSession in self.session_dao.get_logged():
-        for aSession in self.char_dao.get_los(obj, 10):
+        for aSession in self.char_dao.get_los(character, 10):
             yield PlayerEnteredLOS(session_id = session.id,
                 position = (character.x, character.y),
                 description = username,
