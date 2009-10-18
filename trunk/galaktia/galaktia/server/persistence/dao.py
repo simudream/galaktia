@@ -34,7 +34,21 @@ class DAOResolver(object):
         self.user = UserDAO(self.db())
         self.char = CharacterDAO(self.db())
         self.wall = WallDAO(self.db())
-        self.spatial = SpatialDAO(self.db())        
+        self.spatial = SpatialDAO(self.db())  
+          
+    # I'm not lazy, but writing all these attributes is nonsense.
+    # This is the most reasonable solution.
+    def __getattr__(self, name):
+        class_name = "%sDAO" % (name.title())
+        galaktia = __import__('galaktia')
+        mod = galaktia.server.persistence.dao
+        if class_name in mod.__dict__:
+            object = getattr(mod, class_name)
+            instance = object(self.db())
+            setattr(self, name, instance)
+            return instance
+        else:
+            raise Exception    
 
 class SceneObjectDAO(GenericDAO):
     """

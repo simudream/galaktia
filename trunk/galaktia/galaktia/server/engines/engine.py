@@ -7,7 +7,21 @@ from galaktia.server.engines.base import BaseEngine
 class EngineResolver(object):
     def __init__(self, dao_resolver):
         self.dao_resolver = dao_resolver
+        # NOTE: Only add instances that require special treatment.
+        # i.e.: calling a constructor different to ``sth(dao_resolver)``
         self.positional = PositionalEngine(self.dao_resolver)
+
+    def __getattr__(self, name):
+        class_name = "%sEngine" % (name.title())
+        galaktia = __import__('galaktia')
+        engine = galaktia.server.engines.engine
+        if class_name in engine.__dict__:
+            object = getattr(engine, class_name)
+            instance = object(self.dao_resolver)
+            setattr(self, name, instance)
+            return instance
+        else:
+            raise Exception
 
 class PositionalEngine(BaseEngine):
     """
@@ -15,7 +29,7 @@ class PositionalEngine(BaseEngine):
         World.
     """
 
-    __map = {
+    __dxdy = {
         (0,1): 0,
         (1,1): 1,
         (1,0): 2,
@@ -29,8 +43,8 @@ class PositionalEngine(BaseEngine):
     def __init__(self, dao_resolver, collide=True):
         """
             @params:
-            dao_resolver: dao_resolver.
-        """ 
+            dao_resolver: DAOResolver object
+        """
         self.spatialDao = dao_resolver.spatial
         self.wallDao = dao_resolver.wall
         self.charDao = dao_resolver.char
@@ -111,7 +125,7 @@ class PositionalEngine(BaseEngine):
 
     def dx_dy_look(self, obj, dx, dy):
         try:
-            obj.direction = self.__map[(dx, dy)]
+            obj.direction = self.__dxdy[(dx, dy)]
         except:
             if dx != 0 or dy != 0:
                 self.dx_dy_look(self, self.__sign(dx), self.__sign(dy))
@@ -155,4 +169,5 @@ class PositionalEngine(BaseEngine):
         return False
 
 class CombatEngine(BaseEngine):
-    pass
+    def __init__(self, dao_resolver):
+        print "Nothing Yet"
