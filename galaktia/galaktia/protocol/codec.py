@@ -168,9 +168,6 @@ class ProtocolCodec(MultipleCodec):
         Designed for a multi-layer protocol that includes message
         serialization, encryption, session id packing and compression. """
 
-	# AES keys have to have 16 characters (or 32 or 64...)
-    PUBLIC_KEY = 'g4L4kT14 rUlZ!__'
-
     _serializer = PickleSerializationCodec()
     _encipherer = EncryptionCodec()
     _packer = IdentifierPackerCodec()
@@ -181,11 +178,8 @@ class ProtocolCodec(MultipleCodec):
 
     def encode(self, decoded):
         session = decoded.session
-        # TODO: case: session.id == 0 (no encryption, etc.)
-        key            = session.secret_key
-        #or maybe: key = session.secret_key or self.PUBLIC_KEY
+        key            = session.secret_key        
         serialized     = self._serializer.encode(dict(decoded))
-                    # dict forces Message session data not to be serialized
         encrypted, key = self._encipherer.encode((serialized, key))
         packed         = self._packer.encode((session.id, encrypted))
         compressed     = self._compressor.encode(packed)
@@ -197,17 +191,17 @@ class ProtocolCodec(MultipleCodec):
         packed                = self._compressor.decode(encoded.data)
         session_id, encrypted = self._packer.decode(packed)
         host, port            = encoded.host, encoded.port
-        this_session = None
+        
         if session_id:
             this_session = self.session_dao.get(session_id)
-        if this_session == None:
-            this_session  = self.session_dao.create(host=host, port=port)
-            this_session.character_id = 0
-            this_session.secret_key   = KeyGenerator.generate_key()
+        else:
+            key = KeyGenerator.generate_key()
+            this_session = self.session_dao.create(host=host, 
+                                                   port=port, 
+                                                   character_id=0, 
+                                                   secret_key=key)
             self.session_dao.set(this_session)
-            # TODO: bind character_id, secret_key, etc.
-            # by copying user data such as character and password
-            # (user_dao or character_dao needed)
+            
         key             = this_session.secret_key
         serialized, key = self._encipherer.decode((encrypted, key))
         data            = self._serializer.decode(serialized)

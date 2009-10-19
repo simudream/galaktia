@@ -4,6 +4,7 @@
 from random import randint
 from time import time
 
+from galaktia.protocol.model import Session
 from galaktia.protocol.key import KeyGenerator
 from galaktia.protocol.controller import MessageController
 from galaktia.protocol.operations.join import *
@@ -34,12 +35,12 @@ class RequestUserJoinController(MessageController):
             # Set mail to username so as to avoid the unique constraint
             self.user_dao.add(user)
             self.user_dao.session.flush()
-        elif self.session_dao.get_by(user_id=user.id):
-            
-            yield UserAccepted(session=session, accepted=False)
-            return
-        session.user = user
-        self.session_dao.set(session)
+        else:
+            character = user.character
+            if self.session_dao.get_by(character.id):            
+                yield UserAccepted(session=session, accepted=False)
+                return
+        
         
         for aSession in self.session_dao.get_logged():
             yield UserJoined(username=username,
@@ -83,34 +84,40 @@ class RequestUserJoinController(MessageController):
                                'hps' : user.character.life
                            },
                            session=session)
-        session.character_id = character.id
-        session.user = user
-        session.secret_key = KeyGenerator.generate_key(session.id, (username))
+        
+        # Regenerate the session with newly obtained data
+        key = KeyGenerator.generate_key(session.id, (username))
+        session = Session(id=session.id, 
+                          host=session.host, 
+                          port=session.port, 
+                          character_id=character.id, 
+                          secret_key=key)
+        self.session_dao.set(session)
 
         # Let players know that a new dude is in town
             # Use self.char_dao.get_near(character, radius=10) instead of
             # get_logged()
             
 #        for aSession in self.session_dao.get_logged():
-        for aSession in self.char_dao.get_los(character, 10):
+        for char in self.char_dao.get_los(character, 10):
+            
+            aSession = self.session_dao.get_by(char.id)
             yield PlayerEnteredLOS(session_id = session.id,
                 position = (character.x, character.y),
                 description = username,
                 session = aSession
                 )
-        
-        for aSession in [ sth for sth in self.session_dao.get_logged() if \
-            sth.user and sth.user.character in \
-            self.char_dao.get_los(character, radius=10)]:
-            # Explicación: pide todas las sessions (no propias), pero
-            # que además tengan un personaje asociado y que estén
-            # dentro de radio 10 del usuario.
-            pos = (aSession.user.character.x, \
-                aSession.user.character.y)
+            
+        for character in self.char_dao.get_los(character, radius=10, return_self=True):
+            
+            char_session = self.session_dao.get_by(character.id)
+            user = self.user_dao.get_by(id=character.user_id)
+            
+            pos = (character.x, character.y)
             yield PlayerEnteredLOS(session=session, 
-                                   session_id=aSession.id, 
+                                   session_id=char_session.id, 
                                    position=pos, 
-                                   description=aSession.user.character.name)
+                                   description=user.name)
     
 class StartConnectionController(MessageController):
     
