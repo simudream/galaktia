@@ -156,13 +156,16 @@ class ItemDAO(SceneObjectDAO):
 class SpriteDAO(SpatialDAO):
     ENTITY_CLASS=Sprite
 
-    def get_los(self, obj, radius=2):
+    def get_los(self, obj, radius=2, return_self=False):
         assert radius > 0
         max_x, min_x = obj.x + radius, obj.x - radius
         max_y, min_y = obj.y + radius, obj.y - radius
-        return self.filter(self.klass.show == True, self.klass.x <= max_x, \
+        ret = self.filter(self.klass.show == True, self.klass.x <= max_x, \
                 self.klass.x >= min_x, self.klass.y <= max_y, self.klass.y >= \
-                min_y, self.klass.id != obj.id)
+                min_y)
+        if not return_self:
+            ret.remove(obj)
+        return ret
 
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS=Character
