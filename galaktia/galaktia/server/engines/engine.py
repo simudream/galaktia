@@ -157,7 +157,7 @@ class PositionalEngine(BaseEngine):
         if dx == 0 and dy == 0:
             return (0, 0)
         # Check speed:
-        if 1.0/abs(obj.arrival_timestamp - time()) > obj.speed:
+        if abs(obj.arrival_timestamp - time())*obj.speed < 1:
             return False
         for x, y in [(dx, dy), (dx, 0), (0, dy)]:
             if not self._obstacles(obj, obj.x+x, obj.y+y, obj.z):
