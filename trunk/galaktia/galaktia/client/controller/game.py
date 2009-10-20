@@ -220,6 +220,7 @@ class GameHandler():
     def on_player_entered_los(self, session_id, (x,y), description):
         is_me = True if self.window.session.id == session_id else False
         self.game_view.add_player(session_id, (x,y), description, is_me)
+        self.game_view.draw()
 
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
         self.game_view.peers[other_session_id].set_position(x,y)
@@ -228,4 +229,8 @@ class GameHandler():
         chatbox = self.widgets[0]
         message = chatbox.text()
         self.window.say_this(message)
+
+    def on_connection_refused(self):
+        log('Conection lost')
+        sys.exit(1)
 
