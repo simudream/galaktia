@@ -20,7 +20,7 @@ from galaktia.client.paths import IMAGES_DIR, SOUND_DIR
 from galaktia.protocol.interface import ClientProtocolInterface
 from galaktia.protocol.key import KeyGenerator
 
-pyglet.clock.set_fps_limit(30)
+# pyglet.clock.set_fps_limit(30)
 
 logger = logging.getLogger(__name__)
 
