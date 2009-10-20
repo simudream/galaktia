@@ -99,7 +99,6 @@ class GameHandler():
 
     def on_mouse_motion(self, x, y, dx, dy):
         new_orientation = get_angle(x-self.window.width/2, y-self.window.height/2)
-        print x-self.window.width/2, y-self.window.height/2, new_orientation
         self.game_view.miWalter.set_orientation(new_orientation)
         for widget in self.widgets:
             if widget.hit_test(x, y):
