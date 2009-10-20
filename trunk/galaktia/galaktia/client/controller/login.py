@@ -1,4 +1,4 @@
-#!/usr/bin/python
+ #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 import os
@@ -147,7 +147,9 @@ class LoginHandler():
 
     def ingresar(self):
         username = self.widgets[0].text()
-        self.window.request_user_join(username)
+        password = self.widgets[1].text()
+        
+        self.window.request_user_join(username, password)
 
     def on_connection_refused(self):
         self.stateLabel.text = u'No server listening!'

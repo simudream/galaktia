@@ -158,8 +158,8 @@ class ClientProtocolInterface(BaseClient):
         m = SayThis(message=message, session=self.session)
         self.send(m)
         
-    def request_user_join(self,username):
-        self.send(RequestUserJoin(username = username, session=self.session))
+    def request_user_join(self, username, password):
+        self.send(RequestUserJoin(username=username, password=password, session=self.session))
         
     def start_connection(self):
         logger.info('Starting connection...')

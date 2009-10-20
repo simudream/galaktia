@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import hashlib
+
 from random import randint
 from time import time
 
@@ -19,7 +21,7 @@ SERVER_VERSION='0.2'
 
 class RequestUserJoinController(MessageController):
     
-    MESSAGE_KEYS = ['username']
+    MESSAGE_KEYS = ['username', 'password']
     
     def __init__(self, session_dao, dao_resolver):
         MessageController.__init__(self, session_dao, dao_resolver)
@@ -28,14 +30,19 @@ class RequestUserJoinController(MessageController):
         self.char_dao = self.dao_resolver.char
         self.wall_dao = self.dao_resolver.wall
     
-    def _process(self, session, username):
+    def _process(self, session, username, password):
         user = self.user_dao.get_by(name=username)
+        
         if not user:
-            user = User(name=username, passwd= u'', email=username)
+            user = User(name=username, passwd=password, email=username)
             # Set mail to username so as to avoid the unique constraint
             self.user_dao.add(user)
             self.user_dao.session.flush()
         else:
+            if user.passwd != password:
+                yield UserAccepted(session=session, accepted=False)
+                return
+            
             character = user.character
             if self.session_dao.get_by(character.id):            
                 yield UserAccepted(session=session, accepted=False)
