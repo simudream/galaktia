@@ -39,8 +39,8 @@ class CheckProtocolVersion(Message):
 class RequestUserJoin(Message):
     """ C->S Message for informing that a character with a certain username
     wants to enter Galaktia world. I'm Going in Boy!"""
-    def __init__(self, username, **kwargs):
-        super(RequestUserJoin, self).__init__(username=username, **kwargs)
+    def __init__(self, username, password, **kwargs):
+        super(RequestUserJoin, self).__init__(username=username, password=password, **kwargs)
 
 class UserAccepted(Message):
     """ S->C Message for informing that a certain user was accepted or 
