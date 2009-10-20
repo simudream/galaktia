@@ -8,6 +8,7 @@ from pyglet.gl import glEnable,GL_BLEND,glBlendFunc,GL_SRC_ALPHA,GL_ONE_MINUS_SR
 
 from galaktia.client.paths import IMAGES_DIR
 
+
 class GameView(object):
     def __init__(self, (screen_width, screen_height), map_dim, (tile_width, tile_height), padding_left, padding_down, surroundings):
         self.center_walter = {'x':0, 'y':0}
@@ -35,16 +36,20 @@ class GameView(object):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
         self.own_walter = None
+        
+        self.flag = True
 
     def draw(self):
-        self.center_walter = self.miWalter.position
-        for baldosa in self.baldosas:
-            baldosa.draw(self.center_walter)
-        for pared in self.mapa:
-            pared.draw(self.center_walter)
-        for aSession in self.peers:
-            if aSession != self.own_walter:
-                self.peers[aSession].draw(self.center_walter)
+        if self.flag:
+            self.flag = False
+            self.center_walter = self.miWalter.position
+            for baldosa in self.baldosas:
+                baldosa.draw(self.center_walter)
+            for pared in self.mapa:
+                pared.draw(self.center_walter)
+            for aSession in self.peers:
+                if aSession != self.own_walter:
+                    self.peers[aSession].draw(self.center_walter)
         self.floor_sprites.draw()
         self.wall_sprites.draw()
         self.front_sprites.draw()
@@ -166,8 +171,11 @@ class Walter3D(dict):
     
     def draw(self):
         """Draws the current state in the screen"""
-        sprite = self[self.state][self.orientation]
-        sprite.draw()
+        try:
+            sprite = self[self.state][self.orientation]
+            sprite.draw()
+        except:
+            pass
     
     def start_moving(self):
         self.state = 'moving'

@@ -99,6 +99,7 @@ class GameHandler():
 
     def on_mouse_motion(self, x, y, dx, dy):
         new_orientation = get_angle(x-self.window.width/2, y-self.window.height/2)
+        print x-self.window.width/2, y-self.window.height/2, new_orientation
         self.game_view.miWalter.set_orientation(new_orientation)
         for widget in self.widgets:
             if widget.hit_test(x, y):
@@ -224,7 +225,8 @@ class GameHandler():
 
     def on_player_moved(self, other_session_id, (dx,dy), (x,y)):
         self.game_view.peers[other_session_id].set_position(x,y)
-
+        self.game_view.flag = True
+        
     def chatear(self):
         chatbox = self.widgets[0]
         message = chatbox.text()
