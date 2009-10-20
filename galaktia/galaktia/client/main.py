@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
 
     def __init__(self, (host, port), screen_parameters):
+        # Reemplazar esto por "Leer config desde un archivo"
         self.screen_parameters = screen_parameters
         pyglet.clock.set_fps_limit(60)
         pyglet.window.Window.__init__(self, screen_parameters[0], \
@@ -137,7 +138,7 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def exit(self):
         reactor.stop()
         return True
-    
+
     def connectionRefused(self):
         m = "Connection to server was refused"
         logger.info(m)

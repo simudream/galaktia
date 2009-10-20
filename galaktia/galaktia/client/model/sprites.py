@@ -11,7 +11,8 @@ from galaktia.client.paths import IMAGES_DIR
 class GameView(object):
     def __init__(self, (screen_width, screen_height), map_dim, (tile_width, tile_height), padding_left, padding_down, surroundings):
         self.center_walter = {'x':0, 'y':0}
-        self.back_sprites = pyglet.graphics.Batch()
+        self.floor_sprites = pyglet.graphics.Batch()
+        self.wall_sprites = pyglet.graphics.Batch()
         self.front_sprites = pyglet.graphics.Batch()
 
         self.miWalter = Walter3D(pyglet.image.load(os.path.join(IMAGES_DIR, 'humano.png')), screen_width, screen_height)
@@ -24,12 +25,12 @@ class GameView(object):
         self.piso = pyglet.image.load(os.path.join(IMAGES_DIR, 'piso.png'))
         self.pared = pyglet.image.load(os.path.join(IMAGES_DIR, 'pared.png'))
 
-        self.mapa = [Pared((t[0],t[1]), 'Pared', self.pared, self.tile_size, self.padding, self.back_sprites) \
+        self.mapa = [Pared((t[0],t[1]), 'Pared', self.pared, self.tile_size, self.padding, self.wall_sprites) \
                      for t in surroundings]
         self.baldosas = []
         for x in xrange(map_dim):
             for y in xrange(map_dim):
-                self.baldosas.append(Baldosa((x,y), 'Baldosa', self.piso, self.tile_size, self.padding, self.back_sprites))
+                self.baldosas.append(Baldosa((x,y), 'Baldosa', self.piso, self.tile_size, self.padding, self.floor_sprites))
         self.peers = {}
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
@@ -44,7 +45,8 @@ class GameView(object):
         for aSession in self.peers:
             if aSession != self.own_walter:
                 self.peers[aSession].draw(self.center_walter)
-        self.back_sprites.draw()
+        self.floor_sprites.draw()
+        self.wall_sprites.draw()
         self.front_sprites.draw()
         self.miWalter.draw()
 
@@ -60,6 +62,7 @@ class GameView(object):
             self.center_walter = {'x': x, 'y': y}
             self.peers[session_id] = self.miWalter
             self.own_walter = session_id
+            self.miWalter.set_position(x,y)
         #if is_me:
             ##TODO: make each walter a 3DWalter
             #self.miWalter.x = x
@@ -71,7 +74,7 @@ class GameView(object):
 
 
 class Sprite(object):
-    def __init__(self, (x,y), description, image, tile_size, padding, sprites_group):
+    def __init__(self, (x,y), description, image, tile_size, padding, sprites_group, z=0):
         self.sprite = pyglet.sprite.Sprite(img=image, x=0, y=0, batch=sprites_group)
         self.x, self.y = x,y
         self.description = description
