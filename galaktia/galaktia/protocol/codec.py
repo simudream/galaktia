@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Codecs used by protocol for encoding & decoding incoming and outgoing data 
+"""
+
 import simplejson
 import struct
 import zlib
@@ -174,6 +178,13 @@ class ProtocolCodec(MultipleCodec):
     _compressor = CompressionCodec()
 
     def __init__(self, session_dao):
+        """
+        Instance ``ProtocolCodec``
+        
+        : parameters :
+            session_dao : SessionDAO
+                DAO to use for obtaining & creating ``Session`` attached to incoming ``Message``s 
+        """
         self.session_dao = session_dao
 
     def encode(self, decoded):

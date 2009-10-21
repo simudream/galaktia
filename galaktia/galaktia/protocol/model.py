@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Data models used by protocol
+"""
+
 import time
 
 class Datagram(object):

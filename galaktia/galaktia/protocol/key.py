@@ -1,36 +1,35 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 Provides utilities to generate encryption keys.
 
 :date: '2009-09-25'
 :authors:
     - jcivile
-'''
+"""
 
 import hashlib
 
 class KeyGenerator(object):
-    '''
-    Generates keys for encryption & decription to be used by the protocol
-    '''
+    """
+    Generates keys for encryption & decryption to be used by the protocol
+    """
 
     public_key = 'Llavepublicatroz'
     separator = ' - '
 
     @staticmethod
     def generate_key(session_id = 0, salt_list = None):
-        
-        '''
+        """
         Generates a new encryption key to use
         
         :parameters:
             session_id : int
                 The session id attached to this key
-            salt_list : tuple
+            salt_list : list
                 Extra data to salt the key with. It's *strongly* recommend to use a salt.
-        '''
+        """
         
         if session_id == 0:
             return KeyGenerator.public_key
