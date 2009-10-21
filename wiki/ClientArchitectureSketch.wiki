@@ -20,14 +20,14 @@ To get a image, the sintax will be something like "resources_manager.getImage('w
 
 Some ideas on resources organization: (TODO: translate from spanish)
   * Imágenes de escenario
-    - Criaturas (Un subgrupo muy importante)
-      + Personajes
-      + Monstruos
+    * Criaturas (Un subgrupo muy importante)
+      * Personajes
+      * Monstruos
   * Imágenes de inventario
-    - Imágenes de diálogos, boxes, botones, etc
+    * Imágenes de diálogos, boxes, botones, etc
   * Sonidos
-    - Del juego
-    - Del programa (meta-game)
+    * Del juego
+    * Del programa (meta-game)
 
 
 = ConfigurationManager =
@@ -63,11 +63,11 @@ Scenario is the most important widget. It represents the game view.
 Other Widgets:
   * Dialog Boxes
   * Chat
-    + It would be nice if one can also throw commands via text.
+    * It would be nice if one can also throw commands via text.
   * User information
   * Map
   * Item container (backpack)
-    + Subcontainers?
+    * Subcontainers?
   * Etc.
 
 
@@ -77,25 +77,25 @@ The basic idea is: what the user sees at all times is a 'Scenario', with objects
 Separately, we handle the tiles.
 
   * Actors:
-    + Creatures:
-      - Characters
-        Own Char! <---- Too low in the class tree.
-        NPCs
-        Monsters
-      - Naves
-      - Intelligent objects
-    + Objects:
-      - Architectural objects:
-        # Walls
-        # Doors
-        # Furniture
-      - Fallen objects:
-        money, weapons, clothes, your wallet (?)
-    + Tiles
+    * Creatures:
+      * Characters
+        * Own Char! <---- Too low in the class tree.
+        * NPCs
+        * Monsters
+      * Naves
+      * Intelligent objects
+  * Objects:
+    * Architectural objects:
+      * Walls
+      * Doors
+      * Furniture
+    * Fallen objects:
+      * money, weapons, clothes, your wallet (?)
+  * Tiles
 
 
 = Web/AccountManager Interface =
 Create/Modify accounts. You should be able to do these things where you choose: via web or via client.
-    Create account
-    Create character
-        Choose race, profession, starting skills?
+  * Create account
+  * Create character
+    * Choose race, profession, starting skills?
