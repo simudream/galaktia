@@ -30,6 +30,8 @@ C) ConfigurationManager:
     ''' Carga opciones del personaje, leyendo archivos de texto (encriptados?)
     I love "from future import with"
     '''
+    Me parece clave que esto instancie el ResourcesManager y le diga por donde
+        empezar a buscar y cargar archivos.
     Opcional: Recordar contraseña.
     Otras cosas importantes: Servidores (o lista de listas de servidores)
                              Resolución de pantalla
@@ -63,12 +65,12 @@ D) Escenario (Dentro de GameHandler):
         Caídos:
             Dinero, armas, ropa, billetera (?)
     Tiles:
-        (Lo más aburrido, no interactúa ni nada. Tal vez dice "no me pises")
+        (Lo más aburrido, no interactúan ni nada. Tal vez dice "no me pises")
 
 E) Web/AccountManager Interface
     ''' Idea que surgió. Creacion/Modificación de cuentas via web.
         También se pueden crear/modificar las cuentas vía el juego.
-        Igual, esto queda para futuras releases de galaktia.
+        Igual, eso queda para futuras releases de galaktia.
     '''
     Create account
     Create character
@@ -92,12 +94,24 @@ F) GameHandler:
             Cosa local
             Cosa remota -> comunicate con el server
     Widgets
+        ''' Si se quiere, se puede pensar en un widget como "Sub-handler", pero
+            no es un handler porque puede haber varios widgets al mismo tiempo
+            con 'atención' activa. Puede ser que entre los widgets menos
+            importantes haya una relación de orden ("este es el activo") para
+            cerrarlos o utilizar algún atajo de teclado (se me ocurre ESC para
+            cerrarlo nomás en este momento, tal vez algo más después).
+
+            Sin embargo, tienen mucha importancia, porque "handlean" casi todos
+            los eventos cuando se está en modo "juego". En especial el
+            escenario, tiene muchas responsabilidades.
+        '''
         Escenario
             (Este es groso, ver más arriba su propio apartado)
         Boxes de diálogo
             Inhabilitan llegada de eventos a otros widgets (pero los sigue
-            mostrando, sólo que por ahí no podés seguir moviendoté porque tenés
-            un mensaje ahí enfrente que le tenés que dar bola...)
+            mostrando, sólo que por ahí no podés seguir moviendoté o alguna
+            otra cosa porque el foco está perdido, tenés un mensaje ahí
+            enfrente al que le tenés que dar bola...)
         Chat
             Estaría bueno que sirva también para tirar comandos ub3r l337 h@x0r
         User Information
