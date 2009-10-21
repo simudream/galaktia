@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Protocol controllers for processing received messages
+"""
+
 import sys, logging
 
 from twisted.internet import reactor
@@ -12,13 +16,20 @@ from galaktia.protocol.codec import ProtocolCodec
 #logger = logging.getLogger(__name__)
 
 class Controller(object):
+    """ Process incoming input from the protocol """
 
     def greet(self):
         """ Returns Message objects to be sent to start a connection """
         return [] # override in clients to start a connection
 
     def process(self, input_message):
-        """ Returns an iterable of output messages in response to input """
+        """ 
+        Returns an iterable of output messages in response to input 
+        
+        : parameters :
+            input_message : Message
+                The input to be processed
+        """
         raise NotImplementedError
 
 class MessageController(Controller):
@@ -27,6 +38,15 @@ class MessageController(Controller):
     MESSAGE_KEYS = []
 
     def __init__(self, session_dao, dao_resolver):
+        """
+        Instance ``MessageController``
+        
+        : parameters :
+            session_dao : SessionDAO
+                The instance of ``SessionDAO`` to use when processing messages
+            dao_resolver : DAOResolver
+                ``DAOResolver`` instance
+        """
         
         self.session_dao = session_dao
         self.dao_resolver = dao_resolver
@@ -34,12 +54,46 @@ class MessageController(Controller):
         Controller.__init__(self)
 
     def process(self, input_message):
-        return self._process(input_message.session, *self.get_args(input_message))
+        """
+        Process an incoming message
+        
+        Do *NOT* override this method unless necessary. See ``_process``.
+        
+        : parameters :
+            input_message : Message
+                A ``Message`` to process
+        
+        : return :
+            ``Message`` to send as response
+        """
+        return self._process(input_message.session, *self._get_args(input_message))
 
     def _process(self, session, *args):
+        """
+        Extensible method to process methods
+        
+        : paramaters :
+            session : Session
+                The session that sent the message.
+        
+        : return :
+            list of ``Message`` in reply to the message
+        """
         raise NotImplementedError('Abstract method')
 
-    def get_args(self, input_message):
+    def _get_args(self, input_message):
+        """
+        Obtain the data from the message needed to process it.
+        
+        The name of the properties to strip is stored in ``MESSAGE_KEYS``
+        
+        : parameters :
+            input_message : Message
+                The ``Message`` to strip the data from.
+        
+        : return :
+            list of parameters in the order specified in ``MESSAGE_KEYS``
+        """
         return [input_message[key] for key in self.MESSAGE_KEYS]
 
 class PlayerEnteredLOSController(MessageController):
@@ -61,7 +115,9 @@ class DispatcherController(Controller):
         ``DispatcherController`` constructor.
 
         :parameters:
-            # TODO: all necessary DAOs, helpers, etc. to create controllers
+            routes : list
+                dict of ``MessageDispatcher`` sub-classes to handle incoming messages
+                using the ``Message`` it handles name as key.
         """
         self.routes = routes
 
