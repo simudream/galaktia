@@ -1,0 +1,107 @@
+Nuevo Client
+============
+
+A) Handlers:
+    ''' Yo los entiendo mejor pensando Handler como "Pantalla" o "Window"
+    '''
+    Login
+        (esta se puede reciclar. faltaría que cargue recursos mientras el
+        usuario se loguea)
+    SpecialHandler
+        (queda para cosas que agreguemos más tarde, ej Options)
+    GameHandler
+        (esto después tiene su propio apartado)
+
+B) ResourceManager:
+    ''' Gestor de recursos del juego. Carga Imágenes, Sonidos a Pyglet
+    '''
+    Organizado en grupos:
+        Imágenes de escenario
+            Criaturas (Un subgrupo muy importante)
+                Personajes
+                Monstruos
+        Imágenes de inventario
+        Imágenes de diálogos, boxes, botones, etc
+        Sonidos
+            Del juego
+            Del programa (meta-game)
+
+C) ConfigurationManager:
+    ''' Carga opciones del personaje, leyendo archivos de texto (encriptados?)
+    I love "from future import with"
+    '''
+    Opcional: Recordar contraseña.
+    Otras cosas importantes: Servidores (o lista de listas de servidores)
+                             Resolución de pantalla
+                             Archivos de recursos para cada clase
+
+D) Escenario (Dentro de GameHandler):
+    ''' La idea es que lo que está viendo en este momento el jugador es un
+        "escenario", donde hay objetos y actores. Los objetos serían cosas
+        inanimadas, como objetos tirados o cadáveres, y los actores serían
+        aquellas cosas que tienen capacidad de moverse, como una criatura del
+        juego (un character o un monstruo o un npc), o un auto o una nave...
+        Por separado, ver manejo de tiles.
+    '''
+    Actores:
+        Criaturas:
+            Characters
+                Propio Char! <---- Tal vez demasiado importante para estar
+                                   tan abajo!!!
+            Non-Player Characters (NPCs para los que saben)
+            Monstruos
+        Naves:
+            ...?
+        Objetos inteligentes:
+            ...?
+    Objetos:
+        Arquitectónicos:
+            Paredes
+            Puertas
+            Adornos
+                Sillas, cama, sofás, placards
+        Caídos:
+            Dinero, armas, ropa, billetera (?)
+    Tiles:
+        (Lo más aburrido, no interactúa ni nada. Tal vez dice "no me pises")
+
+E) Web/AccountManager Interface
+    ''' Idea que surgió. Creacion/Modificación de cuentas via web.
+        También se pueden crear/modificar las cuentas vía el juego.
+        Igual, esto queda para futuras releases de galaktia.
+    '''
+    Create account
+    Create character
+        Choose race, profession, starting skills?
+
+F) GameHandler:
+    ''' Esto se merece ser tratado aparte
+
+        Sobre los widgets: Hay que averiguar si cada widget siempre le importa
+        todo evento que pase, o sólo algunos, y cómo hacer esto de manera
+        eficiente...
+    '''
+    Recepción de Datos del server
+        Para cada widget:
+            A vos te importa este tipo de mensajes?
+                -> entonces tomá, arreglátelas
+    Recepción de Datos del cliente
+        De donde vienen?
+            SIEMPRE desde Widgets (el escenario es un widget particular)
+        Qué hacen?
+            Cosa local
+            Cosa remota -> comunicate con el server
+    Widgets
+        Escenario
+            (Este es groso, ver más arriba su propio apartado)
+        Boxes de diálogo
+            Inhabilitan llegada de eventos a otros widgets (pero los sigue
+            mostrando, sólo que por ahí no podés seguir moviendoté porque tenés
+            un mensaje ahí enfrente que le tenés que dar bola...)
+        Chat
+            Estaría bueno que sirva también para tirar comandos ub3r l337 h@x0r
+        User Information
+        Mapa
+        Container de Items (mochila)
+            Subcontainers?
+        Etcéteras
