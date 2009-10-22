@@ -1,0 +1,10 @@
+server:
+  server:
+    path: galaktia.server.main:GalaktiaServer
+    constructor-args:
+      session: object:server::session
+  session:
+    path: galaktia.server.main:get_session
+    #constructor-args:
+      #db_conn_string: sqlite:////tmp/galaktia.sqlite
+      #db_conn_string: config:server::db-conn-string

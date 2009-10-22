@@ -8,7 +8,11 @@ setup(name='galaktia',
       author='Galaktia Team',
       author_email='contact@galaktia.com.ar',
       url='http://code.google.com/p/galaktia/',
-      install_requires= [
+      install_requires=[
+        'controlfreak>=1.0',
+        'pycommons>=0.1',
+        'PyYAML==3.08', # TODO: controlfreak dependence, deprecate
+        'zope.interface==3.5.1', # TODO: controlfreak dependence, deprecate
         'pyglet>=1.1',
         'Twisted>=8.2',
         'SQLAlchemy>=0.5',
@@ -16,6 +20,8 @@ setup(name='galaktia',
         'pycrypto>=2.0',
         'mock>=0.5',
       ],
+      entry_points={
+        'console_scripts': ['galaktia = galaktia.__init__:main']
+      },
       packages=find_packages(exclude=['ez_setup']),
-     )
-
+)

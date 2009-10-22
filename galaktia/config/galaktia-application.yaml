@@ -1,0 +1,12 @@
+paths:
+  - "%(here)s"
+objects:
+  imports:
+    - "galaktia-components.yaml"
+#  aliases:
+#    imports:
+#      - "%(envdir)s/galaktia-aliases.yaml"
+config:
+  imports:
+    - "galaktia-config.yaml"
+#    - "%(envdir)s/galaktia-config.yaml"
