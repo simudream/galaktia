@@ -1,13 +1,17 @@
-#summary Coding and documentation style guidelines for programmers.
+#summary Coding standards and guidelines on documentation and programming style.
 #labels Phase-Implementation
 
 = Introduction =
 
-We encourage compliance with the coding and documentation style guidelines described in this document.
+This document describes programming style and documentation guidelines used on the project.
 
-= Coding and Documentation Style =
+= Coding Standards =
 
-Coding style should follow [http://www.python.org/dev/peps/pep-0008/ PEP 8] guidelines.
+== Programming Style ==
+
+We encourage programmers to follow the style guidelines of [http://www.python.org/dev/peps/pep-0008/ PEP 8].
+
+== Documentation Conventions ==
 
 Documentation will be based upon the following Python packages:
   * [http://docutils.sourceforge.net/ docutils]
@@ -21,8 +25,7 @@ Note that any Epydoc field starting with `@` can be translated to _reStructuredT
   * Epydoc: `@cmd foo: bar baz`
   * reStructuredText: `:cmd foo: bar baz`
         
-
-= Example =
+== Example ==
 
 {{{
 #!/usr/bin/env python
@@ -149,16 +152,22 @@ class Walter(object):
 
 }}}
 
-= Documentation Generation =
+= Command Reference =
 
-For generating documentation files, run the following at the Python package root directory:
+== Documentation Generation ==
+
+To generate documentation files, run the following command (at the directory where `setup.py` is located):
 
 {{{
-$ epydoc --config epydoc.ini
+$ epydoc --config setup.cfg galaktia
 }}}
 
-_TODO_
+A `doc` directory containing the documentation in HTML format will be created at that level. It is configured to be ignored by Subversion control.
 
-= HOWTOs and Tips =
+== Documentation Checks ==
 
-_TODO_
+To check undocumented modules and classes, run the following command (at the directory where `setup.py` is located):
+
+{{{
+$ epydoc --check galaktia
+}}}
