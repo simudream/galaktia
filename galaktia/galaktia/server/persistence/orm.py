@@ -28,7 +28,6 @@ class User(Entity):
     name = Column(Unicode(127), unique=True, nullable=False)
     passwd = Column(Unicode(127), nullable=False)
     email = Column(Unicode(127), unique=True, nullable=False)
-    
     character = relation('Character', backref='User', uselist=False)
         # id is the binding between a user and his avatars
 

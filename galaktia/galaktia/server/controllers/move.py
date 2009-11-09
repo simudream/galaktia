@@ -19,6 +19,7 @@ class MoveDxDyController(MessageController):
     def _process(self, session, (dx, dy), timestamp):
         character = self.char_dao.get_by(id=session.character_id)
         pos = self.pos_engine.d_move(character, (dx, dy))
+        print pos
         if pos:
             for aSession in self.session_dao.get_logged():
                 m = PlayerMoved(session_id=session.id,
