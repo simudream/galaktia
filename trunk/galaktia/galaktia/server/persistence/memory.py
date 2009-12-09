@@ -20,11 +20,14 @@ except ImportError:
 #
 #   AUXILIARY CLASSES
 #
+
+
 class NotSet(object):
     """ Empty class used to differenciate None from unsetted values in k-v
         storages that return None in both cases, like python-memcached.
     """
     pass
+
 
 class OutOfBounds(Exception):
     pass
@@ -33,11 +36,12 @@ class OutOfBounds(Exception):
 #   PSEUDO-INTERFACES
 #
 
+
 class Memory(object):
     """
-        Memory objects are key-value gateways to a database or any other kind of
-       memory storage. They behave the same way dictionaries do, which makes it
-       easier to mock them.
+        Memory objects are key-value gateways to a database or any other kind
+       of memory storage. They behave the same way dictionaries do, which
+       makes it easier to mock them.
 
         Required methods are __getitem__, __setitem__ and __delitem__.
     """
@@ -77,14 +81,16 @@ class MemoryPool(Memory):
 #   DECORATORS AND FACTORIES
 #
 
+
 class Memorized(object):
-    def __init__(self, f, memo, DEBUG=False):
+
+    def __init__(self, f, memo, debug=False):
         self.__f = f
         self.__memo = memo
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Memorized Callable %s" % f.__name__)
-        if DEBUG:
-            self.log.setLevel(logging.DEBUG)
+        if debug:
+            self.log.setLevel(logging.debug)
 
     def __create_key(self, f, *args, **kwargs):
 #       TODO: Is there another way to create a key?
@@ -93,7 +99,7 @@ class Memorized(object):
             the_hash.update(str(arg))
         the_hash.update("|")
         for key, val in kwargs.iteritems():
-            the_hash.update("%s:%s;"(i, j))
+            the_hash.update("%s:%s;".__mod__(key, val))
         return the_hash.hexdigest()
 
     def __call__(self, *args, **kwargs):
@@ -109,11 +115,12 @@ class Memorized(object):
 
 
 class memorize(object):
+
     def __init__(self, memory):
         self._memory = memory
 
     def __call__(self, f):
-        memo = Memorized(f, self._memory, DEBUG=True)
+        memo = Memorized(f, self._memory, debug=True)
         wraps(f)(memo)
         return memo
 
@@ -122,12 +129,13 @@ class memorize(object):
 #   CONCRETE STORAGES
 #
 
+
 class MemcacheMemory(Memory):
     """
         Memory gateway to a Memcache server
     """
 
-    def __init__(self, servers=["127.0.0.1:11211"], expire=0, DEBUG=False):
+    def __init__(self, servers=["127.0.0.1:11211"], expire=0, debug=False):
         """
             :param servers: List of servers to use. Please, read
             memcache.Client help.
@@ -137,8 +145,8 @@ class MemcacheMemory(Memory):
         self._expire = expire
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Memcache-Gateway")
-        if DEBUG:
-            self.log.setLevel(logging.DEBUG)
+        if debug:
+            self.log.setLevel(logging.debug)
 
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
@@ -163,24 +171,28 @@ class MemcacheMemory(Memory):
 
 
 class MemcacheMemoryPool(MemoryPool):
-    def __init__(self, servers=["127.0.0.1:11211"], expire=0, upper_limit=100, \
-            lower_limit=1, DEBUG=False):
-        self._clients = [MemcacheMemory(servers=servers, expire=expire) for i
-                in xrange(0, upper_limit/2)]
+
+    def __init__(self, servers=["127.0.0.1:11211"], expire=0, upper_limit=100,
+            lower_limit=1, debug=False):
+        self._clients = [MemcacheMemory(servers=servers, expire=expire) for o
+                in xrange(0, upper_limit / 2)]
         self.__expire = expire
         self._servers = servers
         self.upper_limit = upper_limit
         self.lower_limit = lower_limit
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Memcache Pool")
-        self.__DEBUG = DEBUG
-        if DEBUG:
-            self.log.setLevel(logging.DEBUG)
+        self.__debug = debug
+        self.__clients_lock = Lock()
+        if debug:
+            self.log.setLevel(logging.debug)
 
     @property
     def _expire(self):
+
         def fget(self):
             return self.__expire
+
         def fset(self, value):
             if self.__expire != value:
                 self.__expire = value
@@ -188,27 +200,39 @@ class MemcacheMemoryPool(MemoryPool):
                     i._expire = self.value
 
     def count(self):
-        return len(self._clients)
+        try:
+            self.__clients_lock.acquire()
+            return len(self._clients)
+        finally:
+            self.__clients_lock.release()
 
     def grow(self, number=1):
         self.log.debug("Adding %s new servers to the pool", number)
         for i in range(number):
             self._clients.append[MemcacheMemory(self._servers, self._expire,
-                    self.__DEBUG)]
+                    self.__debug)]
 
     def shrink(self, number=1):
         self.log.debug("Deleting %s servers from the pool", number)
+        self.__clients_lock.acquire()
         for i in range(number):
             self._clients.pop()
+        self.__clients_lock.release()
 
     def __claim_client(self):
         if self.count() < self.lower_limit:
             self.grow()
-        return self._clients.pop()
+        try:
+            self.__clients_lock.acquire()
+            return self._clients.pop()
+        finally:
+            self.__clients_lock.release()
 
     def __return_client(self, client):
         if self.count() < self.upper_limit:
+            self.__clients_lock.acquire()
             self._clients.append(client)
+            self.__clients_lock.release()
 
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
@@ -234,12 +258,14 @@ class MemcacheMemoryPool(MemoryPool):
         finally:
             self.__return_client(client)
 
+
 class RedisMemory(Memory):
     """
         Memory gateway to a Redis server
     """
 
-    def __init__(self, host=None, port=None, expire=None, DEBUG=False, *args, **kwargs):
+    def __init__(self, host=None, port=None, expire=None, debug=False,
+                *args, **kwargs):
         """
             :param servers: List of servers to use. Please, read
             redis.Redis help.
@@ -251,8 +277,8 @@ class RedisMemory(Memory):
         self._expire = expire
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Redis-Gateway")
-        if DEBUG:
-            self.log.setLevel(logging.DEBUG)
+        if debug:
+            self.log.setLevel(logging.debug)
 
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
@@ -278,7 +304,8 @@ class RedisMemory(Memory):
             raise KeyError
 
     def expire(self, key, time):
-        self.log.debug("Setting expire time to %s seconds for key %s", time, key)
+        self.log.debug("Setting expire time to %s seconds for key %s",
+                time, key)
         self._client.expire(key, time)
 
 
@@ -289,14 +316,15 @@ class RedisMemory(Memory):
 
 
 if __name__ == "__main__":
-    memory = MemcacheMemoryPool(DEBUG=True)
+    memory = MemcacheMemoryPool(debug=True)
+
     @memorize(memory)
     def test(a):
         """test test test!!!"""
         if a > 1:
-            return a*test(a-1)
+            return a * test(a - 1)
         elif a == 1:
-            return 1;
+            return 1
         else:
             return None
 

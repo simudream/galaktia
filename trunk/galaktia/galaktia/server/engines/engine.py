@@ -4,7 +4,9 @@ from time import time
 from galaktia.server.persistence.dao import DAOResolver
 from galaktia.server.engines.base import BaseEngine
 
+
 class EngineResolver(object):
+
     def __init__(self, dao_resolver):
         self.dao_resolver = dao_resolver
         # NOTE: Only add instances that require special treatment.
@@ -23,6 +25,7 @@ class EngineResolver(object):
         else:
             raise Exception
 
+
 class PositionalEngine(BaseEngine):
     """
         The Positional system engine, responsible of moving objects in the
@@ -30,15 +33,14 @@ class PositionalEngine(BaseEngine):
     """
 
     __dxdy = {
-        (0,1): 0,
-        (1,1): 1,
-        (1,0): 2,
-        (1,-1): 3,
-        (0,-1): 4,
-        (-1,-1): 5,
-        (-1,0): 6,
-        (-1,1): 7
-    }
+        (0, 1): 0,
+        (1, 1): 1,
+        (1, 0): 2,
+        (1, -1): 3,
+        (0, -1): 4,
+        (-1, -1): 5,
+        (-1, 0): 6,
+        (-1, 1): 7}
 
     def __init__(self, dao_resolver, collide=True):
         """
@@ -52,11 +54,11 @@ class PositionalEngine(BaseEngine):
         self.distance = 1
 
     def __sign(self, n):
-        return (0 if n == 0 else n/abs(n))
+        return (0 if n == 0 else n / abs(n))
 
     def _raw_distance(self, *args):
         """ Returns the norm of the vector """
-        return float((sum([x**2 for x in args]))**0.5)
+        return float((sum([x ** 2 for x in args])) ** 0.5)
 
     def _walktime(self, object):
         return abs(object.arrival_timestamp - time())
@@ -66,14 +68,14 @@ class PositionalEngine(BaseEngine):
             True. This function makes use of _walktime, which compares the
             object's arrival_timestamp against time.time()
         """
-        if self._raw_distance(obj.x-x, obj.y-y)/self._walktime(obj) > \
+        if self._raw_distance(obj.x - x, obj.y - y) / self._walktime(obj) > \
                 obj.speed:
             return False
         else:
             return True
 
     def is_valid_distance(self, obj, x, y):
-        if abs(obj.x-x) > self.distance or abs(obj.y-y) > self.distance:
+        if abs(obj.x - x) > self.distance or abs(obj.y - y) > self.distance:
             return False
         else:
             return True
@@ -157,10 +159,10 @@ class PositionalEngine(BaseEngine):
         if dx == 0 and dy == 0:
             return (0, 0)
         # Check speed:
-        if abs(obj.arrival_timestamp - time())*obj.speed < 1:
+        if abs(obj.arrival_timestamp - time()) * obj.speed < 1:
             return False
         for x, y in [(dx, dy), (dx, 0), (0, dy)]:
-            if not self._obstacles(obj, obj.x+x, obj.y+y, obj.z):
+            if not self._obstacles(obj, obj.x + x, obj.y + y, obj.z):
                 obj.x += x
                 obj.y += y
                 obj.arrival_timestamp = time()
@@ -168,7 +170,9 @@ class PositionalEngine(BaseEngine):
                 return (x, y)
         return False
 
+
 class CombatEngine(BaseEngine):
+
     def __init__(self, dao_resolver):
         self.charDao = dao_resolver.char
 
@@ -179,4 +183,3 @@ class CombatEngine(BaseEngine):
 
     def revive(self, to):
         to.life = 10
-
