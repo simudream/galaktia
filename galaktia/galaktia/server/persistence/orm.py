@@ -1,6 +1,6 @@
 #!/bin/env python
 # -*- coding: utf-8 -*-
-__docformat__='restructuredtext'
+__docformat__ = 'restructuredtext'
 
 # Documentation on what this module does:
 # http://www.sqlalchemy.org/docs/05/reference/ext/declarative.html
@@ -21,15 +21,17 @@ from sqlalchemy.types import Unicode, Integer, Float, Boolean, DateTime, \
 
 Entity = declarative_base()
 
+
 class User(Entity):
     """ Represents a user, with his or her account information """
-    __tablename__= 'users'
+    __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(Unicode(127), unique=True, nullable=False)
     passwd = Column(Unicode(127), nullable=False)
     email = Column(Unicode(127), unique=True, nullable=False)
     character = relation('Character', backref='User', uselist=False)
         # id is the binding between a user and his avatars
+
 
 class SceneObject(Entity):
     """ Anything that exists in the world """
@@ -66,6 +68,7 @@ class SceneObject(Entity):
             setattr(entity, k, v)
         return entity
 
+
 class Spatial(SceneObject):
     """ Represents any object with volume in the world. """
     __tablename__ = 'spatials'
@@ -75,6 +78,7 @@ class Spatial(SceneObject):
         # Show determines if the object will be shown on screen, or considered
         # disconnected.
     collide = Column(Boolean, default=False)
+
 
 class Wall(Spatial):
     """ Objects that you can't move. (i.e.: a wall) """
@@ -89,6 +93,7 @@ class Ground(SceneObject):
     __mapper_args__ = {'polymorphic_identity': u'ground'}
     id = Column(Integer, ForeignKey('scene_objects.id'), primary_key=True)
 
+
 class Item(Entity):
     """ Represents the class of an item """
     __tablename__ = 'items'
@@ -96,11 +101,13 @@ class Item(Entity):
     level = Column(Integer)
     attrs = Column(Unicode(127)) # We can use a pickled dict to hold the data
 
+
 class ItemType(Entity):
     """ Represents the class of an item (i.e.: gun, armor) """
     __tablename__ = 'item_types'
     id = Column(Integer, primary_key=True)
     type = Column(Unicode(42))
+
 
 class Sprite(Spatial):
     """ Represents a moving object with some "skin" appearance """
@@ -110,10 +117,8 @@ class Sprite(Spatial):
     direction = Column(Integer)
         # direction ranges from 0 to 7, starting North & counting clockwise.
     speed = Column(Integer) # how fast can the sprite move
-    arrival_timestamp = Column(Integer, default=0) # time when it reached current x, y
-        # 42 is The Answer to the Ultimate Question of Life, the Universe,
-        # and Everything, as calculated by an enormous supercomputer over a
-        # period of 7.5 million years
+    arrival_timestamp = Column(Integer, default=0)
+        # time when it reached current x, y
     controller = Column(Unicode(127))
         # controller identifies the component that handles actions
         # on interaction events with this sprite
@@ -143,6 +148,7 @@ class CharacterItem(Sprite):
     cost = Column(Integer) # how much money to pay for buying it
                            # or None if not for sell
 
+
 def init_db(db_connection_string='sqlite:///:memory:', echo=False):
     """
     Initializes database model and ORM.
@@ -166,4 +172,3 @@ def init_db(db_connection_string='sqlite:///:memory:', echo=False):
 if __name__ == '__main__':
     # Test database schema setup (with echo on)
     init_db(echo=True)
-

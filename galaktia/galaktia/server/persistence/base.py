@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-__docformat__='restructuredtext'
+__docformat__ = 'restructuredtext'
+
 
 class GenericDAO(object):
     """
@@ -73,4 +74,3 @@ class GenericDAO(object):
             (for retrieval on next access) """
         assert isinstance(entity, self.klass)
         self.session.expire(entity)
-
