@@ -37,6 +37,43 @@ class OutOfBounds(Exception):
 #
 
 
+class Memorized(object):
+    """ This class wraps a normal callable and returns a memorized callable
+        with a "memo" storage. End users are not intended to know what happens
+        inside this class, neither they should know about it.
+
+    """
+
+    def __init__(self, f, memo, debug=False):
+        self.__f = f
+        self.__memo = memo
+        logging.basicConfig(level=logging.WARNING)
+        self.log = logging.getLogger("Memorized Callable %s" % f.__name__)
+        if debug:
+            self.log.setLevel(logging.DEBUG)
+
+    def __create_key(self, f, *args, **kwargs):
+#       TODO: Is there another way to create a key?
+        the_hash = md5(f.__name__)
+        for arg in args:
+            the_hash.update(str(arg))
+        the_hash.update("|")
+        for key, val in kwargs.iteritems():
+            the_hash.update("%s:%s;".__mod__(key, val))
+        return the_hash.hexdigest()
+
+    def __call__(self, *args, **kwargs):
+        key = self.__create_key(self.__f, args, kwargs)
+        self.log.debug("Calling memorized value %s", key)
+        try:
+            return self.__memo[key]
+        except KeyError:
+            self.log.debug("No key %s found. Calculating value...", key)
+            val = self.__f(*args, **kwargs)
+            self.__memo[key] = val
+            return val
+
+
 class Memory(object):
     """
         Memory objects are key-value gateways to a database or any other kind
@@ -44,6 +81,12 @@ class Memory(object):
        makes it easier to mock them.
 
         Required methods are __getitem__, __setitem__ and __delitem__.
+
+        A convenience method __call__ is defined to use objects of this class
+        as decorators. Doing so will apply the memorize pattern to the
+        function. You can find more information in the corresponding docstring
+        in __call__.
+
     """
 
     def __getitem__(self, key):
@@ -54,6 +97,19 @@ class Memory(object):
 
     def __delitem__(self, key):
         raise NotImplementedError
+
+    def __call__(self, f):
+        """
+            This is a convenience function that provides the Memory Pattern as
+            a decorator and wraps it in a way transparent to the end user
+            (i.e.: they will not know whether the function has been decorated
+            or not). This is acomplished by using the "wrap" decorator in
+            functools.
+
+        """
+        memo = Memorized(f, self)
+        wraps(f)(memo)
+        return memo
 
 
 class MemoryPool(Memory):
@@ -82,45 +138,14 @@ class MemoryPool(Memory):
 #
 
 
-class Memorized(object):
-
-    def __init__(self, f, memo, debug=False):
-        self.__f = f
-        self.__memo = memo
-        logging.basicConfig(level=logging.WARNING)
-        self.log = logging.getLogger("Memorized Callable %s" % f.__name__)
-        if debug:
-            self.log.setLevel(logging.debug)
-
-    def __create_key(self, f, *args, **kwargs):
-#       TODO: Is there another way to create a key?
-        the_hash = md5(f.__name__)
-        for arg in args:
-            the_hash.update(str(arg))
-        the_hash.update("|")
-        for key, val in kwargs.iteritems():
-            the_hash.update("%s:%s;".__mod__(key, val))
-        return the_hash.hexdigest()
-
-    def __call__(self, *args, **kwargs):
-        key = self.__create_key(self.__f, args, kwargs)
-        self.log.debug("Calling memorized value %s", key)
-        try:
-            return self.__memo[key]
-        except KeyError:
-            self.log.debug("No key %s found. Calculating value...", key)
-            val = self.__f(*args, **kwargs)
-            self.__memo[key] = val
-            return val
-
-
 class memorize(object):
 
-    def __init__(self, memory):
+    def __init__(self, memory, debug=False):
         self._memory = memory
+        self.debug = debug
 
     def __call__(self, f):
-        memo = Memorized(f, self._memory, debug=True)
+        memo = Memorized(f, self._memory, self.debug)
         wraps(f)(memo)
         return memo
 
@@ -141,12 +166,13 @@ class MemcacheMemory(Memory):
             memcache.Client help.
 
         """
+#        super(MemcacheMemory, self).__init__()
         self._client = MemcacheClient(servers)
         self._expire = expire
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Memcache-Gateway")
         if debug:
-            self.log.setLevel(logging.debug)
+            self.log.setLevel(logging.DEBUG)
 
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
@@ -174,6 +200,7 @@ class MemcacheMemoryPool(MemoryPool):
 
     def __init__(self, servers=["127.0.0.1:11211"], expire=0, upper_limit=100,
             lower_limit=1, debug=False):
+#        super(MemcacheMemoryPool, self).__init__()
         self._clients = [MemcacheMemory(servers=servers, expire=expire) for o
                 in xrange(0, upper_limit / 2)]
         self.__expire = expire
@@ -185,19 +212,19 @@ class MemcacheMemoryPool(MemoryPool):
         self.__debug = debug
         self.__clients_lock = Lock()
         if debug:
-            self.log.setLevel(logging.debug)
+            self.log.setLevel(logging.DEBUG)
 
-    @property
-    def _expire(self):
+    def __expire_get(self):
+        return self.__expire
 
-        def fget(self):
-            return self.__expire
+    def __expire_set(self, value):
+        if self.__expire != value:
+            self.__expire = value
+            for i in self._clients:
+                i._expire = value
 
-        def fset(self, value):
-            if self.__expire != value:
-                self.__expire = value
-                for i in self._clients:
-                    i._expire = self.value
+    _expire = property(__expire_get, __expire_set)
+
 
     def count(self):
         try:
@@ -278,7 +305,7 @@ class RedisMemory(Memory):
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Redis-Gateway")
         if debug:
-            self.log.setLevel(logging.debug)
+            self.log.setLevel(logging.DEBUG)
 
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
@@ -316,7 +343,7 @@ class RedisMemory(Memory):
 
 
 if __name__ == "__main__":
-    memory = MemcacheMemoryPool(debug=True)
+    memory = MemcacheMemoryPool(debug=True, expire=2)
 
     @memorize(memory)
     def test(a):
@@ -344,3 +371,17 @@ if __name__ == "__main__":
     print test(-1)
     for i in range(0, 40, 5):
         print fib(i)
+
+    @memory
+    def test(i):
+        return i
+
+    from time import sleep
+    print test("a")
+    sleep(1)
+    print test("a")
+    memory._expire = 3
+    sleep(3)
+    print test("a")
+    sleep(4)
+    print test("a")
