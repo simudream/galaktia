@@ -147,6 +147,15 @@ class PositionalEngine(BaseEngine):
              ___/_\___               ___/_\___
             5    4    3        (-1,-1) (0,-1) (1,-1)           (-1,-1)
 
+
+
+            DEPRECATED: This should be in client-side!
+            ==========================================
+
+            This adds up to the complexity of the function, which is called
+            quite often by the server. Even the slightest change here can cause
+            a relatively high performance impact.
+
             If the user wants to go to (1, -1) and finds a wall, then the
             character will be moved to (0,-1), and if it cannot move there,
             then it will try (1,0). In a more general way: if
@@ -156,6 +165,8 @@ class PositionalEngine(BaseEngine):
             This function has been designed to emulate the legacy movement
             system.
         """
+        # XXX: LEGACY movement system is DEPRECATED and will not be available
+        # XXX: in the next release.
         if dx == 0 and dy == 0:
             return (0, 0)
         # Check speed:

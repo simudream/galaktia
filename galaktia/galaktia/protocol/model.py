@@ -61,9 +61,12 @@ class Message(dict):
     #  - ack: list of timestamps that identify acknowledged messages
     #  ...
 
+
 class Session(object):
     """ Represents a client-server session """
 
+
+    # XXX: Implement in Redis.
     def __init__(self, id=0, host=None, port=None, character_id=None, \
             secret_key=None):
         """

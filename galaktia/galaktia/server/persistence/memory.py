@@ -202,7 +202,7 @@ class MemcacheMemoryPool(MemoryPool):
             lower_limit=1, debug=False):
 #        super(MemcacheMemoryPool, self).__init__()
         self._clients = [MemcacheMemory(servers=servers, expire=expire) for o
-                in xrange(0, upper_limit / 2)]
+                in xrange(0, abs(upper_limit + lower_limit) / 2)]
         self.__expire = expire
         self._servers = servers
         self.upper_limit = upper_limit
@@ -225,7 +225,6 @@ class MemcacheMemoryPool(MemoryPool):
 
     _expire = property(__expire_get, __expire_set)
 
-
     def count(self):
         try:
             self.__clients_lock.acquire()
@@ -235,9 +234,11 @@ class MemcacheMemoryPool(MemoryPool):
 
     def grow(self, number=1):
         self.log.debug("Adding %s new servers to the pool", number)
+        self.__clients_lock.acquire()
         for i in range(number):
-            self._clients.append[MemcacheMemory(self._servers, self._expire,
-                    self.__debug)]
+            self._clients.append(MemcacheMemory(self._servers, self._expire,
+                    self.__debug))
+        self.__clients_lock.release()
 
     def shrink(self, number=1):
         self.log.debug("Deleting %s servers from the pool", number)
