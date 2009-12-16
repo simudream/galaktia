@@ -11,24 +11,23 @@ import curses
 import sys
 import os
 
+
 class LangParser(object):
 
-    def __init__(self, Session,repres=None, verbosity=0):
+    def __init__(self, Session, repres=None, verbosity=0):
         self.session = Session()
         self.repres = repres
         self.verbosity = verbosity
         if repres is None:
-            self.repres = {
-                "0" : Wall
-            }
-        self.repres[" "]=None
-        self.repres["+"]=1
-        self.repres["-"]=-1
+            self.repres = {"0": Wall}
+        self.repres[" "] = None
+        self.repres["+"] = 1
+        self.repres["-"] = -1
         # Inverse representation: useful for dumping the map in a text file.
         # The encoder may be somewhat complex, and it's not so useful by now.
         self._inverse_repres = {}
         for key in self.repres:
-            self._inverse_repres[self.repres[key]]=key
+            self._inverse_repres[self.repres[key]] = key
 
     def add_character(self, character, klass):
         pass
@@ -81,10 +80,13 @@ class LangParser(object):
         self.session.flush()
         self.session.commit()
 
+
 class MapEditor(object):
     pass
 
+
 class CursesMapEditor(MapEditor):
+
     def __init__(self):
         """
             Start the wrapper and the screen. Cast as singleton inside this
@@ -101,11 +103,12 @@ class CursesMapEditor(MapEditor):
         self.stdscr = stdscr
         stdscr.addstr(0, 0, "TEST", curses.A_BOLD)
         stdscr.refresh()
-        a=stdscr.getch()
-        stdscr.addch(1,1,a)
+        a = stdscr.getch()
+        stdscr.addch(1, 1, a)
+
 
 def _init(connection_string, clear=False):
-    eng, mdata, S = init_db(db_connection_string = connection_string)
+    eng, mdata, S = init_db(db_connection_string=connection_string)
     if clear:
         session = S()
         for i in session.query(Wall).all():
@@ -114,12 +117,13 @@ def _init(connection_string, clear=False):
         session.commit()
     return S
 
+
 def auto(options):
     load = options.load
     if options.load is None:
         load = sys.stdin
     Session = _init(options.dbase, options.clear)
-    parser = LangParser(Session,verbosity=options.verb)
+    parser = LangParser(Session, verbosity=options.verb)
     parser.decode_and_store(load)
 
 
@@ -137,7 +141,7 @@ if __name__ == "__main__":
             help="Sets the verbosity level. 0 for none (default), 1 for" \
             " one-line records and 2 for multiline.", default=0)
     parser.add_option("-n", "--no-gui", action="store_true", dest="ui",
-            help = "Force Curses (console) interface", default=False)
+            help="Force Curses (console) interface", default=False)
     dangerous = optparse.OptionGroup(parser, "Dangerous Options")
     dangerous.add_option("-c", "--clear", action="store_true", dest="clear",
             help="clear ALL map entities.", default=False)
@@ -145,7 +149,7 @@ if __name__ == "__main__":
             help="allow the map editor to run as root", default=False)
     parser.add_option_group(dangerous)
     (options, args) = parser.parse_args()
-    if os.getuid() == 0 and options.root==False:
+    if os.getuid() == 0 and options.root == False:
         print >> sys.stderr, "You must be out of your mind to run this as \
             root!"
         print >> sys.stderr, "Read the help!"

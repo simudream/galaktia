@@ -20,11 +20,10 @@ class daoTestCase(TestCase):
             Setup of the testing environment. This function gets called every
             time a test method is run
         """
-        database_uri='test_database.sqlite3'
+        database_uri = 'test_database.sqlite3'
         self.engine, self.metadata, self.Session = \
             init_db(db_connection_string="sqlite:///%s" % database_uri)
         self.session_instance = self.Session()
-
 
     def tearDown(self):
         self.session_instance.flush()
@@ -35,15 +34,15 @@ class daoTestCase(TestCase):
         """ Tests the insertion of Wall objects """
         dao = WallDAO(self.session_instance)
         # Create a simple 10x10, layer 0 map:
-        expected_result=[]
-        for i,j in ((x,y) for x in range(10) for y in [0,9]):
+        expected_result = []
+        for i, j in ((x, y) for x in range(10) for y in (0, 9)):
             wall = Wall()
             wall.z = 0
             wall.x = i
             wall.y = j
             dao.add(wall)
             expected_result.append(wall)
-        for i,j in ((x,y) for x in [0,9] for y in range(1,10)):
+        for i, j in ((x, y) for x in (0, 9) for y in range(1, 10)):
             wall.z = 0
             wall.x = i
             wall.y = j
@@ -77,5 +76,3 @@ class daoTestCase(TestCase):
             methods
         """
         pass
-
-

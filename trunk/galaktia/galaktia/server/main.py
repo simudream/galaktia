@@ -17,20 +17,22 @@ from galaktia.server.engines.engine import EngineResolver
 from galaktia.server.persistence.dao import DAOResolver
 from galaktia.server.persistence.orm import init_db
 
-from galaktia.server.controllers.join import *
-from galaktia.server.controllers.move import *
-from galaktia.server.controllers.exit import *
-from galaktia.server.controllers.talk import *
+from galaktia.server.controllers.join import RequestUserJoinController, \
+     StartConnectionController
+from galaktia.server.controllers.move import MoveDxDyController
+from galaktia.server.controllers.exit import LogoutRequestController
+from galaktia.server.controllers.talk import SayThisController
 
 logger = logging.getLogger(__name__)
 
 SERVER_VERSION = "0.2" # TODO: should be same as galaktia version, e.g.: 0.1.1
 
+
 class GalaktiaServer(BaseServer):
     """ Implementation of the game server"""
 
     def __init__(self, session):
-        self.session=session
+        self.session = session
             # Database session. Please, do not touch :P
 
         self.session_dao = SessionDAO()
@@ -38,15 +40,22 @@ class GalaktiaServer(BaseServer):
         self.engine_resolver = EngineResolver(self.dao_resolver)
 
         controllers = {
-                  'MoveDxDy': MoveDxDyController(self.session_dao, self.dao_resolver, self.engine_resolver),
-                  'SayThis': SayThisController(self.session_dao, self.dao_resolver),
-                  'RequestUserJoin': RequestUserJoinController(self.session_dao, self.dao_resolver),
-                  'StartConnection': StartConnectionController(self.session_dao, self.dao_resolver),
-                  'LogoutRequest': LogoutRequestController(self.session_dao, self.dao_resolver)
-        }
-        
-        BaseServer.__init__(self, ProtocolCodec(self.session_dao), 
+                  'MoveDxDy': MoveDxDyController(self.session_dao,
+                          self.dao_resolver, self.engine_resolver),
+                  'SayThis': SayThisController(self.session_dao,
+                          self.dao_resolver),
+                  'RequestUserJoin': \
+                      RequestUserJoinController(self.session_dao,
+                          self.dao_resolver),
+                  'StartConnection': \
+                      StartConnectionController(self.session_dao,
+                              self.dao_resolver),
+                  'LogoutRequest': LogoutRequestController(self.session_dao,
+                          self.dao_resolver)}
+
+        BaseServer.__init__(self, ProtocolCodec(self.session_dao),
                             DispatcherController(controllers))
+
 
 def get_session():
     here_dir = os.path.dirname(__file__)
@@ -55,6 +64,7 @@ def get_session():
     logger.info('Using database connection string: %s', db_conn_str)
     engine, metadata, session = init_db(db_conn_str)
     return session
+
 
 def main(program, port=6414):
     """ Main program: Starts a server on given port """
@@ -73,4 +83,3 @@ def main(program, port=6414):
 if __name__ == '__main__':
     # print 'Usage: python -m galaktia.server.main [port]'
     main(*sys.argv)
-
