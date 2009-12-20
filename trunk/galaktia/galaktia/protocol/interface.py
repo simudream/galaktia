@@ -105,7 +105,7 @@ class GalaktiaClientController(EventDispatcher, Controller):
                            GalaktiaClientController.command_handler[command]
         except KeyError:
             raise ValueError, "Invalid command @GalaktiaClientController: %s" % command
-        command_handler_function(input_message)
+        command_handler_function(self, input_message)
         return []
 
 GalaktiaClientController.register_event_type('on_greet')
