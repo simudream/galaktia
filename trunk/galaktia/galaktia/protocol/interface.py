@@ -21,16 +21,6 @@ logger = logging.getLogger(__name__)
 class GalaktiaClientController(EventDispatcher, Controller):
 
 
-    command_handler = {
-        u'PlayerEnteredLOS': self.__PlayerEnteredLOS,
-        u'PlayerMoved': self.__PlayerMoved,
-        u'SomeoneSaid': self.__SomeoneSaid,
-        u'UserAccepted': self.__UserAccepted,
-        u'CheckProtocolVersion': self.__CheckProtocolVersion,
-        u'UserJoined': self.__UserJoined,
-        u'SayThis': self.__SayThis,
-        u'LogoutResponse': self.__LogoutResponse,
-        u'UserExited': self.__UserExited}
 
     def greet(self):
         self.dispatch_event('on_greet')
@@ -91,6 +81,17 @@ class GalaktiaClientController(EventDispatcher, Controller):
         session_id = input_message['subject']
         username = input_message['object']
         self.dispatch_event('on_user_exited', session_id, username)
+
+    command_handler = {
+        u'PlayerEnteredLOS': __PlayerEnteredLOS,
+        u'PlayerMoved': __PlayerMoved,
+        u'SomeoneSaid': __SomeoneSaid,
+        u'UserAccepted': __UserAccepted,
+        u'CheckProtocolVersion': __CheckProtocolVersion,
+        u'UserJoined': __UserJoined,
+        u'SayThis': __SayThis,
+        u'LogoutResponse': __LogoutResponse,
+        u'UserExited': __UserExited}
 
     def process(self, input_message):
         """ Writes server response and prompts for a new message to send """
