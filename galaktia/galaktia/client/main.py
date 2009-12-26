@@ -30,7 +30,6 @@ class GalaktiaWindow(pyglet.window.Window, ClientProtocolInterface):
     def __init__(self, (host, port), screen_parameters):
         # Reemplazar esto por "Leer config desde un archivo"
         self.screen_parameters = screen_parameters
-        pyglet.clock.set_fps_limit(60)
         pyglet.window.Window.__init__(self, screen_parameters[0], \
                 screen_parameters[1], caption='Galaktia', vsync=0)
         ClientProtocolInterface.__init__(self, ClientSessionDAO(), (host, port))

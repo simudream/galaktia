@@ -6,6 +6,8 @@ Data models used by protocol
 """
 
 import time
+from threading import Lock
+from galaktia.server.persistence.memory import RedisMemory, Alzheimer
 
 class Datagram(object):
     """ Stores raw datagram bytes to be sent or received to a host and port """
@@ -66,7 +68,9 @@ class Session(object):
     """ Represents a client-server session """
 
 
-    # XXX: Implement in Redis.
+    # Implement in Redis.
+    # No. Containers should be decoupled from storages. DAOs, on the other
+    # hand, should know how to store objects.
     def __init__(self, id=0, host=None, port=None, character_id=None, \
             secret_key=None):
         """
@@ -84,17 +88,42 @@ class Session(object):
             secret_key : str
                 Secret key shared by the 2 connection endpoints for encryption
         """
-        self.id = id
-        self.host = host
-        self.port = port
-        self.character_id = character_id
+        # WARNING: id is a builtin function. You're masking it.
+        self.__id = id
+        self.__host = host
+        self.__port = port
+        self.__character_id = character_id
+#       self.__secret_key = secret_key
         self.secret_key = secret_key
         # NOTE: no session attribute should be altered after construction
 
+    # Using property we make read-only attributes.
+    @property
+    def id(self):
+        return self.__id
+
+    @property
+    def host(self):
+        return self.__host
+
+    @property
+    def port(self):
+        return self.__port
+
+    @property
+    def character_id(self):
+        return self.__character_id
+
+#    @property
+#    def secret_key(self):
+#        return self.__secret_key
+
     def __str__(self):
-        retstr = ' { Objeto Session: \n \t ID = '+str(id)
-        retstr += '\n\tHost, Port = '+str(host)+','+str(port)
-        retstr += '\n\tcharacter_id = '+str(character_id)+' } '
+        retstr = ' { Objeto Session: \n \t ID = '+str(self.id)
+        retstr += '\n\tHost, Port = '+str(self.host)+','+str(self.port)
+        retstr += '\n\tcharacter_id = '+str(self.character_id)+' } '
+        return retstr
+
 
 class MessageBuffer(object):
     """ Holds acknowledgement and pending messages data for the sake of
@@ -164,45 +193,60 @@ class MessageBuffer(object):
         """
         return self.received[:max_size]
 
+
 class SessionDAO(object):
     """ Data Access Object for ``Session`` objects """
-    # TODO: replace by memcached storage implementation
     # TODO: mutex locking (race condition between session DAOs in parallel)
     #       http://en.wikipedia.org/wiki/Producer-consumer_problem
-    # NOTE: sessions should not be modified after creation
+
+    INSTANCES = 0
 
     def __init__(self):
         """ ``SessionDAO`` constructor """
-        self._sessions = {} # TODO: replace storage by memcached client
+#       self._sessions = RedisMemory(db='SessionDAO')
+        self._sessions = Alzheimer(db='SessionDAO')
+        if self.__class__.INSTANCES == 0:
+            self.purge()
+        self.__class__.INSTANCES += 1
 
     def get(self, id):
         """ :return: ``Session`` object identified by `id` """
-        return self._sessions.get(id)
+        return self._sessions.get('session-%s' % id)
 
     def set(self, session):
         """ Stores `session` """
-        self._sessions[session.id] = session
+        self._sessions.set('session-%s' % session.id, session)
+        self._sessions.set('char-%s' % session.character_id, session.id)
 
+    # We should set the id when we're inserting it to the database, not
+    # *before* we do it.
     def create(self, **kwargs):
         """ :return: Newly created session (with unique id) """
-        id = max(self._sessions.keys() or [0]) + 1
+        id = len(self._sessions.keys('session-*')) + 1
         return Session(id=id, **kwargs)
 
     def get_by(self, user_id):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        for session in self._sessions.values():
-            if session.character_id == user_id:
-                return session
-        return None
+        # XXX: There's something terribly *wrong* about this:
+        return self._sessions.get('session-%s' % \
+                self._sessions.get('char-%s' % user_id))
+        # character_id == user_id ---> WTF?
 
     def get_logged(self):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        return self._sessions.values()
+        return [self._sessions.get(i) for i in \
+            self._sessions.keys('session-*')]
 
     def delete(self, session):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        self._sessions.pop(session.id, None)
+        del self._sessions['session-%s' % session.id]
 
+    def purge(self):
+        for i in self._sessions.keys('*-*'):
+            del self._sessions[i]
+
+
+    # the actual object.
 class MessageBufferDAO(object):
     """ Data Access Object for ``MessageBuffer`` objects """
     # TODO: replace by memcached storage implementation

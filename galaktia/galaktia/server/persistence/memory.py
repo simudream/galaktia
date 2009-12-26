@@ -5,16 +5,17 @@ Memory decorator and utilites to speed up access to computationally expensive
 functions.
 """
 
-from threading import Lock
+import random, time
+from threading import Lock, Thread
 from functools import wraps
 from memcache import Client as MemcacheClient
 from redis import Redis as RedisClient
 import logging
 from hashlib import md5
 try:
-    from cPickle import dumps
+    from cPickle import dumps, loads
 except ImportError:
-    from pickle import dumps
+    from pickle import dumps, loads
 
 
 #
@@ -80,7 +81,8 @@ class Memory(object):
        of memory storage. They behave the same way dictionaries do, which
        makes it easier to mock them.
 
-        Required methods are __getitem__, __setitem__ and __delitem__.
+        Required methods are __getitem__, __setitem__ and __delitem__. get(),
+        set() are mapped to __getitem__ and __setitem__.
 
         A convenience method __call__ is defined to use objects of this class
         as decorators. Doing so will apply the memorize pattern to the
@@ -110,6 +112,12 @@ class Memory(object):
         memo = Memorized(f, self)
         wraps(f)(memo)
         return memo
+
+    def get(self, key):
+        return self.__getitem__(key)
+
+    def set(self, key, value):
+        self.__setitem__(key, value)
 
 
 class MemoryPool(Memory):
@@ -292,16 +300,14 @@ class RedisMemory(Memory):
         Memory gateway to a Redis server
     """
 
-    def __init__(self, host=None, port=None, expire=None, debug=False,
+    def __init__(self, expire=None, debug=False,
                 *args, **kwargs):
         """
             :param servers: List of servers to use. Please, read
             redis.Redis help.
 
         """
-        self._client = RedisClient(host=host, port=port, *args, **kwargs)
-        self._host = host
-        self._port = port
+        self._client = RedisClient(*args, **kwargs)
         self._expire = expire
         logging.basicConfig(level=logging.WARNING)
         self.log = logging.getLogger("Redis-Gateway")
@@ -311,18 +317,21 @@ class RedisMemory(Memory):
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
         value = self._client.get(key)
+        if value:
+            value = loads(str(value))
         if isinstance(value, NotSet):
             return None
         elif value is None:
             raise KeyError
         else:
+            self.log.debug("Key %s returned %s", key, value)
             return value
 
     def __setitem__(self, key, value):
-        self.log.debug("Setting key")
+        self.log.debug("Setting key %s to %s", key, value)
         if value is None:
             value = NotSet()
-        self._client.set(key, value)
+        self._client.set(key, dumps(value))
         if self._expire:
             self._client.expire(key, self._expire)
 
@@ -336,53 +345,42 @@ class RedisMemory(Memory):
                 time, key)
         self._client.expire(key, time)
 
+    def __getattr__(self, attr):
+        redis_attr = getattr(self._client, attr)
+        return redis_attr
 
 
-#
-#   Tests?
-#
+class Alzheimer(Memory):
+    '''This is a mock class. Forget it.'''
 
+    def __init__(self, disease=False, *args, **kwargs):
+        self._client = {}
+        if disease:
+            t = Thread(target=self.__disease)
+            t.start()
 
-if __name__ == "__main__":
-    memory = MemcacheMemoryPool(debug=True, expire=2)
+    def __setitem__(self, key, value):
+        self._client.__setitem__(key, value)
 
-    @memorize(memory)
-    def test(a):
-        """test test test!!!"""
-        if a > 1:
-            return a * test(a - 1)
-        elif a == 1:
-            return 1
-        else:
-            return None
+    def __getitem__(self, key):
+        return self._client.__getitem__(key)
 
-    @memorize(memory)
-    def fib(n):
-        if n == 0 or n == 1:
-            return 1
-        elif n > 1:
-            return fib(n-1) + fib(n - 2)
+    def __delitem__(self, key):
+        self._client.__delitem__(key)
 
+    def keys(self, string):
+        a = []
+        for i in self._client.keys():
+            if i.startswith(string[:-1]):
+                a.append(i)
+        return a
 
-    print test.__name__
-    print test.__class__
-    print test.__doc__
-    print test(4)
-    print test(6)
-    print test(-1)
-    for i in range(0, 40, 5):
-        print fib(i)
-
-    @memory
-    def test(i):
-        return i
-
-    from time import sleep
-    print test("a")
-    sleep(1)
-    print test("a")
-    memory._expire = 3
-    sleep(3)
-    print test("a")
-    sleep(4)
-    print test("a")
+    def __disease(self):
+        while True:
+            rand = random.uniform(1, 3600)
+            time.sleep(rand)
+            try:
+                del self._client[self._client.keys()[int(random.uniform(0,
+                            len(self._client)))]]
+            except:
+                pass
