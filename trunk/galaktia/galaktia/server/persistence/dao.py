@@ -16,7 +16,26 @@ def mass_unpack(list):
     return result
 
 
-class DAOResolver(object):
+class Resolver(object):
+
+    def resolve(self, class_path):
+        path = class_path.split('.')
+        class_name = path[-1]
+        module_path = '.'.join(path[:-1])
+        try:
+            return globals()[class_name]
+        except KeyError:
+            try:
+                module = globals()[path[-2:-1]]
+            except:
+                module = __import__(module_path)
+            if class_name not in module.__dict__:
+                raise Exception('%s not found in %s.' %
+                        (class_name, module_path))
+            return getattr(module, class_name)
+
+
+class DAOResolver(Resolver):
     '''
     Resolves and keeps instances of DAO classes
     '''
@@ -40,15 +59,14 @@ class DAOResolver(object):
 
     def __getattr__(self, name):
         class_name = "%sDAO" % (name.title())
-        galaktia = __import__('galaktia')
-        mod = galaktia.server.persistence.dao
-        if class_name in mod.__dict__:
-            object = getattr(mod, class_name)
-            instance = object(self.db())
+        path = 'galaktia.server.persistence.dao.%s' % class_name
+        try:
+            Class = self.resolve(path)
+            instance = Class(self.db())
             setattr(self, name, instance)
             return instance
-        else:
-            raise Exception
+        except Exception as e:
+            raise AttributeError, e
 
 
 class SceneObjectDAO(GenericDAO):
@@ -66,10 +84,6 @@ class SceneObjectDAO(GenericDAO):
             raise Exception("Layer must be a non-negative integer")
         # assert layer >=0
         return self.filter(self.klass.z == layer)
-
-    # NOTE: Underscored methods and filenames are more Pythonic.
-    #       We prefer to leave CamelCase only for classnames.
-    #       See PEP 7 and PEP 8 for more on Python coding style.
 
     def get_by_coords(self, x, y, layer):
         """Returns the SceneObject in x, y, layer"""
