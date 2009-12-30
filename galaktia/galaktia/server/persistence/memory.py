@@ -255,7 +255,7 @@ class MemcacheMemoryPool(MemoryPool):
             self._clients.pop()
         self.__clients_lock.release()
 
-    def __claim_client(self):
+    def _claim_client(self):
         if self.count() < self.lower_limit:
             self.grow()
         try:
@@ -264,7 +264,7 @@ class MemcacheMemoryPool(MemoryPool):
         finally:
             self.__clients_lock.release()
 
-    def __return_client(self, client):
+    def _return_client(self, client):
         if self.count() < self.upper_limit:
             self.__clients_lock.acquire()
             self._clients.append(client)
@@ -273,7 +273,7 @@ class MemcacheMemoryPool(MemoryPool):
     def __getitem__(self, key):
         self.log.debug("Accessing key %s", key)
         try:
-            client = self.__claim_client()
+            client = self._claim_client()
             return client[key]
         finally:
             self.__return_client(client)
@@ -281,18 +281,18 @@ class MemcacheMemoryPool(MemoryPool):
     def __setitem__(self, key, value):
         self.log.debug("Setting key %s to %s", key, value)
         try:
-            client = self.__claim_client()
+            client = self._claim_client()
             client[key] = value
         finally:
-            self.__return_client(client)
+            self._return_client(client)
 
     def __delitem__(self, key):
         self.log.debug("Deleting key %s", key)
         try:
-            client = self.__claim_client()
+            client = self._claim_client()
             client.__delitem__(key)
         finally:
-            self.__return_client(client)
+            self._return_client(client)
 
 
 class RedisMemory(Memory):
