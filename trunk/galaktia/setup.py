@@ -13,12 +13,14 @@ setup(name='galaktia',
         'pycommons>=0.1',
         'PyYAML==3.08', # TODO: controlfreak dependence, deprecate
         'zope.interface==3.5.1', # TODO: controlfreak dependence, deprecate
-        'pyglet>=1.1',
+        'pyglet>=1.1.3',
         'Twisted>=8.2',
         'SQLAlchemy>=0.5',
         'simplejson>=2.0',
         'pycrypto>=2.0',
         'mock>=0.5',
+        'pymemtools>=0.1',  # TODO: Memory tools. Not used right now, but
+                            # it was part of this project once.
       ],
       entry_points={
         'console_scripts': ['galaktia = galaktia.__init__:main']
