@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<title>Web Socket Example: Echo Test</title>
+
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="echo_test.js"></script>
+
+</head>
+
+<body>
+
+<form onsubmit="return false;">
+<input id="connection" type="text" value="ws://localhost:8880/echo" style="width: 400px;" />
+<input id="connect" type="button" value="Connect" />
+<br />
+<input id="message" type="text" value="" style="width: 400px;" />
+<input id="send" type="submit" value="Send" />
+</form>
+<textarea id="log" rows="25" cols="80" />
+
+</body>
+
+</html>
