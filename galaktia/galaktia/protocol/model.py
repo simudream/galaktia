@@ -6,8 +6,6 @@ Data models used by protocol
 """
 
 import time
-from threading import Lock
-from galaktia.server.persistence.memory import RedisMemory, Alzheimer
 
 class Datagram(object):
     """ Stores raw datagram bytes to be sent or received to a host and port """
@@ -23,10 +21,6 @@ class Datagram(object):
                 Destination or source port number
         """
         self.data, self.host, self.port = data, host, port
-
-#    def __str__(self):
- #       return u'\n{Objeto Datagrama: \n \tData=%s \n \tHost=%s \n \tPort=%s}\n'%(self.data, self.host, self.port)
-        # WTF is this for?? Maybe self.__repr__...
 
     @property
     def destination(self):
@@ -55,6 +49,7 @@ class Message(dict):
         self.update(kwargs)
 
     def __hash__(self):
+        """ :return: hash code for the message (based on timestamp) """
         return hash(self['timestamp'])
 
     # Semantics of reserved fields:
@@ -63,14 +58,9 @@ class Message(dict):
     #  - ack: list of timestamps that identify acknowledged messages
     #  ...
 
-
 class Session(object):
     """ Represents a client-server session """
 
-
-    # Implement in Redis.
-    # No. Containers should be decoupled from storages. DAOs, on the other
-    # hand, should know how to store objects.
     def __init__(self, id=0, host=None, port=None, character_id=None, \
             secret_key=None):
         """
@@ -88,42 +78,18 @@ class Session(object):
             secret_key : str
                 Secret key shared by the 2 connection endpoints for encryption
         """
-        # WARNING: id is a builtin function. You're masking it.
-        self.__id = id
-        self.__host = host
-        self.__port = port
-        self.__character_id = character_id
-#       self.__secret_key = secret_key
+        self.id = id
+        self.host = host
+        self.port = port
+        self.character_id = character_id
         self.secret_key = secret_key
         # NOTE: no session attribute should be altered after construction
 
-    # Using property we make read-only attributes.
-    @property
-    def id(self):
-        return self.__id
-
-    @property
-    def host(self):
-        return self.__host
-
-    @property
-    def port(self):
-        return self.__port
-
-    @property
-    def character_id(self):
-        return self.__character_id
-
-#    @property
-#    def secret_key(self):
-#        return self.__secret_key
-
-    def __str__(self):
-        retstr = ' { Objeto Session: \n \t ID = '+str(self.id)
-        retstr += '\n\tHost, Port = '+str(self.host)+','+str(self.port)
-        retstr += '\n\tcharacter_id = '+str(self.character_id)+' } '
-        return retstr
-
+    def __repr__(self):
+        """ :return: str representing the session """
+        return 'Session(id=%r, host=%r, port=%r, character_id=%r,' \
+                'secret_key=%r)' % (self.id, self.host, self.port, \
+                self.character_id, self.secret_key)
 
 class MessageBuffer(object):
     """ Holds acknowledgement and pending messages data for the sake of
@@ -193,60 +159,45 @@ class MessageBuffer(object):
         """
         return self.received[:max_size]
 
-
 class SessionDAO(object):
     """ Data Access Object for ``Session`` objects """
+    # TODO: replace by memcached storage implementation
     # TODO: mutex locking (race condition between session DAOs in parallel)
     #       http://en.wikipedia.org/wiki/Producer-consumer_problem
-
-    INSTANCES = 0
+    # NOTE: sessions should not be modified after creation
 
     def __init__(self):
         """ ``SessionDAO`` constructor """
-#       self._sessions = RedisMemory(db='SessionDAO')
-        self._sessions = Alzheimer(db='SessionDAO')
-        if self.__class__.INSTANCES == 0:
-            self.purge()
-        self.__class__.INSTANCES += 1
+        self._sessions = {} # TODO: replace storage by memcached client
 
     def get(self, id):
         """ :return: ``Session`` object identified by `id` """
-        return self._sessions.get('session-%s' % id)
+        return self._sessions.get(id)
 
     def set(self, session):
         """ Stores `session` """
-        self._sessions.set('session-%s' % session.id, session)
-        self._sessions.set('char-%s' % session.character_id, session.id)
+        self._sessions[session.id] = session
 
-    # We should set the id when we're inserting it to the database, not
-    # *before* we do it.
     def create(self, **kwargs):
         """ :return: Newly created session (with unique id) """
-        id = len(self._sessions.keys('session-*')) + 1
+        id = max(self._sessions.keys() or [0]) + 1
         return Session(id=id, **kwargs)
 
     def get_by(self, user_id):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        # XXX: There's something terribly *wrong* about this:
-        return self._sessions.get('session-%s' % \
-                self._sessions.get('char-%s' % user_id))
-        # character_id == user_id ---> WTF?
+        for session in self._sessions.values():
+            if session.character_id == user_id:
+                return session
+        return None
 
     def get_logged(self):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        return [self._sessions.get(i) for i in \
-            self._sessions.keys('session-*')]
+        return self._sessions.values()
 
     def delete(self, session):
         # TODO: this is a hack for compatibility with old SessionDAO API
-        del self._sessions['session-%s' % session.id]
+        self._sessions.pop(session.id, None)
 
-    def purge(self):
-        for i in self._sessions.keys('*-*'):
-            del self._sessions[i]
-
-
-    # the actual object.
 class MessageBufferDAO(object):
     """ Data Access Object for ``MessageBuffer`` objects """
     # TODO: replace by memcached storage implementation
