@@ -38,6 +38,9 @@ class BaseServer(DatagramProtocol):
             return
         #self.dispatch_events('on_receive', input_message)
         self.on_receive(input_message)
+        self.receive(input_message)
+
+    def receive(self, input_message):
         for output_message in self.controller.process(input_message):
             self.send(output_message)
 
@@ -90,21 +93,25 @@ class BaseClient(BaseServer):
 class ReliableServer(BaseServer):
     """ Implements a reliability layer on BaseServer """
 
-    TIMEOUT = 7 # seconds before attempting to resend pending messages
+    TIMEOUT = 2
+    """ :ivar: time in seconds before attempting to resend pending messages """
 
     def __init__(self, codec, controller, msg_buffer_dao, scheduler):
+        """ `ReliableServer` constructor """
         BaseServer.__init__(self, codec, controller)
         self.msg_buffer_dao = msg_buffer_dao
         self.scheduler = scheduler
         # scheduler = lambda t, f, *args: task.deferLater(reactor, t, f, *args)
 
     def on_receive(self, input_message):
+        """ Removes acknowledged messages from pending queue """
         session_id = self.input_message.session.id
         msg_buffer = self.msg_buffer_dao.get(session_id)
         msg_buffer = input_message.session.msg_buffer
         msg_buffer.update_received(input_message)
 
     def on_send(self, output_message):
+        """ Sets acknowledgement IDs and saves messages to be resent """
         session_id = self.input_message.session.id
         msg_buffer = self.msg_buffer_dao.get(session_id)
         msg_buffer = output_message.session.msg_buffer
@@ -115,6 +122,7 @@ class ReliableServer(BaseServer):
         # for reliability stuff is too inefficient :(
 
     def resend(self, session_id):
+        """ Sends pending messages again for the given session ID """
         msg_buffer = self.msg_buffer_dao.get(session_id)
         t = time.time()
         for message in msg_buffer.get_pending():
