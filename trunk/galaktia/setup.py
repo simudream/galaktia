@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='galaktia',
-      version='0.1',
+      version='0.2',
       description='A MMORPG game',
       author='Galaktia Team',
       author_email='contact@galaktia.com.ar',
@@ -13,10 +13,8 @@ setup(name='galaktia',
         'pycommons>=0.1',
         'PyYAML==3.08', # TODO: controlfreak dependence, deprecate
         'zope.interface==3.5.1', # TODO: controlfreak dependence, deprecate
-        'pyglet>=1.1.3',
-        'Twisted>=8.2',
+        'mod_pywebsockets',
         'SQLAlchemy>=0.5',
-        'simplejson>=2.0',
         'pycrypto>=2.0',
         'mock>=0.5',
         'pymemtools>=0.1',  # TODO: Memory tools. Not used right now, but
