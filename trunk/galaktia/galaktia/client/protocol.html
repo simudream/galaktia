@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Protocol Test</title>
+
+<script type="text/javascript" src="libs/mootools-1.2.4-core.js"></script>
+<script type="text/javascript" src="protocol/socket.js"></script>
+<script type="text/javascript" src="protocol/message.js"></script>
+<script type="text/javascript" src="protocol/dispatcher.js"></script>
+<script type="text/javascript">
+
+	var socket = new Galaktia.JSONSocket('ws://localhost:8880/echo');
+	var dispatcher = new Galaktia.Dispatcher(socket);
+
+	dispatcher.addDefaultHandler(function(message) { 
+		console.debug(message); 
+	});
+</script>
+</head>
+<body>
+</body>
+</html>
