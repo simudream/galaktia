@@ -8,14 +8,32 @@
 <script type="text/javascript" src="protocol/socket.js"></script>
 <script type="text/javascript" src="protocol/message.js"></script>
 <script type="text/javascript" src="protocol/dispatcher.js"></script>
+<script type="text/javascript" src="protocol/controller.js"></script>
 <script type="text/javascript">
 
 	var socket = new Galaktia.JSONSocket('ws://localhost:8880/echo');
-	var dispatcher = new Galaktia.Dispatcher(socket);
+	var dispatcher = new Galaktia.Dispatcher();
 
-	dispatcher.addDefaultHandler(function(message) { 
+	dispatcher.addDefaultHandler(function(message) {
+
+		//This should show a #faliur message 
 		console.debug(message); 
 	});
+
+	var ExampleController = new Class({
+		Extends: Galaktia.Controller,
+		onSomething: function(message) {
+
+			//Handler for SomethingMessage
+		}
+	});
+
+	//The controller registers itself with the dispatcher
+	var controller = new ExampleController(dispatcher);
+
+	//The dispatcher tells the socket to forward messages it's way
+	dispatcher.registerSocket(socket);
+	
 </script>
 </head>
 <body>

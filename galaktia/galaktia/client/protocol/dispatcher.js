@@ -5,7 +5,7 @@ Galaktia.Dispatcher = new Class({
 	defaultHandler: function() {},
 	initialize: function(socket) {
 	
-		socket.registerListenHandler(this.handler.bind(this));
+		socket || this.registerSocket(socket);
 	},
 	handler: function(message) {
 		
@@ -14,7 +14,7 @@ Galaktia.Dispatcher = new Class({
 		var handler = this.getTypeHandler(message.type);
 		delete message.type;
 		
-		handler(message);
+		handler(new Galaktia.Messages[message.type](message));
 		
 	},
 	getTypeHandler: function(type) {
@@ -45,5 +45,9 @@ Galaktia.Dispatcher = new Class({
 			
 			this.defaultHandler = handler;
 		}
+	},
+	registerSocket: function(socket) {
+		
+		socket.registerListenHandler(this.handler.bind(this));
 	}
 });
