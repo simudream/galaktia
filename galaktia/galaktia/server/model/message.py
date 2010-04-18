@@ -29,3 +29,7 @@ class NotificationMessage(Message):
 # Q: Why this useless class hierarchy?
 # A: I don't know
 
+class SayRequestMessage(RequestMessage):
+    text = ''
+    timestamp = None
+
