@@ -1,0 +1,5 @@
+persistence:
+  database-url: "sqlite:///:memory:"
+  autocommit: True
+  autoflush: False
+
