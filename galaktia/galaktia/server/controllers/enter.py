@@ -9,25 +9,28 @@ from galaktia.server.model.message import RequestMessage, ResponseMessage, \
 
 logger = logging.getLogger(__name__)
 
-class MoveRequestMessage(RequestMessage):
-    x = None
-    y = None
+class EnterRequestMessage(RequestMessage):
+    username = None
+    password = None
 
-class MoveResponseMessage(ResponseMessage):
+class EnterResponseMessage(ResponseMessage):
     x = None
     y = None
+    character = None
     map_data = [] # iterable with newly seen objects (dynamic and static)
 
-class MoveNotificationMessage(NotificationMessage):
-    map_data = [] # iterable with moved object
+class EnterNotificationMessage(NotificationMessage):
+    x = None
+    y = None
+    character = None
 
-class MoveController(Controller):
-    """ Handles "move" events """
+class EnterController(Controller):
+    """ Handles "enter" events """
 
     dao = None # galaktia.server.persistence.dao.DAOLocator
 
     def handle(self, message):
-        # yield MoveResponseMessage(...)
-        # yield MoveNotificationMessage(...)
+        # yield EnterResponseMessage(...)
+        # yield EnterNotificationMessage(...)
         raise NotImplementedError('Not yet implemented')
 

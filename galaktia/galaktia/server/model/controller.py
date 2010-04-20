@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-ABC for controllers and base controller dispatcher model.
+Controllers Abstract Base Classes
 """
 
+import logging
+
 from abc import ABCMeta, abstractmethod
+
+logger = logging.getLogger(__name__)
 
 class Controller(object):
     """ Abstract Base Class for controllers """
@@ -20,39 +24,27 @@ class Controller(object):
         :return: iterable of ``Message`` instances
         """
 
-class DispatcherController(Controller):
-    """
-    Main controller for server-client protocol that dispatches messages
-    to controllers according to message type.
-    """
-
-    def __init__(self, routes=None):
-        """
-        ``DispatcherController`` constructor.
-
-        :parameters:
-            routes : dict
-                Maps message names to controllers that handle them.
-        """
-        self.routes = routes or {}
+class BaseDispatcherController(Controller):
+    """ Abstract Base Class for a front controller that dispatches messages
+        to particular controllers in order to handle them """
+    __metaclass__ = ABCMeta
 
     def handle(self, message):
-        """ Returns responses for given input message """
-        controller = self.get_controller_for(message)
-        if controller is not None:
-            try:
-                return controller.handle(message)
-            except Exception: # if controller fails...
-                logger.exception('Failed to handle message: %s', message)
-        return [] # TODO: send "internal server error" message
-
-    def get_controller_for(self, message):
+        """ Dispatches input message to corresponding controller
+            in order to handle it and return its output messages """
         try:
-            type = message.type
-            return self.routes[type]
-        except KeyError:
-            logger.exception('Unknown message type: %s', message)
+            controller = self.get_controller_for(message)
         except Exception:
-            logger.exception('Bad message: %s', message)
-        return None
+            logger.exception('No controller found to dispatch message: %s', \
+                    message)
+            return []
+        try:
+            return controller.handle(message)
+        except Exception:
+            logger.exception('Failed to handle message: %s', message)
+            return []
+
+    @abstractmethod
+    def get_controller_for(self, message):
+        """ :return: controller that handles given message """
 
