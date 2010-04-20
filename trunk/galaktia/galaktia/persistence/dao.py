@@ -4,8 +4,8 @@ __docformat__ = 'restructuredtext'
 
 import re
 
-from galaktia.server.persistence.base import GenericDAO
-from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
+from galaktia.persistence.base import GenericDAO
+from galaktia.persistence.orm import SceneObject, Ground, User, Item, \
      CharacterItem, Sprite, Character, Spatial, Wall
 
 class DAOLocator(object):

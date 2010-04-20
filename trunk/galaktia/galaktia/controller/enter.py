@@ -3,8 +3,8 @@
 
 import logging
 
-from galaktia.server.model.controller import Controller
-from galaktia.server.model.message import RequestMessage, ResponseMessage, \
+from galaktia.model.controller import Controller
+from galaktia.model.message import RequestMessage, ResponseMessage, \
     NotificationMessage
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class EnterNotificationMessage(NotificationMessage):
 class EnterController(Controller):
     """ Handles "enter" events """
 
-    dao = None # galaktia.server.persistence.dao.DAOLocator
+    dao = None # galaktia.persistence.dao.DAOLocator
 
     def handle(self, message):
         # yield EnterResponseMessage(...)

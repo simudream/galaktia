@@ -3,7 +3,7 @@
 
 import os
 
-from galaktia.server.model.controller import BaseDispatcherController
+from galaktia.model.controller import BaseDispatcherController
 
 class DispatcherController(BaseDispatcherController):
     """ A dispatcher controller that can handle messages whose class name
@@ -12,7 +12,7 @@ class DispatcherController(BaseDispatcherController):
 
     # Mmmmm... Not very elegant... Dispathing by class name is a bit hacky :P
 
-    BASE_MODULE = 'galaktia.server.controllers'
+    BASE_MODULE = 'galaktia.controller'
     CONTROLLER_NAME = '%sController'
     MESSAGE_NAME = '%sRequestMessage'
 

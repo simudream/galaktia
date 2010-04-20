@@ -9,7 +9,7 @@ import logging
 
 from mod_pywebsocket import msgutil
 
-from galaktia.server.model.standalone import WebSocketRequestHandler
+from galaktia.model.standalone import WebSocketRequestHandler
 
 logger = logging.getLogger(__name__)
 
