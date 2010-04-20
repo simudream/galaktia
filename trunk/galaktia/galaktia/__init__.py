@@ -2,22 +2,16 @@
 # -*- coding: utf-8 -*-
 __docformat__='restructuredtext'
 
-from controlfreak.commands import MultiActionCommand, \
-        BaseAction, BaseShellAction
+from controlfreak.commands import BaseAction, BaseShellAction
+from controlfreak.commands import MultiActionCommand
 
 class GalaktiaServerCommand(BaseAction):
     name = 'server'
     description = 'Galaktia game server'
 
     def run(self, appctx):
-        pass # TODO
-
-class GalaktiaClientCommand(BaseAction):
-    name = 'client'
-    description = 'Galaktia game client'
-
-    def run(self, appctx):
-        pass # TODO
+        server = appctx.get('server::server')
+        raise NotImplementedError('Not yet implemented')
 
 class GalaktiaShellCommand(BaseShellAction):
     name = 'shell'
@@ -30,4 +24,4 @@ Available variables:
   - appctx : Application context
 """
 
-main = MultiActionCommand(GalaktiaShellCommand())
+main = MultiActionCommand(GalaktiaShellCommand(), GalaktiaServerCommand())
