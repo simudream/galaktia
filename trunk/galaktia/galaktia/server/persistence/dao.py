@@ -2,72 +2,45 @@
 # -*- coding: utf-8 -*-
 __docformat__ = 'restructuredtext'
 
-from time import time
+import re
+
 from galaktia.server.persistence.base import GenericDAO
 from galaktia.server.persistence.orm import SceneObject, Ground, User, Item, \
      CharacterItem, Sprite, Character, Spatial, Wall
-from galaktia.protocol.codec import SerializationCodec
 
+class DAOLocator(object):
+    """ DAO Service Locator. Has all available DAOs that extend GenericDAO """
 
-def mass_unpack(list):
-    result = []
-    for i in list:
-        result.append(i.unpack())
-    return result
+    # Example:
+    # dao = DAOLocator(session)
+    # lennon = dao.character.get('John')
+    # bird = dao.character_item.get_by(owner='Paul', ability='sing')
+    # stairway = dao.spatial.get_by(z=HEAVEN_ALTITUDE, led='Zeppelin')
+    # pink_floyd = dao.wall.filter(we.need != 'education', \
+    #       we.need != 'thoughts control')
 
+    _UPPERCASE_PATTERN = re.compile('[A-Z]+')
 
-class Resolver(object):
+    def __init__(self, session, **extra_daos):
+        """ Sets own members with available DAOs that extend GenericDAO """
+        for dao_class in self._locate_subclasses(GenericDAO):
+            dao = dao_class(session) # constructor must accept session arg
+            setattr(self, self._get_dao_name(dao), dao)
+        for name, dao in extra_daos.iteritems():
+            setattr(self, name, dao)
 
-    def resolve(self, class_path):
-        path = class_path.split('.')
-        class_name = path[-1]
-        module_path = '.'.join(path[:-1])
-        try:
-            return globals()[class_name]
-        except KeyError:
-            try:
-                module = globals()[path[-2:-1]]
-            except:
-                module = __import__(module_path)
-            if class_name not in module.__dict__:
-                raise Exception('%s not found in %s.' %
-                        (class_name, module_path))
-            return getattr(module, class_name)
+    def _locate_subclasses(self, klass):
+        """ Recursively locates subclasses for given class """
+        for cls in klass.__subclasses__():
+            yield cls
+            for subcls in self._locate_subclasses(cls):
+                yield subcls
 
-
-class DAOResolver(Resolver):
-    '''
-    Resolves and keeps instances of DAO classes
-    '''
-
-    def __init__(self, db_session):
-        '''
-        Instance DAOResolver
-
-        : parameters :
-            db_session : object
-                The database session
-        '''
-        self.db = db_session
-        self.user = UserDAO(self.db())
-        self.char = CharacterDAO(self.db())
-        self.wall = WallDAO(self.db())
-        self.spatial = SpatialDAO(self.db())
-
-    # I'm not lazy, but writing all these attributes is nonsense.
-    # This is the most reasonable solution.
-
-    def __getattr__(self, name):
-        class_name = "%sDAO" % (name.title())
-        path = 'galaktia.server.persistence.dao.%s' % class_name
-        try:
-            Class = self.resolve(path)
-            instance = Class(self.db())
-            setattr(self, name, instance)
-            return instance
-        except Exception as e:
-            raise AttributeError, e
-
+    def _get_dao_name(self, dao):
+        """ Names DAOs with their entity names in underscore notation """
+        name = dao.klass.__name__
+        to_underscore = lambda m: '_' + m.group(0).lower()
+        return self._UPPERCASE_PATTERN.sub(to_underscore, name).strip('_')
 
 class SceneObjectDAO(GenericDAO):
     """

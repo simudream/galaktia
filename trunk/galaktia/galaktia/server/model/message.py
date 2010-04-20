@@ -26,10 +26,6 @@ class ResponseMessage(Message):
 class NotificationMessage(Message):
     """ Base notification message class (from server to another client) """
 
-# Q: Why this useless class hierarchy?
+# Q: Why this silly class hierarchy?
 # A: I don't know
-
-class SayRequestMessage(RequestMessage):
-    text = ''
-    timestamp = None
 

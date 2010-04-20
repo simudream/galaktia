@@ -9,22 +9,22 @@ from galaktia.server.model.message import RequestMessage, ResponseMessage, \
 
 logger = logging.getLogger(__name__)
 
-class ExitRequestMessage(RequestMessage):
+class SayRequestMessage(RequestMessage):
+    text = ''
+
+class SayResponseMessage(ResponseMessage):
     pass
 
-class ExitResponseMessage(ResponseMessage):
-    pass
-
-class ExitNotificationMessage(NotificationMessage):
+class SayNotificationMessage(NotificationMessage):
     character_id = None
 
-class ExitController(Controller):
-    """ Handles "exit" events """
+class SayController(Controller):
+    """ Handles "say" events """
 
     dao = None # galaktia.server.persistence.dao.DAOLocator
 
     def handle(self, message):
-        # yield ExitResponseMessage(...)
-        # yield ExitNotificationMessage(...)
+        # yield SayResponseMessage(...)
+        # yield SayNotificationMessage(...)
         raise NotImplementedError('Not yet implemented')
 
