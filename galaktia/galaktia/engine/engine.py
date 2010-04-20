@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 from time import time
-from galaktia.server.persistence.dao import DAOResolver
-from galaktia.server.engines.base import BaseEngine
+from galaktia.persistence.dao import DAOResolver
+from galaktia.engine.base import BaseEngine
 
 
 class EngineResolver(object):
@@ -16,7 +16,7 @@ class EngineResolver(object):
     def __getattr__(self, name):
         class_name = "%sEngine" % (name.title())
         galaktia = __import__('galaktia')
-        engine = galaktia.server.engines.engine
+        engine = galaktia.engine.engine
         if class_name in engine.__dict__:
             object = getattr(engine, class_name)
             instance = object(self.dao_resolver)

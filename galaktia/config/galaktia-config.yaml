@@ -1,5 +1,5 @@
 persistence:
-  database-url: "sqlite:///:memory:"
+  database-url: "sqlite:///%(here)s/../data/map.sqlite3"
   autocommit: True
   autoflush: False
 

@@ -5,12 +5,13 @@ import logging
 import sys
 import os.path
 
-import galaktia.server
-from galaktia.server.persistence.orm import init_db
-from galaktia.server.model.base import BaseServer
-from galaktia.server.model.controller import DispatcherController
-from galaktia.server.model.codec import JsonCodec
-from galaktia.server.model.standalone import run_web_socket_server
+import galaktia
+from galaktia.model.base import BaseServer
+from galaktia.model.codec import JsonCodec
+from galaktia.model.dispatcher import DispatcherController
+from galaktia.model.standalone import run_web_socket_server
+from galaktia.persistence.orm import init_db
+from galaktia.persistence.dao import DAOLocator
 
 logger = logging.getLogger(__name__)
 
@@ -26,13 +27,14 @@ logger = logging.getLogger(__name__)
 class GalaktiaServer(BaseServer):
     """ Galaktia web socket server implementation """
 
-    DEFAULT_DB_PATH = os.path.join(galaktia.server.__path__[0], \
+    DEFAULT_DB_PATH = os.path.join(os.path.dirname(galaktia.__path__[0]), \
             'data', 'map.sqlite3')
 
     def __init__(self, db_conn_str=None):
-        # TODO XXX session = self._make_session(db_conn_str)
+        session = self._make_session(db_conn_str)
+        dao = DAOLocator(session)
         codec = JsonCodec()
-        controller = DispatcherController()
+        controller = DispatcherController(dao)
         super(GalaktiaServer, self).__init__(codec, controller)
 
     def _make_session(self, db_conn_str):
@@ -52,7 +54,7 @@ def main(program, host='', port=8880):
         logger.info('Stopped server')
 
 if __name__ == '__main__':
-    # print 'Usage: python -m galaktia.server.main [port]'
+    # print 'Usage: python -m galaktia.main [port]'
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
     main(*sys.argv)
 

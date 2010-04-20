@@ -1,19 +1,19 @@
 server:
   server:
-    path: galaktia.server.model.base:BaseServer
+    path: galaktia.model.base:BaseServer
     constructor-args:
       codec: object:codec
       controller: object:controller
   codec:
-    path: galaktia.server.model.codec:JsonCodec
+    path: galaktia.model.codec:JsonCodec
   controller:
-    path: galaktia.server.model.dispatcher:DispatcherController
+    path: galaktia.model.dispatcher:DispatcherController
     constructor-args:
       dao: object:persistence::dao
 
 persistence:
   dao:
-    path: galaktia.server.persistence.dao:DAOLocator
+    path: galaktia.persistence.dao:DAOLocator
     constructor-args:
       session: object:persistence::session
   engine:
@@ -33,9 +33,4 @@ persistence:
     path: sqlalchemy.orm:scoped_session
     constructor-args:
       0: object:sessionmaker
-  metadata:
-    type: factory
-    path: galaktia.server.persistence.orm:bind_metadata
-    constructor-args:
-      0: object:engine
 
