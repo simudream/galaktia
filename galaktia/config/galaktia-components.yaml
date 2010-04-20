@@ -1,10 +1,41 @@
 server:
   server:
-    path: galaktia.server.main:GalaktiaServer
+    path: galaktia.server.model.base:BaseServer
     constructor-args:
-      session: object:server::session
+      codec: object:codec
+      controller: object:controller
+  codec:
+    path: galaktia.server.model.codec:JsonCodec
+  controller:
+    path: galaktia.server.model.dispatcher:DispatcherController
+    constructor-args:
+      dao: object:persistence::dao
+
+persistence:
+  dao:
+    path: galaktia.server.persistence.dao:DAOLocator
+    constructor-args:
+      session: object:persistence::session
+  engine:
+    type: factory
+    path: sqlalchemy:create_engine
+    constructor-args:
+      0: config:persistence::database-url
+  sessionmaker:
+    type: factory
+    path: sqlalchemy.orm:sessionmaker
+    constructor-args:
+      bind: object:engine
+      autocommit: config:persistence::autocommit
+      autoflush: config:persistence::autoflush
   session:
-    path: galaktia.server.main:get_session
-    #constructor-args:
-      #db_conn_string: sqlite:////tmp/galaktia.sqlite
-      #db_conn_string: config:server::db-conn-string
+    type: factory
+    path: sqlalchemy.orm:scoped_session
+    constructor-args:
+      0: object:sessionmaker
+  metadata:
+    type: factory
+    path: galaktia.server.persistence.orm:bind_metadata
+    constructor-args:
+      0: object:engine
+
