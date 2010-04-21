@@ -96,12 +96,13 @@ class ExtendableDispatcherController(BaseDispatcherController):
         # Now, the imported module can either be a proper .py, or a directory
         # package. Let's find out and get those controllers:
         
-        if os.path.basename(to_import.__file__).startswith("__init__.py"): # can also be .pyc
+        if os.path.basename(to_import.__file__).startswith("__init__.py"):
         
             # We were given a package. We need to scan every file in it.
-            scanlist = map(lambda f: f.split(".")[0], 
-                           filter(lambda f: f.endswith(".py") and not f.startswith("_"),
-                                  os.listdir(to_import.__path__[0])))
+            scanlist = \
+            map(lambda f: f.split(".")[0], 
+                filter(lambda f: f.endswith(".py") and not f.startswith("_"),
+                       os.listdir(to_import.__path__[0])))
 
             # Now scanlist holds a list of .py modules in the package. Let's
             # import the package requesting all of those module as fromlist:
@@ -110,7 +111,8 @@ class ExtendableDispatcherController(BaseDispatcherController):
             # Now, imported holds a lot of extra variables, we want to get the
             # actual modules found in the package from among those:
             submodules = [getattr(imported, attr) for attr in 
-                          filter(lambda attr: not attr.startswith("_"), dir(imported))]
+                          filter(lambda attr: not attr.startswith("_"),
+                                 dir(imported))]
 
         else:
 
