@@ -1,3 +1,8 @@
+# Galaktia Configuration
+
+server:
+  bind-address: ":8880"
+
 persistence:
   database-url: "sqlite:///%(here)s/../data/map.sqlite3"
   autocommit: True

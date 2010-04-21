@@ -1,16 +1,28 @@
+# Galaktia Application Context
+
+# Server components
 server:
   server:
-    path: galaktia.model.base:BaseServer
+    path: galaktia.model.standalone:WebSocketServer
+    constructor-args:
+      0: config:server::bind-address
+      1: object:request-handler-factory
+  request-handler-factory:
+    path: galaktia.model.base:make_request_handler_factory
     constructor-args:
       codec: object:codec
       controller: object:controller
+      session_dao: object:session-dao
   codec:
     path: galaktia.model.codec:JsonCodec
   controller:
     path: galaktia.model.dispatcher:DispatcherController
     constructor-args:
       dao: object:persistence::dao
+  session-dao:
+    path: galaktia.model.base:SessionDAO
 
+# Persistence (data access layer) components
 persistence:
   dao:
     path: galaktia.persistence.dao:DAOLocator
