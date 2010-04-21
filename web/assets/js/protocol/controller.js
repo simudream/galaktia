@@ -1,21 +1,18 @@
 var Galaktia = Galaktia || {};
 
 Galaktia.Controller = new Class({
+	messages: [],
 	initialize: function(dispatcher) {
 	
-		var messages = [];
 		for ( prop in this ) {
 			
 			if ( $type(this[prop]) == 'function' && prop.substr(0, 2) == 'on' ) {
 				
-				messages.push(prop.toString());
+				var messageName = prop.toString();
+				dispatcher.addTypeHandler(messageName.substr(2), this[messageName].bind(this));
+				
+				messages.push(messageName);
 			}
-		}
-		
-		for( var i = 0; i < messages.length; i++ ) {
-			
-			var messageName = messages[i];
-			dispatcher.addTypeHandler(messageName.substr(2), this[messageName].bind(this));
 		}
 	}
 });
