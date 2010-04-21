@@ -109,6 +109,7 @@ class _StandaloneRequest(object):
         self._request_handler = request_handler
         self.connection = _StandaloneConnection(request_handler)
         self._use_tls = use_tls
+        self._session = None
 
     def get_uri(self):
         """Getter to mimic request.uri."""
@@ -133,6 +134,7 @@ class _StandaloneRequest(object):
 class WebSocketServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     """HTTPServer specialized for Web Socket."""
 
+    _DEFAULT_REQUEST_QUEUE_SIZE = 128
     USE_TLS = False
     private_key = None
     certificate = None
@@ -141,12 +143,17 @@ class WebSocketServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
 
     def __init__(self, server_address, RequestHandlerClass):
         """Override SocketServer.BaseServer.__init__."""
+        if isinstance(server_address, basestring):
+            host, port = server_address.split(':', 1)
+            server_address = (host, int(port))
         SocketServer.BaseServer.__init__(
                 self, server_address, RequestHandlerClass)
+        self.request_queue_size = self._DEFAULT_REQUEST_QUEUE_SIZE
         self.socket = self._create_socket()
         self.server_bind()
         self.server_activate()
-        logger.info('Web socket server started %r', server_address)
+        logger.info('WebSocketServer.__init__(%r, %r)', \
+                server_address, RequestHandlerClass)
 
     def _create_socket(self):
         socket_ = socket.socket(self.address_family, self.socket_type)
@@ -160,7 +167,7 @@ class WebSocketServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     def handle_error(self, request, client_address):
         """Override SocketServer.handle_error."""
         logger.error('Failed to process request from: %r\n%s', \
-            client_address, util.get_stack_trace())
+                client_address, util.get_stack_trace())
 
 
 class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
@@ -183,6 +190,7 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
         self._request = _StandaloneRequest(self, self.USE_TLS)
         self._handshaker = handshake.Handshaker(self._request, self,
                 strict=self.STRICT)
+        self.cgi_directories = []
         CGIHTTPServer.CGIHTTPRequestHandler.__init__(self, *args, **keywords)
 
     def parse_request(self):
@@ -202,7 +210,7 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
                 return True
             except Exception, e:
                 logger.exception('Error in web socket main transfer loop')
-                logging.info('mod_pywebsocket: %s' % util.get_stack_trace())
+                # logging.info('mod_pywebsocket: %s' % util.get_stack_trace())
                 return False
         return result
 
@@ -247,22 +255,15 @@ class EchoWebSocketRequestHandler(WebSocketRequestHandler):
             if line == self._GOODBYE_MESSAGE:
                 return
 
-def run_web_socket_server(bind_address, request_handler, use_tls=False):
-    """ Runs a web socket server using given request handler class """
-    if use_tls:
-        raise NotImplementedError('TLS implementation pending')
-        # NOTE: To use TLS, check WebSocketServer and WebSocketRequestHandler
-        # configuration variables (use_tls, private_key, certificate) and
-        # import OpenSSL.SSL
-    _DEFAULT_REQUEST_QUEUE_SIZE = 128
-    SocketServer.TCPServer.request_queue_size = _DEFAULT_REQUEST_QUEUE_SIZE
-    CGIHTTPServer.CGIHTTPRequestHandler.cgi_directories = []
-    server = WebSocketServer(bind_address, request_handler)
-    server.serve_forever()
-
 def main(program, host='', port=8880):
+    # NOTE: To use TLS, check WebSocketServer and WebSocketRequestHandler
+    # configuration variables (use_tls, private_key, certificate) and
+    # import OpenSSL.SSL
     try:
-        run_web_socket_server((host, int(port)), EchoWebSocketRequestHandler)
+        bind_address = (host, int(port))
+        request_handler = EchoWebSocketRequestHandler
+        server = WebSocketServer(bind_address, request_handler)
+        server.serve_forever()
     except Exception:
         logger.exception('Failed to run server')
     except KeyboardInterrupt:
