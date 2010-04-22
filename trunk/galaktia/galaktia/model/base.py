@@ -16,13 +16,8 @@ logger = logging.getLogger(__name__)
 def make_request_handler_factory(codec, controller, session_dao):
     """ :return: callable that returns RequestHandlerAdapter instances
                  configured with given args """
-    def request_handler_factory(*args, **kwargs):
-        rh = RequestHandlerAdapter(*args, **kwargs)
-        rh.codec = codec
-        rh.controller = controller
-        rh.session_dao = session_dao
-        return rh
-    return request_handler_factory
+    return lambda *args, **kwargs: RequestHandlerAdapter(codec, \
+            controller, session_dao, *args, **kwargs)
 
 class RequestHandlerAdapter(WebSocketRequestHandler):
     """ Adapts WebSocketRequestHandler to galaktia.model """
@@ -33,6 +28,13 @@ class RequestHandlerAdapter(WebSocketRequestHandler):
     """ :ivar: ``Controller`` that handles ``Message`` instances """
     session_dao = None
     """ :ivar: ``SessionDAO`` that maps sessions to requests """
+
+    def __init__(self, codec, controller, session_dao, *args, **kwargs):
+        """ WebSocketRequestHandler adapter that fits galaktia.model """
+        self.codec = codec
+        self.controller = controller
+        self.session_dao = session_dao
+        WebSocketRequestHandler.__init__(self, *args, **kwargs)
 
     def do_extra_handshake(self, request):
         """ Performs extra validation on handshake """
@@ -45,7 +47,10 @@ class RequestHandlerAdapter(WebSocketRequestHandler):
             try:
                 self._transfer_data()
             except StopIteration:
-                break
+                break # close socket
+            except msgutil.MsgUtilException:
+                logger.exception('Web socket closed')
+                break # close socket
             except Exception:
                 logger.exception('Fatal error handling request: %r', request)
 
@@ -76,14 +81,14 @@ class SessionDAO(dict):
     # Not sure if all this works...
 
     def get_request(self, message, current_request):
-        if isinstance(message, ExitResponseMessage):
-            raise StopIteration('Request finished (socket to be closed)')
         if current_request not in self:
             if message._src_session != message._dst_session:
                 raise ValueError('First message of a new session must be ' \
                         'sent to the same session')
             self[message._src_session] = current_request
             current_request._session = message._src_session
+        elif message._src_session < 0: # TODO: decide how to close session
+            raise StopIteration('Session closed')
         return self[message._dst_session]
 
     def get_session(self, request):
