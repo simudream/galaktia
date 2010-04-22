@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 __docformat__='restructuredtext'
 
+import logging
+
 from controlfreak.commands import BaseAction, BaseShellAction
 from controlfreak.commands import MultiActionCommand
+
+logger = logging.getLogger(__name__)
 
 class GalaktiaServerCommand(BaseAction):
     name = 'server'
@@ -11,7 +15,12 @@ class GalaktiaServerCommand(BaseAction):
 
     def run(self, appctx):
         server = appctx.get('server::server')
-        raise NotImplementedError('Not yet implemented')
+        logger.info('Starting Galaktia server at %s:%s', \
+                *server.server_address)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            logger.info('Stopped Galaktia server')
 
 class GalaktiaShellCommand(BaseShellAction):
     name = 'shell'

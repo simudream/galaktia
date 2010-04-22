@@ -24,7 +24,15 @@ class SayController(Controller):
     dao = None # galaktia.persistence.dao.DAOLocator
 
     def handle(self, message):
+        response = SayResponseMessage()
+        response._src_session = 1
+        response._dst_session = 1
+        if message.text:
+            response.text = 'This is what you said reversed: ' + \
+                    ''.join(reversed(message.text))
+        else:
+            response.text = 'You said nothing!'
+        yield response
         # yield SayResponseMessage(...)
         # yield SayNotificationMessage(...)
-        raise NotImplementedError('Not yet implemented')
 

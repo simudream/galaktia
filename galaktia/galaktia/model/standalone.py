@@ -39,13 +39,10 @@ Note:
 This server is derived from SocketServer.ThreadingMixIn. Hence a thread is
 used for each request.
 
-SECURITY WARNING: This uses CGIHTTPServer and CGIHTTPServer is not secure.
-It may execute arbitrary Python code or external programs. It should not be
-used outside a firewall.
 """
 
 import BaseHTTPServer
-import CGIHTTPServer
+import SimpleHTTPServer
 import SocketServer
 import logging
 import socket
@@ -152,8 +149,6 @@ class WebSocketServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         self.socket = self._create_socket()
         self.server_bind()
         self.server_activate()
-        logger.info('WebSocketServer.__init__(%r, %r)', \
-                server_address, RequestHandlerClass)
 
     def _create_socket(self):
         socket_ = socket.socket(self.address_family, self.socket_type)
@@ -170,8 +165,8 @@ class WebSocketServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 client_address, util.get_stack_trace())
 
 
-class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
-    """CGIHTTPRequestHandler specialized for Web Socket."""
+class WebSocketRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+    """SimpleHTTPRequestHandler specialized for Web Socket."""
 
     _MAX_MEMORIZED_LINES = 1024 # practically large enough to contain
                                 # WebSocket handshake lines.
@@ -190,15 +185,15 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
         self._request = _StandaloneRequest(self, self.USE_TLS)
         self._handshaker = handshake.Handshaker(self._request, self,
                 strict=self.STRICT)
-        self.cgi_directories = []
-        CGIHTTPServer.CGIHTTPRequestHandler.__init__(self, *args, **keywords)
+        SimpleHTTPServer.SimpleHTTPRequestHandler.__init__( \
+                self, *args, **keywords)
 
     def parse_request(self):
         """Override BaseHTTPServer.BaseHTTPRequestHandler.parse_request.
 
         Return True to continue processing for HTTP(S), False otherwise.
         """
-        result = CGIHTTPServer.CGIHTTPRequestHandler.parse_request(self)
+        result = SimpleHTTPServer.SimpleHTTPRequestHandler.parse_request(self)
         if result:
             try:
                 self._handshaker.do_handshake()
@@ -223,10 +218,6 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
         # Despite the name, this method is for warnings than for errors.
         # For example, HTTP status code is logged by this method.
         logger.warn('%s - %s', self.address_string(), (args[0] % args[1:]))
-
-    def is_cgi(self):
-        """ Test whether self.path corresponds to a CGI script. """
-        return False # ignore CGI scripts
 
     def do_extra_handshake(self, request):
         pass # by default: always accept
