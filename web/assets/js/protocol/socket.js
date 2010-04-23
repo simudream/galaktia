@@ -1,6 +1,7 @@
 var Galaktia = Galaktia || {};
+Galaktia.Protocol = Galaktia.Protocol || {};
 
-Galaktia.JSONSocket = new Class({
+Galaktia.Protocol.JSONSocket = new Class({
 	initialize: function(url) {
 		
 		this.url = url;

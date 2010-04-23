@@ -1,5 +1,5 @@
 var Galaktia = Galaktia || {};                                            
-var Galaktia.Messages = Galaktia.Messages || {};      
+Galaktia.Messages = Galaktia.Messages || {};      
 
 Galaktia.Messages.HitRequest = new Class({                               
     Extends: Galaktia.Message,                                         
