@@ -14,3 +14,9 @@ class Batman:
 
 	def getVehicle(self):
 		return "Batmobile"
+
+	def getTools(self):
+		if self.batbelt:
+			return self.batbelt
+		else
+			raise NotImplementedError
