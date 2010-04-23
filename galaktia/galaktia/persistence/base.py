@@ -18,9 +18,15 @@ class GenericDAO(object):
         return self.session.query(self.klass)
 
     def get_by(self, **kwargs):
-        """ Returns the first entity that matches kwargs criteria """
+        """ Returns the first entity that matches kwargs criteria
+            :params **kwargs: dictionary where keys are the NAMES of the
+                fields. 
+        """
         assert len(kwargs) > 0
         return self._query().filter_by(**kwargs).first()
+
+    def flush(self):
+        self.session.flush()
 
     def get(self, *args, **kwargs):
         """ Returns an entity by primary key """
@@ -35,6 +41,7 @@ class GenericDAO(object):
 
     def filter(self, *args, **kwargs):
         """ Returns all entities matching the filters criteria """
+        # params are inequalities.
         # assert len(args) > 0 or len(kwargs) > 0
         q = reduce(lambda q, f: q.filter(f), args, self._query())
         q = q.filter_by(**kwargs) if kwargs else q

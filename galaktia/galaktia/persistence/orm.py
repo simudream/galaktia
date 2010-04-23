@@ -54,7 +54,7 @@ class SceneObject(Entity):
         return (self.x, self.y, self.z)
 
     def unpack(self):
-        return (self.x, self.y, self.z, self.image)
+        return (self.x, self.y, self.z, self.id)
 
     def to_dict(self): # useful for serializing
         return dict((k, getattr(self, k)) for k, v in \
