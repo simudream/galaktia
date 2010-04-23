@@ -139,9 +139,10 @@ class UserDAO(GenericDAO):
         super(UserDAO, self).__init__(session, User)
             # calls superclass constructor with args: session, klass
 
-    def get_user(self, id):
-        return self.get(User.id == id)
+    def get_login_info(self, name, passwd):
+        return self.get_by(User.name=name, User.passwd=passwd)
             # why not?: user_dao.get(user_id)
+            # Ok.
 
 
 class ItemDAO(SceneObjectDAO):
@@ -168,6 +169,9 @@ class CharacterDAO(SpriteDAO):
 
     def get_by_user_id(self, user_id):
         return self.filter(self.klass.user_id == user_id)
+
+    def by_id(self, id):
+        return self.get(self.klass.id == id)
 
 
 class CharacterItemDAO(SpriteDAO):

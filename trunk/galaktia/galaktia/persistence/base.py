@@ -27,6 +27,12 @@ class GenericDAO(object):
         assert len(args) > 0 or len(kwargs) > 0
         return self._query().get(*args, **kwargs)
 
+    def new(self, **kwargs):
+        obj = self.klass()
+        for k, v in kwargs.iteritems():
+            setattr(obj, k, v)
+        self.session.add(obj)
+
     def filter(self, *args, **kwargs):
         """ Returns all entities matching the filters criteria """
         # assert len(args) > 0 or len(kwargs) > 0
