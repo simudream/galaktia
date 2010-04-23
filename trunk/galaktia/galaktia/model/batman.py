@@ -20,3 +20,9 @@ class Batman:
 			return self.batbelt
 		else
 			raise NotImplementedError
+
+    def __repr__(self):
+        return "I'm Batman"
+
+    # OK, guys! Let's cut the joke. It ain't funny.
+
