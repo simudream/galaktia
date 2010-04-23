@@ -13,11 +13,11 @@ setup(name='galaktia',
         'pycommons>=0.1',
         'PyYAML==3.08', # TODO: controlfreak dependence, deprecate
         'zope.interface==3.5.1', # TODO: controlfreak dependence, deprecate
-        'mod_pywebsocket',
+#        'mod_pywebsocket',
         'SQLAlchemy>=0.5',
         'pycrypto>=2.0',
         'mock>=0.5',
-        'pymemtools>=0.1',  # TODO: Memory tools. Not used right now, but
+ #       'pymemtools>=0.2.1',  # TODO: Memory tools. Not used right now, but
                             # it was part of this project once.
       ],
       entry_points={

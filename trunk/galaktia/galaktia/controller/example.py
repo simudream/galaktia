@@ -16,7 +16,6 @@ class SayResponseMessage(ResponseMessage):
     pass
 
 class SayNotificationMessage(NotificationMessage):
-    text = ''
     character_id = None
 
 class SayController(Controller):
@@ -26,20 +25,14 @@ class SayController(Controller):
 
     def handle(self, message):
         response = SayResponseMessage()
-        response._dst_session = message._src_session
-        response.text = 'Batman'
-        yield response
-
+        response._src_session = 1
+        response._dst_session = 1
         if message.text:
-            me = self.dao.character.by_id(message._src_session)
-            others = dao.spatial.get_near(me, radius = 20)
-
-            for other in others:
-                notification = SayNotificationMessage()
-                notification._dst_session = other.id
-                notification.text = 'Batman'
-                yield notification
-
+            response.text = 'This is what you said reversed: ' + \
+                    ''.join(reversed(message.text))
+        else:
+            response.text = 'You said nothing!'
+        yield response
         # yield SayResponseMessage(...)
         # yield SayNotificationMessage(...)
 
