@@ -140,7 +140,7 @@ class UserDAO(GenericDAO):
             # calls superclass constructor with args: session, klass
 
     def get_login_info(self, name, passwd):
-        return self.get_by(User.name=name, User.passwd=passwd)
+        return self.get_by(User.name==name, User.passwd==passwd)
             # why not?: user_dao.get(user_id)
             # Ok.
 
