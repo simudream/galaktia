@@ -3,7 +3,6 @@
 
 import logging
 
-from galaktia.model.mapdata import MapData
 from galaktia.model.controller import Controller
 from galaktia.model.message import RequestMessage, ResponseMessage, \
     NotificationMessage
