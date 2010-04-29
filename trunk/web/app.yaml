@@ -1,5 +1,6 @@
+# Google App Engine application configuration file
 
-application: galaktia-online
+application: galaktia-web
 version: 1
 runtime: python
 api_version: 1
@@ -41,13 +42,7 @@ handlers:
 
 - url: /.*
   script: controller/main.py
-# 
+
 # - url: /otraurl
 #   script: otro_controller.py
-
-
-
-
-
-
 
