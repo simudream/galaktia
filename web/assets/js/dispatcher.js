@@ -1,53 +1,49 @@
-var Galaktia = Galaktia || {};
+/**
+ * Class: DispatcherController
+ * ---------------------------
+ * Request handler that dispatches messages to corresponding controllers.
+ */
+Galaktia.DispatcherController = new Class({
 
-Galaktia.Dispatcher = new Class({
-	handlers: {},
-	defaultHandler: function() {},
-	initialize: function(socket) {
-	
-		socket || this.registerSocket(socket);
+	Implements: [Events],
+
+	routes: new Hash({
+		EnterResponseMessage:
+			new Galaktia.EnterResponseController(),
+		EnterNotificationMessage:
+			new Galaktia.EnterNotificationController(),
+		SayResponseMessage:
+			new Galaktia.SayResponseController(),
+		SayNotificationMessage:
+			new Galaktia.SayNotificationController(),
+		MoveResponseMessage:
+			new Galaktia.MoveResponseController(),
+		MoveNotificationMessage:
+			new Galaktia.MoveNotificationController(),
+		HitResponseMessage:
+			new Galaktia.HitResponseController(),
+		HitNotificationMessage:
+			new Galaktia.HitNotificationController(),
+		ExitResponseMessage:
+			new Galaktia.ExitResponseController(),
+		ExitNotificationMessage:
+			new Galaktia.ExitNotificationController(),
+	}), // TODO: auto-detect controllers?
+
+	initialize: function ()	{
+		this.routes.each(function (controller, type) {
+			var handler = controller.handle.bind(controller);
+			this.addEvent(type, handler);
+		}.bind(this));
 	},
-	handler: function(message) {
-		
-		if ( $type(message) != 'object' ) return;
-		
-		var handler = this.getTypeHandler(message.type);
-		delete message.type;
-		
-		handler(new Galaktia.Messages[message.type](message));
-		
-	},
-	getTypeHandler: function(type) {
-		
-		return this.handlers[type] || this.defaultHandler;
-	},
-	addTypeHandler: function(type, handler) {
-		
-		if ( $type(handler) != 'function' ) return; 
-		
-		this.handlers[type] = handler;
-	},
-	addTypeHandlerList: function(handlerList) {
-		
-		if ( $type(handlerList) == 'object' ) {
-			
-			throw new Exception("Handler list must be an object mapping type to handler.");
+
+	handle: function (message) {
+		var type = (message.__class__ || '').split(':').pop();
+		if (!this.routes.has(type)) {
+			Galaktia.log('No controller to dispatch message: '
+					+ JSON.encode(message), 'ERROR');
 		}
-		
-		for( type in handlerList ) {
-			
-			this.addTypeHandler(type, handlerList[type]);
-		}
-	},
-	addDefaultHandler: function(handler) {
-		
-		if ( $type(handler) == 'function' ) {
-			
-			this.defaultHandler = handler;
-		}
-	},
-	registerSocket: function(socket) {
-		
-		socket.registerListenHandler(this.handler.bind(this));
+		this.fireEvent(type, [message]);
 	}
+
 });

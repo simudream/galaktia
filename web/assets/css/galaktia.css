@@ -1,0 +1,15 @@
+body {
+	font-family: Helvetica, sans-serif;
+	background: #111;
+	margin: 0 auto;
+	width: 1000px;
+}
+textarea {
+	border: 0;
+	background: black;
+	color: #ccc;
+	font-family: Monaco, monospace;
+	font-size: 9pt;
+	width: 1000px;
+	height: 120px;
+}

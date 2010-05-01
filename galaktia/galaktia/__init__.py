@@ -7,6 +7,8 @@ import logging
 from controlfreak.commands import BaseAction, BaseShellAction
 from controlfreak.commands import MultiActionCommand
 
+from galaktia.model.client import run_client_web_server
+
 logger = logging.getLogger(__name__)
 
 class GalaktiaServerCommand(BaseAction):
@@ -22,6 +24,13 @@ class GalaktiaServerCommand(BaseAction):
         except KeyboardInterrupt:
             logger.info('Stopped Galaktia server')
 
+class GalaktiaClientCommand(BaseAction):
+    name = 'client'
+    description = 'Galaktia game client'
+
+    def run(self, appctx):
+        run_client_web_server() # TODO: custom path and server address
+
 class GalaktiaShellCommand(BaseShellAction):
     name = 'shell'
     description = 'Galaktia shell (provides application context)'
@@ -33,4 +42,5 @@ Available variables:
   - appctx : Application context
 """
 
-main = MultiActionCommand(GalaktiaShellCommand(), GalaktiaServerCommand())
+main = MultiActionCommand(GalaktiaShellCommand(), \
+        GalaktiaServerCommand(), GalaktiaClientCommand())
