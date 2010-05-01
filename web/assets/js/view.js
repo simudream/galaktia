@@ -5,6 +5,7 @@
  */
 Galaktia.CanvasView = new Class({
 
+	// CanvasView contructor
 	initialize: function (message) {
 		this.canvas = $('canvas');
 		this.images = new Asset.images(['images/walter.png'], {
@@ -12,6 +13,7 @@ Galaktia.CanvasView = new Class({
         	}); // TODO: better assets handling
 	},
 
+	// Renders the whole canvas
 	render: function () {
 		var ctx = this.canvas.getContext('2d');
 		var w = this.canvas.getProperty('width').toInt();
@@ -32,6 +34,7 @@ Galaktia.CanvasView = new Class({
 		ctx.restore(); // finish
 	},
 
+	// Draws a tile on given coords
 	drawTile: function (x, y) {
 		var ctx = this.canvas.getContext('2d');
 		var tl = 40;
@@ -48,6 +51,7 @@ Galaktia.CanvasView = new Class({
 		ctx.restore(); // finish
 	},
 
+	// Draws a sprite on given coords
 	drawSprite: function (x, y) {
 		var ctx = this.canvas.getContext('2d');
 		ctx.save(); // start

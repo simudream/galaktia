@@ -4,26 +4,13 @@ var Galaktia = {version: '0.2a', client: null};
 // Application context setup
 Galaktia.setup = function () {
 	// log setup
-	Galaktia.logger = new Log;
-	Galaktia.logger.enableLog();
-	var scroll = new Fx.Scroll('log-output');
-	Galaktia.log = function (message, level) {
-		if ($type(message) != 'string') {
-			message = JSON.encode(message);
-		}
-		level = (level || 'INFO').toUpperCase();
-		var now = new Date().format('%H:%M:%S');
-		record = [now, level, message].join(' ');
-		Galaktia.logger.log(record);
-		var value = $('log-output').getProperty('value');
-		$('log-output').setProperty('value', value + record + '\n');
-		scroll.toBottom();
-		// TODO: log output should not grow infinitely
-	};
-	// client setup
+	Galaktia.logger = new Log; // see: mootools Log
+	// client + ui + view setup
 	Galaktia.client = new Galaktia.Client();
-	// view setup
+	Galaktia.ui = new Galaktia.UIController();
 	Galaktia.view = new Galaktia.CanvasView();
+	Galaktia.log = Galaktia.ui.bindLog(Galaktia.logger);
+			// returns a log callback to be used globally
 	// welcome message
 	Galaktia.log('Welcome Galaktia player! You may play with this '
 			+ 'pre-release-candidate GUI by pressing these keys:'
@@ -35,6 +22,9 @@ Galaktia.setup = function () {
 };
 
 // Main script
+// NOTE: No mootools functions should be assumed in the global execution
+// context until all *.js files are loaded, i.e., on domready event.
+// In addition, some dependencies may only be resolved after Galaktia.setup().
 if (MooTools.version == '1.2.4') {
 	window.addEvent('domready', Galaktia.setup);
 } else {
