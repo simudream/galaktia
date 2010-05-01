@@ -5,7 +5,7 @@
  */
 Galaktia.DispatcherController = new Class({
 
-	Implements: [Events],
+	Implements: [Events], // see: mootools Events
 
 	routes: new Hash({
 		EnterResponseMessage:
@@ -30,6 +30,7 @@ Galaktia.DispatcherController = new Class({
 			new Galaktia.ExitNotificationController(),
 	}), // TODO: auto-detect controllers?
 
+	// DispatcherController constructor
 	initialize: function ()	{
 		this.routes.each(function (controller, type) {
 			var handler = controller.handle.bind(controller);
@@ -37,6 +38,7 @@ Galaktia.DispatcherController = new Class({
 		}.bind(this));
 	},
 
+	// Dispatcher received message to a controller according to its routes
 	handle: function (message) {
 		var type = (message.__class__ || '').split(':').pop();
 		if (!this.routes.has(type)) {

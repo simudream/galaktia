@@ -7,18 +7,18 @@
  */
 Galaktia.Client = new Class({
 
-	ui: null,
-	socket: null,
-	codec: null,
-	handler: null,
+	socket: null, // WebSocket (HTML5)
+	codec: null, // JSON (mootools)
+	handler: null, // Galaktia.DispatcherController
 
+	// GalaktiaClient constructor
 	initialize: function () {
-		this.ui = new Galaktia.UIController();
 		this.socket = null; // until connect is called
 		this.codec = JSON; // nice shortcut :)
 		this.handler = new Galaktia.DispatcherController();
 	},
 
+	// Opens web socket to host and runs onConnect callback on success
 	connect: function (host, onConnect) {
 		try {
 			this.socket = new WebSocket(host);
@@ -49,10 +49,12 @@ Galaktia.Client = new Class({
 		}.bind(this);
 	},
 
+	// Closes web socket
 	disconnect: function () {
 		this.socket.close();
 	},
 
+	// Sends a message (regular object to be encoded in JSON)
 	send: function (message) {
 		if (this.socket) {
 			try {

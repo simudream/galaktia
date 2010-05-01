@@ -3,6 +3,7 @@
 __docformat__='restructuredtext'
 
 import logging
+import os
 
 from controlfreak.commands import BaseAction, BaseShellAction
 from controlfreak.commands import MultiActionCommand
@@ -42,5 +43,26 @@ Available variables:
   - appctx : Application context
 """
 
-main = MultiActionCommand(GalaktiaShellCommand(), \
-        GalaktiaServerCommand(), GalaktiaClientCommand())
+class GalaktiaCommand(MultiActionCommand):
+    """ Custom MultiActionCommand with default configuration """
+
+    CONFIG_PATH = os.path.join(os.path.dirname(__file__), '..', 'config')
+    ACTION_CLASSES = [
+        GalaktiaShellCommand,
+        GalaktiaServerCommand,
+        GalaktiaClientCommand
+    ]
+
+    def __init__(self):
+        actions = [cls() for cls in self.ACTION_CLASSES]
+        super(GalaktiaCommand, self).__init__(*actions)
+
+    def customCommandLineValidation(self, parser):
+        super(GalaktiaCommand, self).customCommandLineValidation(parser)
+        # sets default freakconfig option in case '-c' option is omitted
+        if self.options.freakconfig is None:
+            self.options.freakconfig = os.path.join(self.CONFIG_PATH, \
+                    'galaktia-application.yaml')
+
+# Main program
+main = GalaktiaCommand()

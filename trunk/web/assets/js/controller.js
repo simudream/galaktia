@@ -5,6 +5,7 @@
  */
 Galaktia.Controller = new Class({
 
+	// Handles a received message (abstract method)
 	handle: function (message) {
 		Galaktia.log('Not yet implemented: Handling message: '
 				+ JSON.encode(message));
