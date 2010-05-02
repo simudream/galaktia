@@ -2,14 +2,21 @@ body {
 	font-family: Helvetica, sans-serif;
 	background: #111;
 	margin: 0 auto;
-	width: 1000px;
 }
-textarea {
+#canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+.console {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 99%;
+	height: 120px;
 	border: 0;
-	background: black;
-	color: #ccc;
+	color: #eee;
+	background-color: rgba(0, 0, 0, 0.5);
 	font-family: Monaco, monospace;
 	font-size: 9pt;
-	width: 1000px;
-	height: 120px;
 }
