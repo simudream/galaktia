@@ -15,7 +15,10 @@ Galaktia.UIController = new Class({
 		var events = {
 			'e': this.enter.bind(this),
 			's': this.say.bind(this),
-			'm': this.move.bind(this),
+			'left': this.move.bind(this, [-1, -1]),
+			'right': this.move.bind(this, [1, 1]),
+			'up': this.move.bind(this, [-1, 1]),
+			'down': this.move.bind(this, [1, -1]),
 			'h': this.hit.bind(this),
 			'x': this.exit.bind(this)
 		};
@@ -27,15 +30,15 @@ Galaktia.UIController = new Class({
 	enter: function () {
 		var host = this.prompt('Host (web socket server URL):',
 				'ws://localhost:8880');
+		if (!host) {
+			Galaktia.log('Login cancelled');
+			return;
+		}
 		var onConnect = this.send.bind(this, ['Enter', {
 			username: this.prompt('Username:', 'walter'),
 			password: this.prompt('Password:', 'i<3w4Lt3r1N4')
 		}]);
-		if (host) {
-			Galaktia.client.connect(host, onConnect);
-		} else {
-			Galaktia.log('Login cancelled');
-		}
+		Galaktia.client.connect(host, onConnect);
 	},
 
 	// Sends a SayRequestMessage. Prompts for chat message text.
@@ -45,12 +48,17 @@ Galaktia.UIController = new Class({
 		});
 	},
 
-	// Sends a MoveRequestMessage. Prompts for absolute coords.
-	move: function () {
+	// Sends a MoveRequestMessage to position given by offset (dx, dy).
+	move: function (dx, dy) {
 		this.send('Move', {
-			x: this.prompt('X coordinate:', '0').toInt(),
-			y: this.prompt('Y coordinate:', '0').toInt()
+			x: Galaktia.dao.position.x + dx,
+			y: Galaktia.dao.position.y + dy
 		});
+		// XXX Simulate controller action after MoveResponseMessage:
+		var character = Galaktia.dao.character;
+		var oMap = [6, 7, 4, 5, character.orientation, 1, 0, 3, 2];
+		character.orientation = oMap[(dx + 1) + 3 * (dy + 1)];
+		Galaktia.view.render();
 	},
 
 	// Sends a HitRequestMessage. Prompts for input of character ID.
@@ -76,11 +84,15 @@ Galaktia.UIController = new Class({
 	},
 
 	// Returns a callback function that can be called globally to
-	// see logged messages in an UI console-like display.
-	// Returned callback can accept a string and an optional log level
-	// key such as 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL', etc.
+	// see logged messages in the GUI "console".
+	// Returned callback accepts the log message string and an optional
+	// log level key such as 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL',
+	// etc. (defaults to 'INFO').
 	bindLog: function (logger) {
-		var scroll = new Fx.Scroll('log-output');
+		var console = new Element('textarea', {disabled: 'disabled'});
+		console.addClass('console');
+		console.inject($('canvas'), 'after');
+		var scroll = new Fx.Scroll(console);
 		return function (message, level) {
 			if ($type(message) != 'string') {
 				message = JSON.encode(message);
@@ -89,9 +101,9 @@ Galaktia.UIController = new Class({
 			var now = new Date().format('%H:%M:%S');
 			record = [now, level, message].join(' ');
 			logger.log(record);
-			var value = $('log-output').getProperty('value');
+			var value = console.getProperty('value');
 			value += record + '\n';
-			$('log-output').setProperty('value', value);
+			console.setProperty('value', value);
 			scroll.toBottom();
 			// TODO: log output should not grow infinitely
 		};
