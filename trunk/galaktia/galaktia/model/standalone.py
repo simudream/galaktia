@@ -107,6 +107,8 @@ class _StandaloneRequest(object):
         self.connection = _StandaloneConnection(request_handler)
         self._use_tls = use_tls
         self._session = None
+        self.client_terminated = False
+        self.server_terminated = False
 
     def get_uri(self):
         """Getter to mimic request.uri."""

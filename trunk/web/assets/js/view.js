@@ -28,8 +28,7 @@ Galaktia.CanvasView = new Class({
 	// Resizes canvas to fit in given size or parent size
 	resize: function (width, height) {
 		var size = this.canvas.getParent().getSize();
-		this.size = {x: width || size.x - 10,
-				y: height || size.y - 10};
+		this.size = {x: width || size.x, y: height || size.y};
 		this.canvas.setProperty('width', this.size.x.toString());
 		this.canvas.setProperty('height', this.size.y.toString());
 		this.render();

@@ -2,6 +2,7 @@ body {
 	font-family: Helvetica, sans-serif;
 	background: #111;
 	margin: 0 auto;
+	overflow: hidden;
 }
 #canvas {
 	position: absolute;
@@ -12,7 +13,8 @@ body {
 	position: absolute;
 	left: 0;
 	bottom: 0;
-	width: 99%;
+	width: 100%;
+	overflow: auto;
 	height: 120px;
 	border: 0;
 	color: #eee;
