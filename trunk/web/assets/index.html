@@ -23,7 +23,32 @@
 </head>
 
 <body>
-<canvas id="canvas" width="800" height="600"></canvas>
+<div id="frontpage">
+	<div class="titlepane">
+		<h1>Galaktia</h1>
+		<p>version 0.2.0</p>
+	</div>
+	<div class="loginpane">
+		<div>
+			<label for="host">Host</label>
+			<input id="host" type="text" value="ws://localhost:8880" />
+		</div>
+		<div>
+			<label for="username">Username</label>
+			<input id="username" type="text" value="" />
+		</div>
+		<div>
+			<label for="password">Password</label>
+			<input id="password" type="password" value="" />
+		</div>
+		<button id="login">Play</button>
+	</div>
+</div>
+<div id="ingamepage">
+	<canvas id="canvas" width="800" height="600"></canvas>
+	<textarea id="console" class="console" disabled="disabled"></textarea>
+	<input id="prompt" class="prompt" type="text" value="" />
+</div>
 </body>
 
 </html>

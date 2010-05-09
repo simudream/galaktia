@@ -10,9 +10,12 @@ Galaktia.CanvasView = new Class({
 		'images/humano.png',
 	],
 
+	canvas: null, // canvas HTML element
+	size: null, // {x, y} object storing canvas width and height
+
 	// CanvasView contructor
-	initialize: function (message) {
-		this.canvas = $('canvas');
+	initialize: function (canvas) {
+		this.canvas = canvas;
 		this.size = this.canvas.getSize();
 		this.images = new Asset.images(this.images, {
                 	onComplete: this.resize.bind(this)
@@ -27,15 +30,18 @@ Galaktia.CanvasView = new Class({
 
 	// Resizes canvas to fit in given size or parent size
 	resize: function (width, height) {
-		var size = this.canvas.getParent().getSize();
+		var size = $(document).getSize();
 		this.size = {x: width || size.x, y: height || size.y};
 		this.canvas.setProperty('width', this.size.x.toString());
 		this.canvas.setProperty('height', this.size.y.toString());
-		this.render();
+		return this.render();
 	},
 
 	// Renders the whole canvas
 	render: function () {
+		if (!Galaktia.client.socket) { // XXX UI state hack
+			return false;
+		}
 		var ctx = this.canvas.getContext('2d');
 		var w = this.canvas.getProperty('width').toInt();
 		var h = this.canvas.getProperty('height').toInt();
@@ -53,6 +59,7 @@ Galaktia.CanvasView = new Class({
 		// sprite
 		this.drawSprite(Galaktia.dao.character);
 		ctx.restore(); // finish
+		return true;
 	},
 
 	// Draws a tile on given coords

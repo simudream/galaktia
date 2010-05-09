@@ -95,7 +95,7 @@ class SceneObjectDAO(GenericDAO):
 
     def get_near(self, obj, radius=2, return_self=False):
         list = self.get_layer_subsection(obj.x, obj.y, obj.z, radius)
-        if not return_self:
+        if not return_self and obj in list:
             list.remove(obj)
         return list
 
@@ -140,9 +140,7 @@ class UserDAO(GenericDAO):
             # calls superclass constructor with args: session, klass
 
     def get_login_info(self, name, passwd):
-        return self.get_by(User.name == name, User.passwd == passwd)
-            # why not?: user_dao.get(user_id)
-            # Ok.
+        return self.get_by(name=name, passwd=passwd)
 
 
 class ItemDAO(SceneObjectDAO):
@@ -167,12 +165,7 @@ class SpriteDAO(SpatialDAO):
 class CharacterDAO(SpriteDAO):
     ENTITY_CLASS = Character
 
-    def get_by_user_id(self, user_id):
-        return self.filter(self.klass.user_id == user_id)
-
-    def by_id(self, id):
-        return self.get_by(id=id)
-
 
 class CharacterItemDAO(SpriteDAO):
     ENTITY_CLASS = CharacterItem
+

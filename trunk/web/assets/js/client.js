@@ -23,9 +23,9 @@ Galaktia.Client = new Class({
 		try {
 			this.socket = new WebSocket(host);
 		} catch (e) {
-			Galaktia.log('Your web browser does not support '
-					+ 'web sockets', 'FATAL');
-			return;
+			Galaktia.log('Your web browser does not seem to '
+					+ 'support web sockets', 'FATAL');
+			return false;
 		}
 		this.socket.onopen = function (e) {
 			Galaktia.log('Connected to: ' + host);
@@ -47,11 +47,13 @@ Galaktia.Client = new Class({
 			Galaktia.log('Disconnected from: ' + host);
 			this.socket = null;
 		}.bind(this);
+		return true;
 	},
 
 	// Closes web socket
 	disconnect: function () {
 		this.socket.close();
+		return true;
 	},
 
 	// Sends a message (regular object to be encoded in JSON)
@@ -61,11 +63,13 @@ Galaktia.Client = new Class({
 				var data = this.codec.encode(message);
 				this.socket.send(data);
 				Galaktia.log('Sent message: ' + data);
+				return true;
 			} catch (e) {
 				Galaktia.log('Failed to send message: ' + e);
 			}
 		} else {
 			Galaktia.log('Cannot send message: No open socket');
 		}
+		return false;
 	}
 });

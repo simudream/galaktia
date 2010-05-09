@@ -18,9 +18,10 @@ class GenericDAO(object):
         return self.session.query(self.klass)
 
     def get_by(self, **kwargs):
-        """ Returns the first entity that matches kwargs criteria
-            :params **kwargs: dictionary where keys are the NAMES of the
-                fields. 
+        """ Retrieves first entity that matches criteria given by keywords.
+
+        :keywords:
+            attribute key/values
         """
         assert len(kwargs) > 0
         return self._query().filter_by(**kwargs).first()
@@ -38,6 +39,7 @@ class GenericDAO(object):
         for k, v in kwargs.iteritems():
             setattr(obj, k, v)
         self.session.add(obj)
+        return obj
 
     def filter(self, *args, **kwargs):
         """ Returns all entities matching the filters criteria """
