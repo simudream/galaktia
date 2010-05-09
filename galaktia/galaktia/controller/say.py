@@ -27,12 +27,12 @@ class SayController(Controller):
     def handle(self, message):
         response = SayResponseMessage()
         response._dst_session = message._src_session
-        response.text = 'Batman'
-        yield response
+        response.text = message.text # formerly: 'Batman' :)
+        yield response # responds same text (echo service)
 
         if message.text:
-            me = self.dao.character.by_id(message._src_session)
-            others = dao.spatial.get_near(me, radius = 20)
+            me = self.dao.character.get(message._src_session)
+            others = self.dao.spatial.get_near(me, radius = 20)
 
             for other in others:
                 notification = SayNotificationMessage()

@@ -1,21 +1,122 @@
+@font-face {
+	font-family: Monaco;
+	src: url(../images/monaco.ttf);
+}
+@font-face {
+	font-family: Borg;
+	src: url(../images/borg.ttf);
+}
 body {
 	font-family: Helvetica, sans-serif;
 	background: #111;
 	margin: 0 auto;
 	overflow: hidden;
 }
+.titlepane {
+	width: 540px;
+	margin: 64px auto;
+}
+.titlepane h1 {
+	font-family: Borg;
+	font-size: 48pt;
+	margin: 16px;
+	width: 100%;
+	text-align: center;
+	color: #eee;
+	text-shadow: 4px 4px 12px #000;
+}
+.titlepane p {
+	font-family: Borg;
+	font-size: 16pt;
+	width: 100%;
+	text-align: center;
+	color: #333;
+	text-shadow: 1px 1px 4px #000;
+}
+.loginpane {
+	background-color: #666666;
+	font-family: Borg;
+	width: 540px;
+	margin: auto;
+	padding: 8px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+	-moz-box-shadow: 2px 2px 8px #000;
+	-webkit-box-shadow: 2px 2px 8px #000;
+}
+.loginpane input {
+	width: 300px;
+	border: 0;
+	background: #111;
+	color: #eee;
+	font-family: Monaco, monospace;
+	font-size: 14pt;
+	margin: 4px;
+	padding: 4px 8px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-box-shadow: -2px -2px 4px #999;
+	-webkit-box-shadow: -2px -2px 4px #999;
+}
+.loginpane label {
+	width: 200px;
+	text-align: right;
+	font-size: 18pt;
+	margin: 4px;
+	display: inline-block;
+	color: #111;
+}
+.loginpane button {
+	margin: 4px 4px 4px 440px;
+	font-family: Borg;
+	font-size: 18pt;
+	display: inline-block;
+	padding: 5px 10px 6px;
+	background-color: #012;
+	color: #eee;
+	text-decoration: none;
+	font-weight: bold;
+	line-height: 1;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-box-shadow: 1px 1px 4px #333;
+	-webkit-box-shadow: 1px 1px 4px #333;
+	text-shadow: 0 -1px 1px #222;
+	position: relative;
+	cursor: pointer;
+}
+.loginpane button:hover {
+	background-color: #036;
+}
 #canvas {
 	position: absolute;
 	left: 0;
 	top: 0;
+	display: none;
 }
 .console {
 	position: absolute;
 	left: 0;
+	bottom: 24px;
+	width: 100%;
+	height: 128px;
+	padding: 2px 0px;
+	margin: 0;
+	overflow: auto;
+	border: 0;
+	color: #eee;
+	background-color: rgba(0, 0, 0, 0.5);
+	font-family: Monaco, monospace;
+	font-size: 9pt;
+}
+.prompt {
+	position: absolute;
+	left: 0;
 	bottom: 0;
 	width: 100%;
-	overflow: auto;
-	height: 120px;
+	height: 20px;
+	padding: 2px 0px;
+	margin: 0;
 	border: 0;
 	color: #eee;
 	background-color: rgba(0, 0, 0, 0.5);

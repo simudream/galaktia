@@ -9,43 +9,71 @@
 Galaktia.UIController = new Class({
 
 	keyboard: null, // Keyboard (mootools)
+	view: null, // Galaktia.CanvasView
 
 	// UIController contructor
 	initialize: function () {
 		var events = {
-			'e': this.enter.bind(this),
-			's': this.say.bind(this),
+			'enter': this.say.bind(this),
 			'left': this.move.bind(this, [-1, -1]),
 			'right': this.move.bind(this, [1, 1]),
 			'up': this.move.bind(this, [-1, 1]),
 			'down': this.move.bind(this, [1, -1]),
-			'h': this.hit.bind(this),
-			'x': this.exit.bind(this)
+			'alt+h': this.hit.bind(this),
+			'alt+x': this.exit.bind(this)
 		};
 		this.keyboard = new Keyboard({events: events});
+		this.view = new Galaktia.CanvasView($('canvas'));
+		$('login').addEvent('click', this.enter.bind(this));
+		$('username').focus();
 	},
 
 	// Connects client and sends an EnterRequestMessage.
 	// Prompts for input of: host, username, password.
 	enter: function () {
-		var host = this.prompt('Host (web socket server URL):',
-				'ws://localhost:8880');
-		if (!host) {
-			Galaktia.log('Login cancelled');
+		var host = $('host').getProperty('value');
+		var username = $('username').getProperty('value');
+		var password = $('password').getProperty('value');
+		if (!(host && username && password)) {
+			Galaktia.log('Cannot login: Missing required fields');
 			return;
 		}
-		var onConnect = this.send.bind(this, ['Enter', {
-			username: this.prompt('Username:', 'walter'),
-			password: this.prompt('Password:', 'i<3w4Lt3r1N4')
-		}]);
-		Galaktia.client.connect(host, onConnect);
+		var callback = this.onConnect.bind(this, [username, password]);
+		return Galaktia.client.connect(host, callback);
+	},
+
+	onConnect: function (username, password) {
+		Galaktia.log('Remember these keyboard actions:'
+			+ '\n\tEnter text in the prompt at bottom '
+			+ 'to send a chat message (Say Request)'
+			+ '\n\tPress the arrows (\u2190\u2191\u2192\u2193) '
+			+ 'to walk (Move Request)'
+			+ '\n\tPress Alt+H to attack (Hit Request)'
+			+ '\n\tPress Alt+X or close the window to quit game '
+			+ '(Exit Request)'
+		);
+		$('frontpage').setStyle('display', 'none');
+		$('canvas').setStyle('display', 'block');
+		this.view.render();
+		$('prompt').focus();
+		window.onbeforeunload = function (e) {
+			return 'You are about to quit the game. You may '
+					+ 'cancel to keep playing.';
+		};
+		window.addEvent('unload', this.exit.bind(this));
+		return this.send('Enter', {username: username,
+				password: password});
 	},
 
 	// Sends a SayRequestMessage. Prompts for chat message text.
 	say: function () {
-		this.send('Say', {
-			text: this.prompt('Chat message:')
-		});
+		if (!Galaktia.client.socket) { // XXX UI state hack
+			return this.enter();
+		} else {
+			var text = $('prompt').getProperty('value');
+			$('prompt').setProperty('value', '');
+			return this.send('Say', {text: text});
+		}
 	},
 
 	// Sends a MoveRequestMessage to position given by offset (dx, dy).
@@ -58,29 +86,29 @@ Galaktia.UIController = new Class({
 		var character = Galaktia.dao.character;
 		var oMap = [6, 7, 4, 5, character.orientation, 1, 0, 3, 2];
 		character.orientation = oMap[(dx + 1) + 3 * (dy + 1)];
-		Galaktia.view.render();
+		this.view.render();
+		return true;
 	},
 
 	// Sends a HitRequestMessage. Prompts for input of character ID.
 	hit: function () {
-		this.send('Hit', {
+		return this.send('Hit', {
 			character_id: this.prompt('Character ID:', '0').toInt()
 		});
 	},
 
 	// Sends an ExitRequestMessage, given prior confirmation
 	exit: function () {
-		if (this.confirm('Are you sure you want to quit?')) {
-			this.send('Exit', {});
-			Galaktia.client.disconnect();
-		}
+		this.send('Exit', {});
+		Galaktia.client.disconnect();
+		return true;
 	},
 
 	// Sends a generic message (type determines class, data is any object)
 	send: function (type, data) {
 		var namespace = 'galaktia.controller.' + type.toLowerCase();
 		data.__class__ = namespace + ':' + type + 'RequestMessage';
-		Galaktia.client.send(data);
+		return Galaktia.client.send(data);
 	},
 
 	// Returns a callback function that can be called globally to
@@ -89,9 +117,7 @@ Galaktia.UIController = new Class({
 	// log level key such as 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL',
 	// etc. (defaults to 'INFO').
 	bindLog: function (logger) {
-		var console = new Element('textarea', {disabled: 'disabled'});
-		console.addClass('console');
-		console.inject($('canvas'), 'after');
+		var console = $('console');
 		var scroll = new Fx.Scroll(console);
 		return function (message, level) {
 			if ($type(message) != 'string') {

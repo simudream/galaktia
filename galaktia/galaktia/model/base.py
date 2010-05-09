@@ -81,13 +81,14 @@ class SessionDAO(dict):
     # Not sure if all this works...
 
     def get_request(self, message, current_request):
-        if current_request not in self:
+        if current_request._session not in self:
             if message._src_session != message._dst_session:
                 raise ValueError('First message of a new session must be ' \
                         'sent to the same session')
             self[message._src_session] = current_request
             current_request._session = message._src_session
-        elif message._src_session < 0: # TODO: decide how to close session
+        elif message.__class__.__name__ == 'ExitResponseMessage':
+                # TODO: decide how to close session
             raise StopIteration('Session closed')
         return self[message._dst_session]
 
