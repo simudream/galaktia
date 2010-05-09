@@ -5,78 +5,90 @@
 
 This document explains how to install libraries, tools and other dependencies required for development.
 
+=Development Environment=
 
-= Dependencies =
+==Dependencies Overview==
 
-  * *Python 2.5 or 2.6*
-     * *ipython*
-     * *virtualenv*
-  * *Python libraries*
-     * *pyglet*
-     * *twisted*
-     * *simplejson*
-     * *setuptools*
-     * *nose*
-     * *sqlalchemy*
-     * *sqlite*
+  * *Python 2.6*
+     * *[http://pypi.python.org/pypi/virtualenv virtualenv]*: A tool to create isolated Python environments
+     * *[http://ipython.scipy.org/moin/Documentation ipython]*: An interactive Python shell
+     * *[http://www.sqlalchemy.org/docs/ SQLAlchemy>=2.6]*: An Object-Relational Mapping framework for the Data Access Layer
+     * *[http://code.google.com/p/pywebsocket/ mod_pywebsocket>=0.5]*: Utilities for a standalone Web Socket server
+     * *[http://blog.code.zauber.com.ar/2009/04/controlfreak-python-inversion-of.html controlfreak>=1.1.3]*: An Inversion of Control framework for connecting loosely coupled components
+     * *[http://blog.code.zauber.com.ar/2009/04/controlfreak-python-inversion-of.html pycommons>=0.3.7]*: Common Python utilities (indirect dependency due to controlfreak)
+     * *[http://pyyaml.org/wiki/PyYAMLDocumentation PyYAML>=3.09]*: A Python YAML parser (indirect dependency due to controlfreak)
+     * *[http://somethingaboutorange.com/mrl/projects/nose/0.11.3/ nose>=0.11]*: A testing framework (only for testing)
+     * *[http://pmock.sourceforge.net/ pmock>=0.3]*: Utilities for mocking objects in tests (only for testing)
   * *PostgreSQL*
      * *pgAdmin III*
   * *Memcached* ... not yet
 
-= Platform-dependent installation instructions =
+==Setup==
+
+This is a step-by-step description of how to setup a development environment. You will find the commands you may run in [DevelopmentEnvironmentSetup#Platform-specific_instructions].
+
+  # Create a virtualenv for galaktia. It is highly recommended that you read the [http://pypi.python.org/pypi/virtualenv virtualenv documentation] to understand how it works.
+  # Activate the galaktia virtualenv.
+  # Install setuptools (latest version) and ipython.
+  # Checkout galaktia source code.
+  # Go to the root galaktia source code directory.
+  # Run `galaktia` setup for development.
+  # Run `galaktia` server.
+  # Run `galaktia` client (separately).
+  # Optionally, run `galaktia` shell for playing with its components in an interactive shell.
+
+
+=Platform-specific instructions=
+
+==Linux==
+
+===Required packages===
+
+Use your package manager to install them; e.g.: `sudo apt-get install...` in Ubuntu.
+  * python2.6
+  * python-dev
+  * python-virtualenv
+  * subversion
+
+===Commands===
+
+*IMPORTANT*: Replace the environment variables for your custom values:
+  * `$VIRTUALENV`: path where you install virtualenvs, e.g.: `~/python-envs`
+  * `$WORKSPACE`: path where you checkout projects, e.g.: `~/workspace`
+  * `$USERNAME`: your username in the source code repository. Check [DevelopmentEnvironmentSetup#Source_Code_Management] for instructions on authentication.
+
+{{{
+$ virtualenv -p /usr/bin/python2.6 --no-site-packages $VIRTUALENV/galaktia
+$ source $VIRTUALENV/galaktia/bin/activate
+$ easy_install -U setuptools ipython
+$ svn checkout https://galaktia.googlecode.com/svn/trunk/ $WORKSPACE/galaktia --username $USERNAME
+$ cd $WORKSPACE/galaktia/galaktia
+$ python setup.py develop
+$ galaktia server
+$ galaktia client
+$ galaktia shell
+}}}
+
+==Mac OS X (Leopard)==
+
+===Requirements===
+  * Xcode
+  * Python 2.6
+  * virtualenv
+
+===Commands===
+
+Same as in Linux.
+
+Additionally, it is recommended to `easy_install readline` for a better experience in the `ipython` shell.
 
 ==Windows==
 
   _Oh, please! Get an operating system!_
 
-  But, just in case you need to run the svn version on Windows, here's how you do it:
-  First, obviously, you install Python. Don't forget to add the python directory to your PATH variable.
-  Then you need to install (manually) before running setup.py:
-  * Twisted http://twistedmatrix.com/trac/wiki/Downloads
-  * Python for Windows extensions https://sourceforge.net/projects/pywin32/
-
-  Finally, run setup.py and enjoy.
-
-
-==Ubuntu Linux==
-
-  * *Python 2.6*: comes out-of-the-box
-     * *ipython*: sudo apt-get install ipython
-     * *virtualenv*: sudo apt-get install python-virtualenv
-  * *Python libraries*
-     * *pyglet*: sudo apt-get install python-pyglet
-     * *twisted*: sudo apt-get install python-twisted
-     * *simplejson*: sudo apt-get install python-simplejson
-     * *setuptools*: sudo apt-get install python-setuptools
-     * *nose*: sudo apt-get install python-nose
-     * *sqlalchemy*: sudo apt-get install python-sqlalchemy
-     * *sqlite*: sudo apt-get install python-sqlite
-  * *PostgreSQL*: sudo apt-get install postgresql (See: http://www.guia-ubuntu.org/index.php?title=PostgreSQL )
-     * *pgAdmin III*: sudo apt-get install pgadmin3
-
-==Mac OS X (Leopard)==
-
-  * *Python 2.5*: comes out-of-the-box
-     * *ipython*: sudo easy_install ipython
-     * *virtualenv*: sudo easy_install python-virtualenv
-  * *Python libraries*
-     * *pyglet*: sudo easy_install pyglet
-     * *twisted*: sudo easy_install twisted
-     * *simplejson*: sudo easy_install simplejson
-     * *setuptools*: sudo easy_install setuptools
-     * *nose*: sudo easy_install nose
-     * *sqlalchemy*: sudo easy_install sqlalchemy
-     * *sqlite*: sudo easy_install sqlite
-  * *PostgreSQL*: See the instructions at http://developer.apple.com/internet/opensource/postgres.html
-     * *pgAdmin III*: See http://www.pgadmin.org/download/macosx.php
-
+Anyway, once you get Python 2.6 and virtualenv working on Windows (read the corresponding documentation), it should be very similar to the commands described above.
 
 =Source Code Management=
-
-==Tools==
-
-  * *Subversion*
-  * *[http://www.orcaware.com/svn/wiki/Svnmerge.py svnmerge.py]*: Script for _branch_ management
 
 ==Source checkout==
 
@@ -88,57 +100,11 @@ $ svn checkout https://galaktia.googlecode.com/svn/trunk/ galaktia --username PU
 
 When prompted, enter your [http://code.google.com/hosting/settings generated Google Code password].
 
-==Installing galaktia as a Python module==
+==Tools==
 
-*_TODO: Expand on this topic_*
+  * *Subversion*
+  * *[http://www.orcaware.com/svn/wiki/Svnmerge.py svnmerge.py]*: Script for _branch_ management
 
-At the trunk path:
-
-{{{
-$ cd galaktia/galaktia
-$ python setup.py develop
-}}}
-
-If everything went fine, you should then be able to `import galaktia` on the `ipython` interactive shell.
-
-=Python Virtual Environment _(OPTIONAL)_=
-
-==About _virtualenv_==
-
-From the Python Package Index of [http://pypi.python.org/pypi/virtualenv virtualenv]:
-
-  virtualenv is a tool to create isolated Python environments.
-
-  The basic problem being addressed is one of dependencies and versions, and indirectly permissions. `[...]`
-
-   In all these cases, virtualenv can help you. It creates an environment that has its own installation directories, that doesn't share libraries with other virtualenv environments (and optionally doesn't use the globally installed libraries either).
-
-== Basic usage ==
-
-To create a _virtualenv_:
-{{{
-$ virtualenv $PATH_TO_ENV
-}}}
-
-  This creates ENV/lib/python2.4/site-packages (or ENV/lib/python2.5/site-packages on Python 2.5, etc), where any libraries you install will go. It also creates ENV/bin/python, which is a Python interpreter that uses this environment. Anytime you use that interpreter (including when a script has #!/path/to/ENV/bin/python in it) the libraries in that environment will be used. `[...]` It also installs Setuptools for you, and if you use ENV/bin/easy_install the packages will be installed into the environment.
-
-To enter the _virtualenv_:
-{{{
-$ source $PATH_TO_ENV/bin/activate
-}}}
-
-== Recommended usage ==
-
-{{{
-$ mkdir -p ~/python-envs
-$ virtualenv -p /usr/bin/python2.6 --no-site-packages ~/python-envs/galaktia
-$ source ~/python-envs/galaktia/bin/activate
-$ easy_install -U setuptools ipython
-}}}
-
-Run the activation command (`source`...) every time you need to enter the development environment again. You may run `deactivate` to exit the environment.
-
-Pro: There is no need to `sudo easy_install` any package in virtual environments as packages may be installed locally, i.e., in a user-writable location.
 
 =IDEs _(OPTIONAL)_=
 
