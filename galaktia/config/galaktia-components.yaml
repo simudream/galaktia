@@ -19,6 +19,7 @@ server:
     path: galaktia.model.dispatcher:DispatcherController
     constructor-args:
       dao: object:persistence::dao
+      engine: object:persistence::engine
   session-dao:
     path: galaktia.model.base:SessionDAO
 

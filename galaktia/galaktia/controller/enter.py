@@ -68,7 +68,7 @@ class EnterController(Controller):
 
         # Notify all users in LoS
         for i in erm.dyn_data:
-            enm = EnterResponseMessage()
+            enm = EnterNotificationMessage()
             enm._dst_session = i.id
             enm.x, enm.y = char.pos[0:2]
             enm.character = char

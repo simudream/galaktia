@@ -37,9 +37,8 @@ class SayController(Controller):
             for other in others:
                 notification = SayNotificationMessage()
                 notification._dst_session = other.id
-                notification.text = 'Batman'
+                notification.character_id = me.id
+                notification.text = message.text
                 yield notification
 
-        # yield SayResponseMessage(...)
-        # yield SayNotificationMessage(...)
 
