@@ -128,6 +128,9 @@ class _StandaloneRequest(object):
     def is_https(self):
         """Mimic request.is_https()."""
         return self._use_tls
+    
+    def __repr__(self):
+        return self.__class__.__name__ + str(self.get_uri())
 
 
 class WebSocketServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
